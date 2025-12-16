@@ -12,7 +12,8 @@ import {
     LogOut,
     Menu,
     X,
-    User
+    User,
+    Shield
 } from "lucide-react";
 import { authClient } from "@/lib/auth-client";
 import { useRouter } from "next/navigation";
@@ -42,10 +43,19 @@ export default function DashboardLayout({
 
     const navItems = [
         { href: "/dashboard", label: "Inicio", icon: LayoutDashboard },
-        { href: "/dashboard/tickets/new", label: "Nuevo Ticket", icon: PlusCircle },
         { href: "/dashboard/tickets", label: "Mis Tickets", icon: Ticket },
-        { href: "/dashboard/agent", label: "Bandeja (Agentes)", icon: User }, // Added for easy access
     ];
+
+    // Admin-only items
+    const adminItems = [
+        { href: "/dashboard/tickets/new", label: "Nuevo Ticket", icon: PlusCircle },
+        { href: "/dashboard/agent", label: "Bandeja de Tickets", icon: User },
+        { href: "/dashboard/admin/roles", label: "Gestión de Roles", icon: Shield },
+    ];
+
+    const allNavItems = (session?.user as any)?.role === "admin"
+        ? [...navItems, ...adminItems]
+        : navItems;
 
     return (
         <div className="flex h-screen bg-gray-100">
@@ -65,7 +75,7 @@ export default function DashboardLayout({
                 </div>
 
                 <nav className="mt-6 flex-1 space-y-1 px-2">
-                    {navItems.map((item) => {
+                    {allNavItems.map((item) => {
                         const Icon = item.icon;
                         const isActive = pathname === item.href;
                         return (

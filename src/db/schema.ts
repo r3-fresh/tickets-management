@@ -12,7 +12,7 @@ export const users = pgTable("user", {
     image: text("image"),
     createdAt: timestamp("created_at").notNull(),
     updatedAt: timestamp("updated_at").notNull(),
-    role: text("role").default("user").notNull(), // 'user', 'agent', 'admin'
+    role: text("role").default("user").notNull(), // 'user', 'admin'
 });
 
 export const sessions = pgTable("session", {

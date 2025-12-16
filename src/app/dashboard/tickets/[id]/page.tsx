@@ -13,11 +13,12 @@ import { format } from "date-fns";
 import { es } from "date-fns/locale";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
-import { addCommentAction } from "@/app/actions/comment-actions"; // You'll need to create this
+import { addCommentAction } from "@/app/actions/comment-actions";
 import { ArrowLeft } from "lucide-react";
 import Link from "next/link";
+import { AdminTicketControls } from "./admin-ticket-controls";
 
-export default async function TicketDetailPage({ params }: { params: { id: string } }) {
+export default async function TicketDetailPage({ params }: { params: Promise<{ id: string }> }) {
     const session = await auth.api.getSession({
         headers: await headers(),
     });
@@ -26,7 +27,8 @@ export default async function TicketDetailPage({ params }: { params: { id: strin
         redirect("/login");
     }
 
-    const ticketId = Number(params.id);
+    const { id } = await params;
+    const ticketId = Number(id);
     if (isNaN(ticketId)) notFound();
 
     const ticket = await db.query.tickets.findFirst({
@@ -169,6 +171,22 @@ export default async function TicketDetailPage({ params }: { params: { id: strin
                             </div>
                         </CardContent>
                     </Card>
+
+                    {/* Admin Controls */}
+                    {session.user.role === "admin" && (
+                        <Card>
+                            <CardHeader>
+                                <CardTitle className="text-sm font-medium">Controles de Administrador</CardTitle>
+                            </CardHeader>
+                            <CardContent>
+                                <AdminTicketControls
+                                    ticketId={ticketId}
+                                    currentStatus={ticket.status}
+                                    isAssigned={!!ticket.assignedToId}
+                                />
+                            </CardContent>
+                        </Card>
+                    )}
                 </div>
             </div>
         </div>
