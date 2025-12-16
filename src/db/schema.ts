@@ -1,5 +1,5 @@
 
-import { pgTable, text, timestamp, boolean, uuid, serial, integer, jsonb } from "drizzle-orm/pg-core";
+import { pgTable, text, timestamp, boolean, uuid, serial, integer, jsonb, unique } from "drizzle-orm/pg-core";
 import { relations } from "drizzle-orm";
 
 // --- AUTH SCHEMA (Better-Auth Compatible) ---
@@ -87,6 +87,17 @@ export const comments = pgTable("comment", {
     isInternal: boolean("is_internal").default(false),
     createdAt: timestamp("created_at").defaultNow().notNull(),
 });
+
+// Track when users last viewed tickets (for unread comments)
+export const ticketViews = pgTable("ticket_view", {
+    id: serial("id").primaryKey(),
+    ticketId: integer("ticket_id").notNull().references(() => tickets.id, { onDelete: "cascade" }),
+    userId: text("user_id").notNull().references(() => users.id, { onDelete: "cascade" }),
+    lastViewedAt: timestamp("last_viewed_at").defaultNow().notNull(),
+}, (table) => ({
+    // Unique constraint: one view record per user per ticket
+    uniqueUserTicket: unique().on(table.userId, table.ticketId),
+}));
 
 export const attachments = pgTable("attachment", {
     id: uuid("id").primaryKey().defaultRandom(),

@@ -6,7 +6,6 @@ import { auth } from "@/lib/auth";
 import { headers } from "next/headers";
 import { eq } from "drizzle-orm";
 import { revalidatePath } from "next/cache";
-import { sendEmail } from "@/lib/email";
 
 export async function assignTicketToSelf(ticketId: number) {
     const session = await auth.api.getSession({
@@ -44,39 +43,12 @@ export async function updateTicketStatus(ticketId: number, newStatus: "open" | "
     }
 
     try {
-        const [ticket] = await db.select().from(tickets).where(eq(tickets.id, ticketId));
-
-        if (!ticket) {
-            return { error: "Ticket no encontrado" };
-        }
-
         await db.update(tickets)
             .set({
                 status: newStatus,
                 updatedAt: new Date()
             })
             .where(eq(tickets.id, ticketId));
-
-        // Send email notification based on status
-        const statusMessages: Record<string, string> = {
-            in_progress: "Tu ticket está siendo atendido",
-            resolved: "Tu ticket ha sido resuelto",
-            voided: "Tu ticket ha sido anulado",
-        };
-
-        if (newStatus !== "open" && statusMessages[newStatus]) {
-            // Get ticket creator email (we'd need to join with users table)
-            // For now, simplified version
-            await sendEmail({
-                to: ticket.createdById, // This should be the email, need to fetch from users table
-                subject: `Actualización de Ticket #${ticketId}`,
-                html: `
-                    <h2>${statusMessages[newStatus]}</h2>
-                    <p><strong>Ticket:</strong> ${ticket.title}</p>
-                    <p><strong>Nuevo Estado:</strong> ${newStatus}</p>
-                `,
-            });
-        }
 
         revalidatePath(`/dashboard/tickets/${ticketId}`);
         revalidatePath("/dashboard/agent");

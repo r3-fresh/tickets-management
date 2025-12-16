@@ -17,6 +17,7 @@ import { addCommentAction } from "@/app/actions/comment-actions";
 import { ArrowLeft } from "lucide-react";
 import Link from "next/link";
 import { AdminTicketControls } from "./admin-ticket-controls";
+import { MarkAsViewed } from "./mark-as-viewed";
 
 export default async function TicketDetailPage({ params }: { params: Promise<{ id: string }> }) {
     const session = await auth.api.getSession({
@@ -48,7 +49,7 @@ export default async function TicketDetailPage({ params }: { params: Promise<{ i
 
     // Basic permission check (Owner or Admin/Agent)
     // For now we allow owner. Real app should check 'agent' role too.
-    if (ticket.createdById !== session.user.id && session.user.role !== 'agent' && session.user.role !== 'admin') {
+    if (ticket.createdById !== session.user.id && (session.user as any).role !== 'agent' && (session.user as any).role !== 'admin') {
         // return <div>No tienes permiso para ver este ticket.</div>; 
         // For demo purposes, we might be lenient or strict. Let's be strict-ish.
         // But we haven't strictly defined roles seeding yet, so sticking to ID check might lock out fresh agents.
@@ -57,6 +58,7 @@ export default async function TicketDetailPage({ params }: { params: Promise<{ i
 
     return (
         <div className="space-y-6 max-w-4xl mx-auto">
+            <MarkAsViewed ticketId={ticketId} />
             <Link href="/dashboard/tickets" className="inline-flex items-center text-sm text-gray-500 hover:text-gray-900">
                 <ArrowLeft className="mr-2 h-4 w-4" />
                 Volver a Mis Tickets

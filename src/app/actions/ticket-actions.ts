@@ -4,10 +4,9 @@
 import { db } from "@/db";
 import { tickets } from "@/db/schema";
 import { createTicketSchema } from "@/lib/schemas";
-import { auth } from "@/lib/auth"; // We need server-side auth
+import { auth } from "@/lib/auth";
 import { headers } from "next/headers";
 import { redirect } from "next/navigation";
-import { sendEmail } from "@/lib/email";
 
 export async function createTicketAction(formData: FormData) {
     const session = await auth.api.getSession({
@@ -41,7 +40,7 @@ export async function createTicketAction(formData: FormData) {
         : [];
 
     try {
-        const [newTicket] = await db.insert(tickets).values({
+        await db.insert(tickets).values({
             title,
             description,
             priority,
@@ -50,22 +49,6 @@ export async function createTicketAction(formData: FormData) {
             createdById: session.user.id,
             ccEmails: ccList,
             status: 'open',
-        }).returning();
-
-        // Send Email Notification
-        await sendEmail({
-            to: session.user.email,
-            cc: ccList,
-            subject: `Ticket Creade #${newTicket.id}: ${title}`,
-            html: `
-                <h1>Hola ${session.user.name},</h1>
-                <p>Tu ticket ha sido registrado exitosamente.</p>
-                <p><strong>Título:</strong> ${title}</p>
-                <p><strong>Prioridad:</strong> ${priority}</p>
-                <p><strong>Categoría:</strong> ${subcategory}</p>
-                <hr />
-                <p>Un agente revisará tu caso pronto.</p>
-            `,
         });
 
     } catch (error) {
