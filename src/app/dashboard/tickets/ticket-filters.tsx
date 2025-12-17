@@ -53,7 +53,7 @@ export function TicketFilters({ onFilterChange, assignedUsers }: TicketFiltersPr
     return (
         <div className="flex flex-wrap gap-3 items-center">
             <Select value={status || "all"} onValueChange={handleStatusChange}>
-                <SelectTrigger className="w-[180px]">
+                <SelectTrigger className="w-[180px] bg-white">
                     <SelectValue placeholder="Estado" />
                 </SelectTrigger>
                 <SelectContent>
@@ -66,7 +66,7 @@ export function TicketFilters({ onFilterChange, assignedUsers }: TicketFiltersPr
             </Select>
 
             <Select value={assignedTo || "all"} onValueChange={handleAssignedToChange}>
-                <SelectTrigger className="w-[200px]">
+                <SelectTrigger className="w-[200px] bg-white">
                     <SelectValue placeholder="Asignado a" />
                 </SelectTrigger>
                 <SelectContent>

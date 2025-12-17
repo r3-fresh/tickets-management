@@ -62,18 +62,22 @@ export const categories = pgTable("category", {
 
 export const tickets = pgTable("ticket", {
     id: serial("id").primaryKey(),
+    ticketCode: text("ticket_code").notNull().unique(), // Format: YYYY-####
     title: text("title").notNull(),
     description: text("description").notNull(),
-    status: text("status").default("open").notNull(), // open, in_progress, resolved, voided
-    priority: text("priority").default("medium").notNull(), // low, medium, high, critical
-
-    categoryId: integer("category_id").references(() => categories.id),
-    subcategory: text("subcategory"), // Selected subcategory
+    status: text("status").notNull().default("open"), // 'open', 'in_progress', 'resolved', 'voided'
+    priority: text("priority").notNull(), // 'low', 'medium', 'high', 'critical'
 
     createdById: text("created_by_id").notNull().references(() => users.id),
     assignedToId: text("assigned_to_id").references(() => users.id),
 
-    ccEmails: text("cc_emails").array(), // Deprecated, use watchers instead
+    categoryId: integer("category_id").references(() => categories.id),
+    subcategory: text("subcategory"),
+
+    // Nuevos campos opcionales
+    area: text("area").default("No aplica"), // GRI, Servicios presenciales, etc.
+    campus: text("campus").default("No aplica"), // Corporativo, Huancayo, etc.
+
     watchers: text("watchers").array(), // User IDs que monitorean el ticket
 
     createdAt: timestamp("created_at").defaultNow().notNull(),

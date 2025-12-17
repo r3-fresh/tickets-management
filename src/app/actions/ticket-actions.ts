@@ -23,6 +23,8 @@ export async function createTicketAction(formData: FormData) {
         priority: formData.get("priority"),
         categoryId: formData.get("categoryId"),
         subcategory: formData.get("subcategory"),
+        area: formData.get("area") || "No aplica",
+        campus: formData.get("campus") || "No aplica",
         ccEmails: formData.get("ccEmails"),
     };
 
@@ -32,9 +34,9 @@ export async function createTicketAction(formData: FormData) {
         return { error: "Datos inválidos", details: result.error.flatten() };
     }
 
-    const { title, description, priority, categoryId, subcategory, ccEmails } = result.data;
+    const { title, description, priority, categoryId, subcategory, area, campus, ccEmails } = result.data;
 
-    // Parse CC emails
+    // Parse CC emails (deprecated but keep for compatibility)
     const ccList = ccEmails
         ? ccEmails.split(",").map(e => e.trim()).filter(e => e.length > 0)
         : [];
@@ -51,14 +53,20 @@ export async function createTicketAction(formData: FormData) {
     }
 
     try {
+        // Generate ticket code with year (YYYY-####)
+        const { generateNextTicketCode } = await import("@/lib/ticket-utils");
+        const ticketCode = await generateNextTicketCode();
+
         await db.insert(tickets).values({
+            ticketCode,
             title,
             description,
             priority,
             categoryId,
             subcategory,
+            area: area || "No aplica",
+            campus: campus || "No aplica",
             createdById: session.user.id,
-            ccEmails: ccList,
             watchers: watcherList,
             status: 'open',
         });

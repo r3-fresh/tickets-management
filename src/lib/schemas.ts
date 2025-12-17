@@ -7,7 +7,9 @@ export const createTicketSchema = z.object({
     priority: z.enum(["low", "medium", "high", "critical"]),
     categoryId: z.coerce.number().min(1, "Selecciona una categoría"),
     subcategory: z.string().min(1, "Selecciona una subcategoría"),
-    ccEmails: z.string().optional(), // We'll parse this string into an array
+    area: z.string().optional().default("No aplica"),
+    campus: z.string().optional().default("No aplica"),
+    ccEmails: z.string().optional(), // Deprecated, mantener por compatibilidad
 });
 
 export type CreateTicketSchema = z.infer<typeof createTicketSchema>;

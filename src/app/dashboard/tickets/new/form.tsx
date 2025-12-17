@@ -47,6 +47,8 @@ export function NewTicketForm({ availableUsers }: NewTicketFormProps) {
             priority: "medium",
             title: "",
             description: "",
+            area: "No aplica",
+            campus: "No aplica",
             ccEmails: "", // Keep for compatibility
         },
     });
@@ -177,6 +179,62 @@ export function NewTicketForm({ availableUsers }: NewTicketFormProps) {
                                                     <SelectItem value="medium">Media</SelectItem>
                                                     <SelectItem value="high">Alta</SelectItem>
                                                     <SelectItem value="critical">Crítica</SelectItem>
+                                                </SelectContent>
+                                            </Select>
+                                            <FormMessage />
+                                        </FormItem>
+                                    )}
+                                />
+                            </div>
+
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <FormField
+                                    control={form.control}
+                                    name="area"
+                                    render={({ field }) => (
+                                        <FormItem>
+                                            <FormLabel>Área de Procedencia</FormLabel>
+                                            <Select onValueChange={field.onChange} defaultValue={field.value}>
+                                                <FormControl>
+                                                    <SelectTrigger>
+                                                        <SelectValue placeholder="Selecciona..." />
+                                                    </SelectTrigger>
+                                                </FormControl>
+                                                <SelectContent>
+                                                    <SelectItem value="No aplica">No aplica</SelectItem>
+                                                    <SelectItem value="GRI">GRI</SelectItem>
+                                                    <SelectItem value="Servicios presenciales">Servicios presenciales</SelectItem>
+                                                    <SelectItem value="Servicios virtuales">Servicios virtuales</SelectItem>
+                                                    <SelectItem value="Apoyo a la investigación">Apoyo a la investigación</SelectItem>
+                                                </SelectContent>
+                                            </Select>
+                                            <FormMessage />
+                                        </FormItem>
+                                    )}
+                                />
+
+                                <FormField
+                                    control={form.control}
+                                    name="campus"
+                                    render={({ field }) => (
+                                        <FormItem>
+                                            <FormLabel>Campus</FormLabel>
+                                            <Select onValueChange={field.onChange} defaultValue={field.value}>
+                                                <FormControl>
+                                                    <SelectTrigger>
+                                                        <SelectValue placeholder="Selecciona..." />
+                                                    </SelectTrigger>
+                                                </FormControl>
+                                                <SelectContent>
+                                                    <SelectItem value="No aplica">No aplica</SelectItem>
+                                                    <SelectItem value="Corporativo">Corporativo</SelectItem>
+                                                    <SelectItem value="Huancayo">Huancayo</SelectItem>
+                                                    <SelectItem value="Instituto">Instituto</SelectItem>
+                                                    <SelectItem value="Arequipa">Arequipa</SelectItem>
+                                                    <SelectItem value="Los Olivos">Los Olivos</SelectItem>
+                                                    <SelectItem value="Miraflores">Miraflores</SelectItem>
+                                                    <SelectItem value="Ica">Ica</SelectItem>
+                                                    <SelectItem value="Ayacucho">Ayacucho</SelectItem>
                                                 </SelectContent>
                                             </Select>
                                             <FormMessage />

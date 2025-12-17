@@ -25,9 +25,10 @@ export default async function TicketsPage() {
             priority: tickets.priority,
             categoryId: tickets.categoryId,
             subcategory: tickets.subcategory,
+            area: tickets.area,
+            campus: tickets.campus,
             createdById: tickets.createdById,
             assignedToId: tickets.assignedToId,
-            ccEmails: tickets.ccEmails,
             createdAt: tickets.createdAt,
             updatedAt: tickets.updatedAt,
             unreadCommentCount: sql<number>`

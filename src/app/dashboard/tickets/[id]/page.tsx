@@ -164,13 +164,6 @@ export default async function TicketDetailPage({ params }: { params: Promise<{ i
                                 <span className="block text-gray-500">Prioridad</span>
                                 <span className="font-medium capitalize">{ticket.priority}</span>
                             </div>
-                            <Separator />
-                            <div>
-                                <span className="block text-gray-500">CC</span>
-                                <span className="text-gray-600">
-                                    {ticket.ccEmails && ticket.ccEmails.length > 0 ? ticket.ccEmails.join(", ") : "Ninguno"}
-                                </span>
-                            </div>
                         </CardContent>
                     </Card>
 
