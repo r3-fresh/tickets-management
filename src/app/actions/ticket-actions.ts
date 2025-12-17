@@ -39,6 +39,17 @@ export async function createTicketAction(formData: FormData) {
         ? ccEmails.split(",").map(e => e.trim()).filter(e => e.length > 0)
         : [];
 
+    // Parse watchers (user IDs)
+    let watcherList: string[] = [];
+    const watchersData = formData.get("watchers");
+    if (watchersData) {
+        try {
+            watcherList = JSON.parse(watchersData as string);
+        } catch (e) {
+            console.error("Error parsing watchers:", e);
+        }
+    }
+
     try {
         await db.insert(tickets).values({
             title,
@@ -48,6 +59,7 @@ export async function createTicketAction(formData: FormData) {
             subcategory,
             createdById: session.user.id,
             ccEmails: ccList,
+            watchers: watcherList,
             status: 'open',
         });
 

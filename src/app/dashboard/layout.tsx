@@ -43,11 +43,11 @@ export default function DashboardLayout({
 
     const navItems = [
         { href: "/dashboard/tickets", label: "Mis Tickets", icon: Ticket },
+        { href: "/dashboard/tickets/new", label: "Nuevo Ticket", icon: PlusCircle },
     ];
 
     // Admin-only items
     const adminItems = [
-        { href: "/dashboard/tickets/new", label: "Nuevo Ticket", icon: PlusCircle },
         { href: "/dashboard/agent", label: "Bandeja de Tickets", icon: User },
         { href: "/dashboard/admin/roles", label: "Gestión de Roles", icon: Shield },
     ];

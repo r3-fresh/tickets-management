@@ -73,7 +73,8 @@ export const tickets = pgTable("ticket", {
     createdById: text("created_by_id").notNull().references(() => users.id),
     assignedToId: text("assigned_to_id").references(() => users.id),
 
-    ccEmails: text("cc_emails").array(),
+    ccEmails: text("cc_emails").array(), // Deprecated, use watchers instead
+    watchers: text("watchers").array(), // User IDs que monitorean el ticket
 
     createdAt: timestamp("created_at").defaultNow().notNull(),
     updatedAt: timestamp("updated_at").defaultNow().notNull(),
