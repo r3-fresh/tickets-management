@@ -36,6 +36,7 @@ const PRIORITY_MAP: Record<string, string> = {
 
 interface Ticket {
     id: number;
+    ticketCode: string;
     title: string;
     subcategory: string | null;
     priority: string;
@@ -43,6 +44,7 @@ interface Ticket {
     createdAt: Date;
     updatedAt: Date;
     assignedTo: { id: string; name: string; image: string | null } | null;
+    createdBy?: { id: string; name: string; image: string | null } | null;
     unreadCommentCount?: number;
 }
 
@@ -123,12 +125,12 @@ export function TicketsList({ tickets, isAdmin, isWatchedView = false }: Tickets
                 <Table>
                     <TableHeader>
                         <TableRow>
-                            <TableHead className="w-[80px]">ID</TableHead>
+                            <TableHead className="w-[100px]">ID</TableHead>
                             <TableHead>Asunto</TableHead>
                             <TableHead>Categoría</TableHead>
                             <TableHead>Prioridad</TableHead>
                             <TableHead>Estado</TableHead>
-                            <TableHead>Asignado a</TableHead>
+                            <TableHead>{isWatchedView ? "Solicitante" : "Asignado a"}</TableHead>
                             <TableHead className="text-center w-[100px]">Comentarios</TableHead>
                             <TableHead className="text-right">Fecha</TableHead>
                             <TableHead className="text-center w-[100px]">Compartir</TableHead>
@@ -148,7 +150,9 @@ export function TicketsList({ tickets, isAdmin, isWatchedView = false }: Tickets
                         ) : (
                             filteredTickets.map((ticket) => (
                                 <TableRow key={ticket.id}>
-                                    <TableCell className="font-medium">#{ticket.id}</TableCell>
+                                    <TableCell className="font-medium text-xs text-gray-500">
+                                        {ticket.ticketCode || `#${ticket.id}`}
+                                    </TableCell>
                                     <TableCell>
                                         <Link href={`/dashboard/tickets/${ticket.id}`} className="hover:underline font-medium text-blue-600">
                                             {ticket.title}
@@ -164,16 +168,30 @@ export function TicketsList({ tickets, isAdmin, isWatchedView = false }: Tickets
                                         </span>
                                     </TableCell>
                                     <TableCell>
-                                        {ticket.assignedTo ? (
-                                            <div className="flex items-center space-x-2">
-                                                <Avatar className="h-6 w-6">
-                                                    <AvatarImage src={ticket.assignedTo.image || ""} />
-                                                    <AvatarFallback>{ticket.assignedTo.name.charAt(0)}</AvatarFallback>
-                                                </Avatar>
-                                                <span className="text-sm">{ticket.assignedTo.name}</span>
-                                            </div>
+                                        {isWatchedView ? (
+                                            ticket.createdBy ? (
+                                                <div className="flex items-center space-x-2">
+                                                    <Avatar className="h-6 w-6">
+                                                        <AvatarImage src={ticket.createdBy.image || ""} />
+                                                        <AvatarFallback>{ticket.createdBy.name.charAt(0)}</AvatarFallback>
+                                                    </Avatar>
+                                                    <span className="text-sm">{ticket.createdBy.name}</span>
+                                                </div>
+                                            ) : (
+                                                <span className="text-sm text-gray-400">Desconocido</span>
+                                            )
                                         ) : (
-                                            <span className="text-sm text-gray-400">Sin asignar</span>
+                                            ticket.assignedTo ? (
+                                                <div className="flex items-center space-x-2">
+                                                    <Avatar className="h-6 w-6">
+                                                        <AvatarImage src={ticket.assignedTo.image || ""} />
+                                                        <AvatarFallback>{ticket.assignedTo.name.charAt(0)}</AvatarFallback>
+                                                    </Avatar>
+                                                    <span className="text-sm">{ticket.assignedTo.name}</span>
+                                                </div>
+                                            ) : (
+                                                <span className="text-sm text-gray-400">Sin asignar</span>
+                                            )
                                         )}
                                     </TableCell>
                                     <TableCell className="text-center">

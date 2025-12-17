@@ -19,6 +19,10 @@ import Link from "next/link";
 import { AdminTicketControls } from "./admin-ticket-controls";
 import { MarkAsViewed } from "./mark-as-viewed";
 
+import { RichTextEditor } from "@/components/rich-text-editor";
+import { CommentForm } from "./comment-form";
+import { inArray } from "drizzle-orm"; // Import inArray
+
 export default async function TicketDetailPage({ params }: { params: Promise<{ id: string }> }) {
     const session = await auth.api.getSession({
         headers: await headers(),
@@ -40,21 +44,21 @@ export default async function TicketDetailPage({ params }: { params: Promise<{ i
                 with: {
                     author: true
                 },
-                orderBy: [desc(comments.createdAt)] // Show newest first or simple list
+                orderBy: [desc(comments.createdAt)]
             }
         }
     });
 
     if (!ticket) notFound();
 
-    // Basic permission check (Owner or Admin/Agent)
-    // For now we allow owner. Real app should check 'agent' role too.
-    if (ticket.createdById !== session.user.id && (session.user as any).role !== 'agent' && (session.user as any).role !== 'admin') {
-        // return <div>No tienes permiso para ver este ticket.</div>; 
-        // For demo purposes, we might be lenient or strict. Let's be strict-ish.
-        // But we haven't strictly defined roles seeding yet, so sticking to ID check might lock out fresh agents.
-        // Let's allow it if we are confident, basically if valid user for now in demo.
+    // Fetch watchers details
+    let watchersList: typeof users.$inferSelect[] = [];
+    if (ticket.watchers && ticket.watchers.length > 0) {
+        watchersList = await db.select().from(users).where(inArray(users.id, ticket.watchers));
     }
+
+    const isTicketClosed = ticket.status === 'resolved' || ticket.status === 'voided';
+    const canComment = !isTicketClosed; // Only check status, not role for now per user request
 
     return (
         <div className="space-y-6 max-w-4xl mx-auto">
@@ -72,7 +76,10 @@ export default async function TicketDetailPage({ params }: { params: Promise<{ i
                             <div className="flex justify-between items-start">
                                 <div>
                                     <Badge variant="outline" className="mb-2">{ticket.subcategory}</Badge>
-                                    <CardTitle className="text-2xl">{ticket.title}</CardTitle>
+                                    <div className="flex items-center gap-2">
+                                        <span className="text-gray-500 font-mono text-sm">{ticket.ticketCode}</span>
+                                        <CardTitle className="text-2xl">{ticket.title}</CardTitle>
+                                    </div>
                                 </div>
                                 <Badge className={
                                     ticket.status === 'open' ? 'bg-green-100 text-green-800' :
@@ -86,8 +93,8 @@ export default async function TicketDetailPage({ params }: { params: Promise<{ i
                             </CardDescription>
                         </CardHeader>
                         <CardContent>
-                            <div className="prose max-w-none text-gray-700 whitespace-pre-wrap">
-                                {ticket.description}
+                            <div className="prose max-w-none text-gray-700">
+                                <RichTextEditor value={ticket.description} onChange={() => { }} disabled={true} />
                             </div>
                         </CardContent>
                     </Card>
@@ -96,24 +103,13 @@ export default async function TicketDetailPage({ params }: { params: Promise<{ i
                         <h3 className="text-lg font-semibold">Actividad</h3>
 
                         {/* New Comment Form */}
-                        <Card>
-                            <CardContent className="pt-6">
-                                <form action={async (formData) => {
-                                    "use server"
-                                    await addCommentAction(formData)
-                                }} className="space-y-4">
-                                    <input type="hidden" name="ticketId" value={ticketId} />
-                                    <Textarea
-                                        name="content"
-                                        placeholder="Escribe una respuesta..."
-                                        required
-                                    />
-                                    <div className="flex justify-end">
-                                        <Button type="submit">Enviar Respuesta</Button>
-                                    </div>
-                                </form>
-                            </CardContent>
-                        </Card>
+                        {canComment ? (
+                            <CommentForm ticketId={ticketId} />
+                        ) : (
+                            <div className="bg-gray-50 border border-gray-200 rounded-lg p-4 text-center text-gray-500">
+                                Este ticket está cerrado y no admite más comentarios.
+                            </div>
+                        )}
 
                         {/* Comment List */}
                         <div className="space-y-4">
@@ -132,7 +128,9 @@ export default async function TicketDetailPage({ params }: { params: Promise<{ i
                                                         {format(comment.createdAt, "dd MMM p", { locale: es })}
                                                     </span>
                                                 </div>
-                                                <p className="mt-1 text-sm text-gray-700 whitespace-pre-wrap">{comment.content}</p>
+                                                <div className="mt-1 text-sm text-gray-700">
+                                                    <RichTextEditor value={comment.content} onChange={() => { }} disabled={true} />
+                                                </div>
                                             </div>
                                         </div>
                                     </CardContent>
@@ -158,6 +156,25 @@ export default async function TicketDetailPage({ params }: { params: Promise<{ i
                                     </Avatar>
                                     <span>{ticket.createdBy.name}</span>
                                 </div>
+                            </div>
+                            <Separator />
+                            <div>
+                                <span className="block text-gray-500 mb-2">Watchers</span>
+                                {watchersList.length > 0 ? (
+                                    <div className="space-y-2">
+                                        {watchersList.map(watcher => (
+                                            <div key={watcher.id} className="flex items-center">
+                                                <Avatar className="h-6 w-6 mr-2">
+                                                    <AvatarImage src={watcher.image || ""} />
+                                                    <AvatarFallback>{watcher.name.charAt(0)}</AvatarFallback>
+                                                </Avatar>
+                                                <span>{watcher.name}</span>
+                                            </div>
+                                        ))}
+                                    </div>
+                                ) : (
+                                    <span className="text-gray-400 italic">No hay watchers asignados</span>
+                                )}
                             </div>
                             <Separator />
                             <div>

@@ -19,6 +19,7 @@ export default async function TicketsPage() {
     const userTickets = await db
         .select({
             id: tickets.id,
+            ticketCode: tickets.ticketCode,
             title: tickets.title,
             description: tickets.description,
             status: tickets.status,

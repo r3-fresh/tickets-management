@@ -14,7 +14,8 @@ import {
     X,
     User,
     Shield,
-    Eye
+    Eye,
+    Settings
 } from "lucide-react";
 import { authClient } from "@/lib/auth-client";
 import { useRouter } from "next/navigation";
@@ -52,10 +53,11 @@ export default function DashboardLayout({
     const adminItems = [
         { href: "/dashboard/agent", label: "Bandeja de Tickets", icon: User },
         { href: "/dashboard/admin/roles", label: "Gestión de Roles", icon: Shield },
+        { href: "/dashboard/admin/settings", label: "Configuración", icon: Settings },
     ];
 
     const allNavItems = (session?.user as any)?.role === "admin"
-        ? [...navItems, ...adminItems]
+        ? adminItems
         : navItems;
 
     return (
@@ -94,7 +96,7 @@ export default function DashboardLayout({
                     <div className="flex-shrink-0 border-t border-gray-200 p-4">
                         <div className="flex flex-col items-center text-center space-y-3">
                             <Avatar className="h-12 w-12">
-                                <AvatarImage src={session?.user?.image || ""} />
+                                <AvatarImage src={session?.user?.image || undefined} />
                                 <AvatarFallback className="bg-teal-500 text-white text-lg">
                                     {session?.user?.name?.charAt(0) || "U"}
                                 </AvatarFallback>
@@ -159,7 +161,7 @@ export default function DashboardLayout({
                 <div className="border-t p-4">
                     <div className="flex items-center mb-4">
                         <Avatar className="h-9 w-9">
-                            <AvatarImage src={session?.user?.image || ""} />
+                            <AvatarImage src={session?.user?.image || undefined} />
                             <AvatarFallback>{session?.user?.name?.charAt(0) || "U"}</AvatarFallback>
                         </Avatar>
                         <div className="ml-3">

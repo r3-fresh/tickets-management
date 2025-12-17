@@ -43,24 +43,26 @@ export default async function WatchedTicketsPage() {
         )
         .orderBy(desc(tickets.createdAt));
 
-    // Fetch assigned users separately
-    const ticketsWithAssigned = await db.query.tickets.findMany({
+    // Fetch assigned users and creators separately
+    const ticketsWithRelations = await db.query.tickets.findMany({
         where: and(
             not(eq(tickets.createdById, session.user.id)),
             sql`${session.user.id} = ANY(${tickets.watchers})`
         ),
         with: {
             assignedTo: true,
+            createdBy: true,
         },
         orderBy: [desc(tickets.createdAt)],
     });
 
-    // Merge with assigned user data
+    // Merge with relation data
     const mergedTickets = watchedTickets.map((ticket) => {
-        const withAssigned = ticketsWithAssigned.find((t) => t.id === ticket.id);
+        const withRelations = ticketsWithRelations.find((t) => t.id === ticket.id);
         return {
             ...ticket,
-            assignedTo: withAssigned?.assignedTo || null,
+            assignedTo: withRelations?.assignedTo || null,
+            createdBy: withRelations?.createdBy || null,
         };
     });
 

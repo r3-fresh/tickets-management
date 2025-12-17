@@ -55,6 +55,13 @@ export const verifications = pgTable("verification", {
 
 // --- APP SCHEMA ---
 
+export const appSettings = pgTable("app_settings", {
+    id: serial("id").primaryKey(),
+    key: text("key").notNull().unique(), // e.g., "allow_new_tickets"
+    value: text("value").notNull(), // JSON string or simple value
+    updatedAt: timestamp("updated_at").defaultNow().notNull(),
+});
+
 export const tickets = pgTable("ticket", {
     id: serial("id").primaryKey(),
     ticketCode: text("ticket_code").notNull().unique(), // Format: YYYY-####

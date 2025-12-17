@@ -16,6 +16,7 @@ import { Loader2 } from "lucide-react";
 import { UserSelector } from "@/components/ui/user-selector";
 import Link from "next/link";
 import { ArrowLeft } from "lucide-react";
+import { RichTextEditor } from "@/components/rich-text-editor";
 
 // Mock categories for now since DB might be down
 const CATEGORIES = [
@@ -34,12 +35,32 @@ interface User {
 
 interface NewTicketFormProps {
     availableUsers: User[];
+    allowNewTickets?: boolean;
 }
 
-export function NewTicketForm({ availableUsers }: NewTicketFormProps) {
+export function NewTicketForm({ availableUsers, allowNewTickets = true }: NewTicketFormProps) {
     const [isPending, startTransition] = useTransition();
     const [selectedCategory, setSelectedCategory] = useState<number | null>(null);
     const [selectedWatchers, setSelectedWatchers] = useState<string[]>([]);
+
+    if (!allowNewTickets) {
+        return (
+            <div className="max-w-2xl mx-auto text-center py-12">
+                <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-6">
+                    <h2 className="text-xl font-semibold text-yellow-800 mb-2">Creación de tickets temporalmente inhabilitada</h2>
+                    <p className="text-yellow-700">
+                        El sistema no está aceptando nuevos tickets en este momento por motivos de mantenimiento o periodo vacacional.
+                        Por favor, intente nuevamente más tarde.
+                    </p>
+                    <div className="mt-6">
+                        <Link href="/dashboard/tickets" className="text-blue-600 hover:underline">
+                            Volver a Mis Tickets
+                        </Link>
+                    </div>
+                </div>
+            </div>
+        );
+    }
 
     const form = useForm({
         resolver: zodResolver(createTicketSchema),
@@ -249,10 +270,10 @@ export function NewTicketForm({ availableUsers }: NewTicketFormProps) {
                                     <FormItem>
                                         <FormLabel>Descripción Detallada <span className="text-red-500">*</span></FormLabel>
                                         <FormControl>
-                                            <Textarea
+                                            <RichTextEditor
+                                                value={field.value}
+                                                onChange={field.onChange}
                                                 placeholder="Describa el problema o requerimiento..."
-                                                className="min-h-[120px]"
-                                                {...field}
                                             />
                                         </FormControl>
                                         <FormMessage />
