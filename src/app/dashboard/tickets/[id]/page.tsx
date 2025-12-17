@@ -63,9 +63,9 @@ export default async function TicketDetailPage({ params }: { params: Promise<{ i
     return (
         <div className="space-y-6 max-w-4xl mx-auto">
             <MarkAsViewed ticketId={ticketId} />
-            <Link href="/dashboard/tickets" className="inline-flex items-center text-sm text-gray-500 hover:text-gray-900">
+            <Link href={`/dashboard/${session.user.role == "admin" ? "agent" : "tickets"}`} className="inline-flex items-center text-sm text-gray-500 hover:text-gray-900">
                 <ArrowLeft className="mr-2 h-4 w-4" />
-                Volver a Mis Tickets
+                Volver al listado de tickets
             </Link>
 
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
