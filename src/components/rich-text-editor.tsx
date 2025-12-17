@@ -9,7 +9,7 @@ import { Separator } from "@/components/ui/separator";
 
 interface RichTextEditorProps {
     value: string;
-    onChange: (content: string) => void;
+    onChange?: (content: string) => void;
     placeholder?: string;
     disabled?: boolean;
 }
@@ -20,17 +20,20 @@ export function RichTextEditor({ value, onChange, placeholder, disabled }: RichT
             StarterKit,
             Link.configure({
                 openOnClick: false,
+                HTMLAttributes: {
+                    class: 'text-blue-600 underline cursor-pointer hover:text-blue-800',
+                },
             }),
         ],
         immediatelyRender: false,
         content: value,
         editable: !disabled,
         onUpdate: ({ editor }) => {
-            onChange(editor.getHTML());
+            onChange?.(editor.getHTML());
         },
         editorProps: {
             attributes: {
-                class: "prose prose-sm max-w-none p-3 min-h-[100px] outline-none",
+                class: "prose prose-sm max-w-none p-3 min-h-[100px] outline-none break-words [&_a]:break-all",
             },
         },
     });

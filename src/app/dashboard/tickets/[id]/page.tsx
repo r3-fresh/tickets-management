@@ -94,7 +94,7 @@ export default async function TicketDetailPage({ params }: { params: Promise<{ i
                         </CardHeader>
                         <CardContent>
                             <div className="prose max-w-none text-gray-700">
-                                <RichTextEditor value={ticket.description} onChange={() => { }} disabled={true} />
+                                <RichTextEditor value={ticket.description} disabled={true} />
                             </div>
                         </CardContent>
                     </Card>
@@ -129,7 +129,7 @@ export default async function TicketDetailPage({ params }: { params: Promise<{ i
                                                     </span>
                                                 </div>
                                                 <div className="mt-1 text-sm text-gray-700">
-                                                    <RichTextEditor value={comment.content} onChange={() => { }} disabled={true} />
+                                                    <RichTextEditor value={comment.content} disabled={true} />
                                                 </div>
                                             </div>
                                         </div>
