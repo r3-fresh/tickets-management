@@ -25,7 +25,6 @@ export async function createTicketAction(formData: FormData) {
         subcategory: formData.get("subcategory"),
         area: formData.get("area") || "No aplica",
         campus: formData.get("campus") || "No aplica",
-        ccEmails: formData.get("ccEmails"),
     };
 
     const result = createTicketSchema.safeParse(rawData);
@@ -34,12 +33,7 @@ export async function createTicketAction(formData: FormData) {
         return { error: "Datos inválidos", details: result.error.flatten() };
     }
 
-    const { title, description, priority, categoryId, subcategory, area, campus, ccEmails } = result.data;
-
-    // Parse CC emails (deprecated but keep for compatibility)
-    const ccList = ccEmails
-        ? ccEmails.split(",").map(e => e.trim()).filter(e => e.length > 0)
-        : [];
+    const { title, description, priority, categoryId, subcategory, area, campus } = result.data;
 
     // Parse watchers (user IDs)
     let watcherList: string[] = [];

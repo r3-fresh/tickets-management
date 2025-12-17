@@ -49,9 +49,10 @@ interface Ticket {
 interface TicketsListProps {
     tickets: Ticket[];
     isAdmin: boolean;
+    isWatchedView?: boolean;
 }
 
-export function TicketsList({ tickets, isAdmin }: TicketsListProps) {
+export function TicketsList({ tickets, isAdmin, isWatchedView = false }: TicketsListProps) {
     const [filters, setFilters] = useState<{
         status?: string;
         assignedTo?: string;
@@ -105,7 +106,9 @@ export function TicketsList({ tickets, isAdmin }: TicketsListProps) {
     return (
         <div className="space-y-6">
             <div className="flex items-center justify-between">
-                <h1 className="text-3xl font-bold tracking-tight text-gray-900">Mis Tickets</h1>
+                <h1 className="text-3xl font-bold tracking-tight text-gray-900">
+                    {isWatchedView ? "Tickets Observados" : "Mis Tickets"}
+                </h1>
                 <Button asChild>
                     <Link href="/dashboard/tickets/new">
                         <Plus className="mr-2 h-4 w-4" />
@@ -136,7 +139,9 @@ export function TicketsList({ tickets, isAdmin }: TicketsListProps) {
                             <TableRow>
                                 <TableCell colSpan={9} className="h-24 text-center text-muted-foreground">
                                     {tickets.length === 0
-                                        ? "No has creado ningún ticket aún."
+                                        ? isWatchedView
+                                            ? "No estás observando ningún ticket."
+                                            : "No has creado ningún ticket aún."
                                         : "No se encontraron tickets con los filtros aplicados."}
                                 </TableCell>
                             </TableRow>

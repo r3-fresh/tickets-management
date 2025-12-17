@@ -9,7 +9,6 @@ export const createTicketSchema = z.object({
     subcategory: z.string().min(1, "Selecciona una subcategoría"),
     area: z.string().optional().default("No aplica"),
     campus: z.string().optional().default("No aplica"),
-    ccEmails: z.string().optional(), // Deprecated, mantener por compatibilidad
 });
 
 export type CreateTicketSchema = z.infer<typeof createTicketSchema>;

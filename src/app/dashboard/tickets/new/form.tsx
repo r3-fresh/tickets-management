@@ -49,7 +49,6 @@ export function NewTicketForm({ availableUsers }: NewTicketFormProps) {
             description: "",
             area: "No aplica",
             campus: "No aplica",
-            ccEmails: "", // Keep for compatibility
         },
     });
 
@@ -93,7 +92,7 @@ export function NewTicketForm({ availableUsers }: NewTicketFormProps) {
                                 name="title"
                                 render={({ field }) => (
                                     <FormItem>
-                                        <FormLabel>Asunto</FormLabel>
+                                        <FormLabel>Asunto <span className="text-red-500">*</span></FormLabel>
                                         <FormControl>
                                             <Input placeholder="Ej: Error al ingresar al sistema" {...field} />
                                         </FormControl>
@@ -108,7 +107,7 @@ export function NewTicketForm({ availableUsers }: NewTicketFormProps) {
                                     name="categoryId"
                                     render={({ field }) => (
                                         <FormItem>
-                                            <FormLabel>Categoría</FormLabel>
+                                            <FormLabel>Categoría <span className="text-red-500">*</span></FormLabel>
                                             <Select
                                                 onValueChange={(val) => {
                                                     field.onChange(val);
@@ -140,7 +139,7 @@ export function NewTicketForm({ availableUsers }: NewTicketFormProps) {
                                     name="subcategory"
                                     render={({ field }) => (
                                         <FormItem>
-                                            <FormLabel>Subcategoría</FormLabel>
+                                            <FormLabel>Subcategoría <span className="text-red-500">*</span></FormLabel>
                                             <Select onValueChange={field.onChange} defaultValue={field.value} disabled={!selectedCategory}>
                                                 <FormControl>
                                                     <SelectTrigger>
@@ -167,7 +166,7 @@ export function NewTicketForm({ availableUsers }: NewTicketFormProps) {
                                     name="priority"
                                     render={({ field }) => (
                                         <FormItem>
-                                            <FormLabel>Prioridad</FormLabel>
+                                            <FormLabel>Prioridad <span className="text-red-500">*</span></FormLabel>
                                             <Select onValueChange={field.onChange} defaultValue={field.value}>
                                                 <FormControl>
                                                     <SelectTrigger>
@@ -193,7 +192,7 @@ export function NewTicketForm({ availableUsers }: NewTicketFormProps) {
                                     name="area"
                                     render={({ field }) => (
                                         <FormItem>
-                                            <FormLabel>Área de Procedencia</FormLabel>
+                                            <FormLabel>Área de Procedencia <span className="text-gray-400 font-normal">(Opcional)</span></FormLabel>
                                             <Select onValueChange={field.onChange} defaultValue={field.value}>
                                                 <FormControl>
                                                     <SelectTrigger>
@@ -218,7 +217,7 @@ export function NewTicketForm({ availableUsers }: NewTicketFormProps) {
                                     name="campus"
                                     render={({ field }) => (
                                         <FormItem>
-                                            <FormLabel>Campus</FormLabel>
+                                            <FormLabel>Campus <span className="text-gray-400 font-normal">(Opcional)</span></FormLabel>
                                             <Select onValueChange={field.onChange} defaultValue={field.value}>
                                                 <FormControl>
                                                     <SelectTrigger>
@@ -248,7 +247,7 @@ export function NewTicketForm({ availableUsers }: NewTicketFormProps) {
                                 name="description"
                                 render={({ field }) => (
                                     <FormItem>
-                                        <FormLabel>Descripción Detallada</FormLabel>
+                                        <FormLabel>Descripción Detallada <span className="text-red-500">*</span></FormLabel>
                                         <FormControl>
                                             <Textarea
                                                 placeholder="Describa el problema o requerimiento..."
@@ -262,7 +261,7 @@ export function NewTicketForm({ availableUsers }: NewTicketFormProps) {
                             />
 
                             <div>
-                                <FormLabel>Usuarios a Notificar</FormLabel>
+                                <FormLabel>Usuarios a Notificar <span className="text-gray-400 font-normal">(Opcional)</span></FormLabel>
                                 <UserSelector
                                     users={availableUsers}
                                     selectedUserIds={selectedWatchers}

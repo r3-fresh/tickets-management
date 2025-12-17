@@ -53,12 +53,7 @@ export const verifications = pgTable("verification", {
 
 // --- APP SCHEMA ---
 
-export const categories = pgTable("category", {
-    id: serial("id").primaryKey(),
-    name: text("name").notNull(), // e.g., "Sistema de Gestión Bibliotecaria"
-    subcategories: text("subcategories").array(), // Simple array of strings for subcategories
-    isActive: boolean("is_active").default(true),
-});
+// --- APP SCHEMA ---
 
 export const tickets = pgTable("ticket", {
     id: serial("id").primaryKey(),
@@ -71,7 +66,7 @@ export const tickets = pgTable("ticket", {
     createdById: text("created_by_id").notNull().references(() => users.id),
     assignedToId: text("assigned_to_id").references(() => users.id),
 
-    categoryId: integer("category_id").references(() => categories.id),
+    categoryId: integer("category_id"), // Just the ID, no FK constraint
     subcategory: text("subcategory"),
 
     // Nuevos campos opcionales
@@ -125,10 +120,6 @@ export const ticketsRelations = relations(tickets, ({ one, many }) => ({
         fields: [tickets.assignedToId],
         references: [users.id],
         relationName: "assignedTickets",
-    }),
-    category: one(categories, {
-        fields: [tickets.categoryId],
-        references: [categories.id],
     }),
     comments: many(comments),
     attachments: many(attachments),

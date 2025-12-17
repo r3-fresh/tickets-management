@@ -13,7 +13,8 @@ import {
     Menu,
     X,
     User,
-    Shield
+    Shield,
+    Eye
 } from "lucide-react";
 import { authClient } from "@/lib/auth-client";
 import { useRouter } from "next/navigation";
@@ -43,6 +44,7 @@ export default function DashboardLayout({
 
     const navItems = [
         { href: "/dashboard/tickets", label: "Mis Tickets", icon: Ticket },
+        { href: "/dashboard/tickets/watching", label: "Tickets Observados", icon: Eye },
         { href: "/dashboard/tickets/new", label: "Nuevo Ticket", icon: PlusCircle },
     ];
 
