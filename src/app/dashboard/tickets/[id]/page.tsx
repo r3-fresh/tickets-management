@@ -4,16 +4,12 @@ import { tickets, comments, users } from "@/db/schema";
 import { auth } from "@/lib/auth";
 import { headers } from "next/headers";
 import { notFound, redirect } from "next/navigation";
-import { eq, desc } from "drizzle-orm";
+import { eq, desc, inArray } from "drizzle-orm";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Separator } from "@/components/ui/separator";
-import { format } from "date-fns";
-import { es } from "date-fns/locale";
-import { Button } from "@/components/ui/button";
-import { Textarea } from "@/components/ui/textarea";
-import { addCommentAction } from "@/app/actions/comment-actions";
+import { formatDate, translateStatus, translatePriority } from "@/lib/utils/format";
 import { ArrowLeft } from "lucide-react";
 import Link from "next/link";
 import { AdminTicketControls } from "./admin-ticket-controls";
@@ -21,7 +17,6 @@ import { MarkAsViewed } from "./mark-as-viewed";
 
 import { RichTextEditor } from "@/components/rich-text-editor";
 import { CommentForm } from "./comment-form";
-import { inArray } from "drizzle-orm"; // Import inArray
 
 export default async function TicketDetailPage({ params }: { params: Promise<{ id: string }> }) {
     const session = await auth.api.getSession({
@@ -58,7 +53,7 @@ export default async function TicketDetailPage({ params }: { params: Promise<{ i
     }
 
     const isTicketClosed = ticket.status === 'resolved' || ticket.status === 'voided';
-    const canComment = !isTicketClosed; // Only check status, not role for now per user request
+    const canComment = !isTicketClosed;
 
     return (
         <div className="space-y-6 max-w-4xl mx-auto">
@@ -83,17 +78,19 @@ export default async function TicketDetailPage({ params }: { params: Promise<{ i
                                 </div>
                                 <Badge className={
                                     ticket.status === 'open' ? 'bg-green-100 text-green-800' :
-                                        ticket.status === 'in_progress' ? 'bg-blue-100 text-blue-800' : 'bg-gray-100'
+                                        ticket.status === 'in_progress' ? 'bg-blue-100 text-blue-800' :
+                                            ticket.status === 'resolved' ? 'bg-gray-100 text-gray-800' :
+                                                'bg-red-100 text-red-800'
                                 }>
-                                    {ticket.status}
+                                    {translateStatus(ticket.status)}
                                 </Badge>
                             </div>
                             <CardDescription className="flex items-center space-x-2 mt-2">
-                                <span>Creado el {format(ticket.createdAt, "PPP 'a las' p", { locale: es })}</span>
+                                <span>Creado el {formatDate(ticket.createdAt)}</span>
                             </CardDescription>
                         </CardHeader>
                         <CardContent>
-                            <div className="prose max-w-none text-gray-700">
+                            <div className="prose max-w-none text-gray-700 dark:text-gray-300">
                                 <RichTextEditor value={ticket.description} disabled={true} />
                             </div>
                         </CardContent>
@@ -106,7 +103,7 @@ export default async function TicketDetailPage({ params }: { params: Promise<{ i
                         {canComment ? (
                             <CommentForm ticketId={ticketId} />
                         ) : (
-                            <div className="bg-gray-50 border border-gray-200 rounded-lg p-4 text-center text-gray-500">
+                            <div className="bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg p-4 text-center text-gray-500">
                                 Este ticket está cerrado y no admite más comentarios.
                             </div>
                         )}
@@ -114,21 +111,21 @@ export default async function TicketDetailPage({ params }: { params: Promise<{ i
                         {/* Comment List */}
                         <div className="space-y-4">
                             {ticket.comments.map((comment) => (
-                                <Card key={comment.id} className="bg-gray-50/50">
+                                <Card key={comment.id} className="bg-gray-50/50 dark:bg-gray-800/50">
                                     <CardContent className="p-4">
                                         <div className="flex items-start space-x-4">
                                             <Avatar className="h-8 w-8">
-                                                <AvatarImage src={comment.author.image || ""} />
+                                                <AvatarImage src={comment.author.image || undefined} />
                                                 <AvatarFallback>{comment.author.name.charAt(0)}</AvatarFallback>
                                             </Avatar>
                                             <div className="flex-1">
                                                 <div className="flex items-center justify-between">
-                                                    <p className="text-sm font-medium text-gray-900">{comment.author.name}</p>
+                                                    <p className="text-sm font-medium text-gray-900 dark:text-gray-100">{comment.author.name}</p>
                                                     <span className="text-xs text-gray-500">
-                                                        {format(comment.createdAt, "dd MMM p", { locale: es })}
+                                                        {formatDate(comment.createdAt)}
                                                     </span>
                                                 </div>
-                                                <div className="mt-1 text-sm text-gray-700">
+                                                <div className="mt-1 text-sm text-gray-700 dark:text-gray-300">
                                                     <RichTextEditor value={comment.content} disabled={true} />
                                                 </div>
                                             </div>
@@ -151,7 +148,7 @@ export default async function TicketDetailPage({ params }: { params: Promise<{ i
                                 <span className="block text-gray-500">Solicitante</span>
                                 <div className="flex items-center mt-1">
                                     <Avatar className="h-6 w-6 mr-2">
-                                        <AvatarImage src={ticket.createdBy.image || ""} />
+                                        <AvatarImage src={ticket.createdBy.image || undefined} />
                                         <AvatarFallback>U</AvatarFallback>
                                     </Avatar>
                                     <span>{ticket.createdBy.name}</span>
@@ -165,7 +162,7 @@ export default async function TicketDetailPage({ params }: { params: Promise<{ i
                                         {watchersList.map(watcher => (
                                             <div key={watcher.id} className="flex items-center">
                                                 <Avatar className="h-6 w-6 mr-2">
-                                                    <AvatarImage src={watcher.image || ""} />
+                                                    <AvatarImage src={watcher.image || undefined} />
                                                     <AvatarFallback>{watcher.name.charAt(0)}</AvatarFallback>
                                                 </Avatar>
                                                 <span>{watcher.name}</span>
@@ -179,7 +176,7 @@ export default async function TicketDetailPage({ params }: { params: Promise<{ i
                             <Separator />
                             <div>
                                 <span className="block text-gray-500">Prioridad</span>
-                                <span className="font-medium capitalize">{ticket.priority}</span>
+                                <span className="font-medium capitalize">{translatePriority(ticket.priority)}</span>
                             </div>
                         </CardContent>
                     </Card>

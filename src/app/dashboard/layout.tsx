@@ -20,6 +20,7 @@ import {
 import { authClient } from "@/lib/auth-client";
 import { useRouter } from "next/navigation";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { ModeToggle } from "@/components/mode-toggle";
 
 export default function DashboardLayout({
     children,
@@ -95,6 +96,9 @@ export default function DashboardLayout({
                     {/* User section at bottom */}
                     <div className="flex-shrink-0 border-t border-gray-200 p-4">
                         <div className="flex flex-col items-center text-center space-y-3">
+                            <div className="w-full flex justify-end px-2">
+                                <ModeToggle />
+                            </div>
                             <Avatar className="h-12 w-12">
                                 <AvatarImage src={session?.user?.image || undefined} />
                                 <AvatarFallback className="bg-teal-500 text-white text-lg">

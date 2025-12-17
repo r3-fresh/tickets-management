@@ -1,23 +1,10 @@
-
 import { db } from "@/db";
-import { tickets, users } from "@/db/schema";
+import { tickets } from "@/db/schema";
 import { auth } from "@/lib/auth";
 import { headers } from "next/headers";
 import { redirect } from "next/navigation";
-import { desc, eq } from "drizzle-orm";
-import {
-    Table,
-    TableBody,
-    TableCell,
-    TableHead,
-    TableHeader,
-    TableRow,
-} from "@/components/ui/table";
-import { Badge } from "@/components/ui/badge";
-import Link from "next/link";
-import { format, differenceInDays } from "date-fns";
-import { es } from "date-fns/locale";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { desc } from "drizzle-orm";
+import { AgentTicketsTable } from "./agent-tickets-table";
 
 export default async function AgentDashboardPage() {
     const session = await auth.api.getSession({
@@ -27,9 +14,6 @@ export default async function AgentDashboardPage() {
     if (!session?.user) {
         redirect("/login");
     }
-
-    // In a real app, enforce 'agent' or 'admin' role here
-    // if (session.user.role !== 'agent') redirect("/dashboard");
 
     // Fetch ALL tickets
     const allTickets = await db.query.tickets.findMany({
@@ -43,87 +27,7 @@ export default async function AgentDashboardPage() {
     return (
         <div className="space-y-6">
             <h1 className="text-3xl font-bold tracking-tight text-gray-900">Bandeja de Tickets</h1>
-
-            <div className="rounded-md border bg-white shadow-sm">
-                <Table>
-                    <TableHeader>
-                        <TableRow>
-                            <TableHead className="w-[100px]">ID</TableHead>
-                            <TableHead>Asunto</TableHead>
-                            <TableHead>Solicitante</TableHead>
-                            <TableHead>Prioridad</TableHead>
-                            <TableHead>Estado</TableHead>
-                            <TableHead>Admin Asignado</TableHead>
-                            <TableHead className="text-center">Días Trans.</TableHead>
-                            <TableHead className="text-right">Fecha</TableHead>
-                        </TableRow>
-                    </TableHeader>
-                    <TableBody>
-                        {allTickets.length === 0 ? (
-                            <TableRow>
-                                <TableCell colSpan={8} className="h-24 text-center text-muted-foreground">
-                                    No hay tickets registrados.
-                                </TableCell>
-                            </TableRow>
-                        ) : (
-                            allTickets.map((ticket) => {
-                                const daysOpen = differenceInDays(new Date(), new Date(ticket.createdAt));
-                                return (
-                                    <TableRow key={ticket.id}>
-                                        <TableCell className="font-medium text-xs text-gray-500">
-                                            {ticket.ticketCode || `#${ticket.id}`}
-                                        </TableCell>
-                                        <TableCell>
-                                            <Link href={`/dashboard/tickets/${ticket.id}`} className="hover:underline font-medium text-blue-600">
-                                                {ticket.title}
-                                            </Link>
-                                            <div className="text-xs text-gray-500">{ticket.subcategory}</div>
-                                        </TableCell>
-                                        <TableCell>
-                                            <div className="flex items-center space-x-2">
-                                                <Avatar className="h-6 w-6">
-                                                    <AvatarImage src={ticket.createdBy.image || ""} />
-                                                    <AvatarFallback>U</AvatarFallback>
-                                                </Avatar>
-                                                <span className="text-sm">{ticket.createdBy.name}</span>
-                                            </div>
-                                        </TableCell>
-                                        <TableCell>
-                                            <Badge variant="outline" className="capitalize">{ticket.priority}</Badge>
-                                        </TableCell>
-                                        <TableCell>
-                                            <Badge variant={ticket.status === 'open' ? 'default' : 'secondary'}>
-                                                {ticket.status}
-                                            </Badge>
-                                        </TableCell>
-                                        <TableCell>
-                                            {ticket.assignedTo ? (
-                                                <div className="flex items-center space-x-2">
-                                                    <Avatar className="h-6 w-6">
-                                                        <AvatarImage src={ticket.assignedTo.image || ""} />
-                                                        <AvatarFallback>{ticket.assignedTo.name.charAt(0)}</AvatarFallback>
-                                                    </Avatar>
-                                                    <span className="text-sm">{ticket.assignedTo.name}</span>
-                                                </div>
-                                            ) : (
-                                                <span className="text-sm text-gray-400">Sin asignar</span>
-                                            )}
-                                        </TableCell>
-                                        <TableCell className="text-center">
-                                            <span className={`text-sm font-medium ${daysOpen > 3 ? "text-red-600" : "text-gray-600"}`}>
-                                                {daysOpen} días
-                                            </span>
-                                        </TableCell>
-                                        <TableCell className="text-right text-muted-foreground">
-                                            {format(ticket.createdAt, "dd MMM", { locale: es })}
-                                        </TableCell>
-                                    </TableRow>
-                                );
-                            })
-                        )}
-                    </TableBody>
-                </Table>
-            </div>
+            <AgentTicketsTable tickets={allTickets} />
         </div>
     );
 }

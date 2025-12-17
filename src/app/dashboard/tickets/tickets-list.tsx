@@ -13,26 +13,12 @@ import { Badge } from "@/components/ui/badge";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Plus, MessageCircle } from "lucide-react";
-import { format, isWithinInterval } from "date-fns";
-import { es } from "date-fns/locale";
 import { CopyLinkButton } from "./copy-link-button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { TicketFilters } from "./ticket-filters";
 import { DateRange } from "react-day-picker";
-
-const STATUS_MAP: Record<string, { label: string; color: string }> = {
-    open: { label: "Abierto", color: "bg-green-100 text-green-800" },
-    in_progress: { label: "En Curso", color: "bg-blue-100 text-blue-800" },
-    resolved: { label: "Resuelto", color: "bg-gray-100 text-gray-800" },
-    voided: { label: "Anulado", color: "bg-red-100 text-red-800" },
-};
-
-const PRIORITY_MAP: Record<string, string> = {
-    low: "Baja",
-    medium: "Media",
-    high: "Alta",
-    critical: "Crítica",
-};
+import { formatDate, translateStatus, translatePriority } from "@/lib/utils/format";
+import { isWithinInterval } from "date-fns";
 
 interface Ticket {
     id: number;
@@ -160,11 +146,15 @@ export function TicketsList({ tickets, isAdmin, isWatchedView = false }: Tickets
                                     </TableCell>
                                     <TableCell>{ticket.subcategory}</TableCell>
                                     <TableCell>
-                                        <Badge variant="outline">{PRIORITY_MAP[ticket.priority]}</Badge>
+                                        <Badge variant="outline">{translatePriority(ticket.priority)}</Badge>
                                     </TableCell>
                                     <TableCell>
-                                        <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${STATUS_MAP[ticket.status]?.color || "bg-gray-100"}`}>
-                                            {STATUS_MAP[ticket.status]?.label || ticket.status}
+                                        <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${ticket.status === 'open' ? 'bg-green-100 text-green-800' :
+                                                ticket.status === 'in_progress' ? 'bg-blue-100 text-blue-800' :
+                                                    ticket.status === 'resolved' ? 'bg-gray-100 text-gray-800' :
+                                                        'bg-red-100 text-red-800'
+                                            }`}>
+                                            {translateStatus(ticket.status)}
                                         </span>
                                     </TableCell>
                                     <TableCell>
@@ -172,7 +162,7 @@ export function TicketsList({ tickets, isAdmin, isWatchedView = false }: Tickets
                                             ticket.createdBy ? (
                                                 <div className="flex items-center space-x-2">
                                                     <Avatar className="h-6 w-6">
-                                                        <AvatarImage src={ticket.createdBy.image || ""} />
+                                                        <AvatarImage src={ticket.createdBy.image || undefined} />
                                                         <AvatarFallback>{ticket.createdBy.name.charAt(0)}</AvatarFallback>
                                                     </Avatar>
                                                     <span className="text-sm">{ticket.createdBy.name}</span>
@@ -184,7 +174,7 @@ export function TicketsList({ tickets, isAdmin, isWatchedView = false }: Tickets
                                             ticket.assignedTo ? (
                                                 <div className="flex items-center space-x-2">
                                                     <Avatar className="h-6 w-6">
-                                                        <AvatarImage src={ticket.assignedTo.image || ""} />
+                                                        <AvatarImage src={ticket.assignedTo.image || undefined} />
                                                         <AvatarFallback>{ticket.assignedTo.name.charAt(0)}</AvatarFallback>
                                                     </Avatar>
                                                     <span className="text-sm">{ticket.assignedTo.name}</span>
@@ -205,7 +195,7 @@ export function TicketsList({ tickets, isAdmin, isWatchedView = false }: Tickets
                                         ) : null}
                                     </TableCell>
                                     <TableCell className="text-right text-muted-foreground">
-                                        {format(ticket.createdAt, "dd MMM yyyy", { locale: es })}
+                                        {formatDate(ticket.createdAt)}
                                     </TableCell>
                                     <TableCell className="text-center">
                                         <CopyLinkButton ticketId={ticket.id} />

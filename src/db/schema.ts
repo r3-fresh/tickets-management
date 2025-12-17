@@ -106,15 +106,6 @@ export const ticketViews = pgTable("ticket_view", {
     uniqueUserTicket: unique().on(table.userId, table.ticketId),
 }));
 
-export const attachments = pgTable("attachment", {
-    id: uuid("id").primaryKey().defaultRandom(),
-    fileName: text("file_name").notNull(),
-    fileUrl: text("file_url").notNull(),
-    ticketId: integer("ticket_id").notNull().references(() => tickets.id),
-    uploadedById: text("uploaded_by_id").notNull().references(() => users.id),
-    createdAt: timestamp("created_at").defaultNow().notNull(),
-});
-
 // --- RELATIONS ---
 
 export const ticketsRelations = relations(tickets, ({ one, many }) => ({
@@ -129,7 +120,6 @@ export const ticketsRelations = relations(tickets, ({ one, many }) => ({
         relationName: "assignedTickets",
     }),
     comments: many(comments),
-    attachments: many(attachments),
 }));
 
 export const commentsRelations = relations(comments, ({ one }) => ({
