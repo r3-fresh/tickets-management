@@ -2,10 +2,10 @@
 
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { assignTicketToSelf, updateTicketStatus } from "@/app/actions/agent-actions";
+import { assignTicketToSelf, updateTicketStatus, unassignTicket } from "@/app/actions/agent-actions";
 import { toast } from "sonner";
 import { useTransition } from "react";
-import { UserPlus } from "lucide-react";
+import { UserPlus, UserMinus } from "lucide-react";
 
 const STATUS_OPTIONS = [
     { value: "open", label: "Abierto" },
@@ -47,10 +47,21 @@ export function AdminTicketControls({
         });
     };
 
+    const handleUnassign = () => {
+        startTransition(async () => {
+            const result = await unassignTicket(ticketId);
+            if (result?.error) {
+                toast.error(result.error);
+            } else {
+                toast.success("Ticket desasignado correctamente");
+            }
+        });
+    };
+
     return (
         <div className="space-y-4">
             <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
+                <label className="block text-sm font-medium mb-2">
                     Cambiar Estado
                 </label>
                 <Select
@@ -71,7 +82,7 @@ export function AdminTicketControls({
                 </Select>
             </div>
 
-            {!isAssigned && (
+            {!isAssigned ? (
                 <Button
                     onClick={handleAssign}
                     disabled={isPending}
@@ -80,6 +91,16 @@ export function AdminTicketControls({
                 >
                     <UserPlus className="mr-2 h-4 w-4" />
                     Asignarme este ticket
+                </Button>
+            ) : (
+                <Button
+                    onClick={handleUnassign}
+                    disabled={isPending}
+                    className="w-full"
+                    variant="outline"
+                >
+                    <UserMinus className="mr-2 h-4 w-4" />
+                    Desasignarme este ticket
                 </Button>
             )}
         </div>

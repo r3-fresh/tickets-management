@@ -14,7 +14,8 @@ import { ArrowLeft } from "lucide-react";
 import Link from "next/link";
 import { AdminTicketControls } from "./admin-ticket-controls";
 import { MarkAsViewed } from "./mark-as-viewed";
-
+import { WatchersManager } from "./watchers-manager";
+import { CancelTicketButton } from "./cancel-ticket-button";
 import { RichTextEditor } from "@/components/rich-text-editor";
 import { CommentForm } from "./comment-form";
 
@@ -46,6 +47,8 @@ export default async function TicketDetailPage({ params }: { params: Promise<{ i
 
     if (!ticket) notFound();
 
+    const allUsers = await db.select().from(users);
+
     // Fetch watchers details
     let watchersList: typeof users.$inferSelect[] = [];
     if (ticket.watchers && ticket.watchers.length > 0) {
@@ -54,11 +57,12 @@ export default async function TicketDetailPage({ params }: { params: Promise<{ i
 
     const isTicketClosed = ticket.status === 'resolved' || ticket.status === 'voided';
     const canComment = !isTicketClosed;
+    const isCreator = ticket.createdById === session.user.id;
 
     return (
         <div className="space-y-6 max-w-4xl mx-auto">
             <MarkAsViewed ticketId={ticketId} />
-            <Link href={`/dashboard/${session.user.role == "admin" ? "agent" : "tickets"}`} className="inline-flex items-center text-sm text-gray-500 hover:text-gray-900">
+            <Link href={`/dashboard/${session.user.role == "admin" ? "agent" : "tickets"}`} className="inline-flex items-center text-sm text-muted-foreground hover:text-foreground">
                 <ArrowLeft className="mr-2 h-4 w-4" />
                 Volver al listado de tickets
             </Link>
@@ -72,18 +76,23 @@ export default async function TicketDetailPage({ params }: { params: Promise<{ i
                                 <div>
                                     <Badge variant="outline" className="mb-2">{ticket.subcategory}</Badge>
                                     <div className="flex items-center gap-2">
-                                        <span className="text-gray-500 font-mono text-sm">{ticket.ticketCode}</span>
+                                        <span className="text-muted-foreground font-mono text-sm">{ticket.ticketCode}</span>
                                         <CardTitle className="text-2xl">{ticket.title}</CardTitle>
                                     </div>
                                 </div>
-                                <Badge className={
-                                    ticket.status === 'open' ? 'bg-green-100 text-green-800' :
-                                        ticket.status === 'in_progress' ? 'bg-blue-100 text-blue-800' :
-                                            ticket.status === 'resolved' ? 'bg-gray-100 text-gray-800' :
-                                                'bg-red-100 text-red-800'
-                                }>
-                                    {translateStatus(ticket.status)}
-                                </Badge>
+                                <div className="flex flex-col items-end gap-2">
+                                    <Badge className={
+                                        ticket.status === 'open' ? 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400' :
+                                            ticket.status === 'in_progress' ? 'bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-400' :
+                                                ticket.status === 'resolved' ? 'bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-300' :
+                                                    'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400'
+                                    }>
+                                        {translateStatus(ticket.status)}
+                                    </Badge>
+                                    {isCreator && !isTicketClosed && (
+                                        <CancelTicketButton ticketId={ticketId} />
+                                    )}
+                                </div>
                             </div>
                             <CardDescription className="flex items-center space-x-2 mt-2">
                                 <span>Creado el {formatDate(ticket.createdAt)}</span>
@@ -103,7 +112,7 @@ export default async function TicketDetailPage({ params }: { params: Promise<{ i
                         {canComment ? (
                             <CommentForm ticketId={ticketId} />
                         ) : (
-                            <div className="bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg p-4 text-center text-gray-500">
+                            <div className="bg-muted border border-border rounded-lg p-4 text-center text-muted-foreground">
                                 Este ticket está cerrado y no admite más comentarios.
                             </div>
                         )}
@@ -111,7 +120,7 @@ export default async function TicketDetailPage({ params }: { params: Promise<{ i
                         {/* Comment List */}
                         <div className="space-y-4">
                             {ticket.comments.map((comment) => (
-                                <Card key={comment.id} className="bg-gray-50/50 dark:bg-gray-800/50">
+                                <Card key={comment.id} className="bg-muted/30">
                                     <CardContent className="p-4">
                                         <div className="flex items-start space-x-4">
                                             <Avatar className="h-8 w-8">
@@ -120,12 +129,12 @@ export default async function TicketDetailPage({ params }: { params: Promise<{ i
                                             </Avatar>
                                             <div className="flex-1">
                                                 <div className="flex items-center justify-between">
-                                                    <p className="text-sm font-medium text-gray-900 dark:text-gray-100">{comment.author.name}</p>
-                                                    <span className="text-xs text-gray-500">
+                                                    <p className="text-sm font-medium">{comment.author.name}</p>
+                                                    <span className="text-xs text-muted-foreground">
                                                         {formatDate(comment.createdAt)}
                                                     </span>
                                                 </div>
-                                                <div className="mt-1 text-sm text-gray-700 dark:text-gray-300">
+                                                <div className="mt-1 text-sm text-foreground">
                                                     <RichTextEditor value={comment.content} disabled={true} />
                                                 </div>
                                             </div>
@@ -145,7 +154,7 @@ export default async function TicketDetailPage({ params }: { params: Promise<{ i
                         </CardHeader>
                         <CardContent className="space-y-4 text-sm">
                             <div>
-                                <span className="block text-gray-500">Solicitante</span>
+                                <span className="block text-muted-foreground">Solicitante</span>
                                 <div className="flex items-center mt-1">
                                     <Avatar className="h-6 w-6 mr-2">
                                         <AvatarImage src={ticket.createdBy.image || undefined} />
@@ -156,7 +165,7 @@ export default async function TicketDetailPage({ params }: { params: Promise<{ i
                             </div>
                             <Separator />
                             <div>
-                                <span className="block text-gray-500 mb-2">Watchers</span>
+                                <span className="block text-muted-foreground mb-2">Watchers</span>
                                 {watchersList.length > 0 ? (
                                     <div className="space-y-2">
                                         {watchersList.map(watcher => (
@@ -170,12 +179,22 @@ export default async function TicketDetailPage({ params }: { params: Promise<{ i
                                         ))}
                                     </div>
                                 ) : (
-                                    <span className="text-gray-400 italic">No hay watchers asignados</span>
+                                    <span className="text-muted-foreground italic text-sm">No hay watchers asignados</span>
                                 )}
+                                <WatchersManager
+                                    ticketId={ticketId}
+                                    currentWatchers={ticket.watchers || []}
+                                    allUsers={allUsers.map(u => ({
+                                        id: u.id,
+                                        name: u.name,
+                                        email: u.email,
+                                        image: u.image
+                                    }))}
+                                />
                             </div>
                             <Separator />
                             <div>
-                                <span className="block text-gray-500">Prioridad</span>
+                                <span className="block text-muted-foreground">Prioridad</span>
                                 <span className="font-medium capitalize">{translatePriority(ticket.priority)}</span>
                             </div>
                         </CardContent>

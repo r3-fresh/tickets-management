@@ -94,7 +94,7 @@ export function TicketsList({ tickets, isAdmin, isWatchedView = false }: Tickets
     return (
         <div className="space-y-6">
             <div className="flex items-center justify-between">
-                <h1 className="text-3xl font-bold tracking-tight text-gray-900">
+                <h1 className="text-3xl font-bold tracking-tight">
                     {isWatchedView ? "Tickets Observados" : "Mis Tickets"}
                 </h1>
                 <Button asChild>
@@ -107,7 +107,7 @@ export function TicketsList({ tickets, isAdmin, isWatchedView = false }: Tickets
 
             <TicketFilters onFilterChange={setFilters} assignedUsers={assignedUsers} />
 
-            <div className="rounded-md border bg-white shadow-sm">
+            <div className="rounded-md border bg-card shadow-sm">
                 <Table>
                     <TableHeader>
                         <TableRow>
@@ -150,9 +150,9 @@ export function TicketsList({ tickets, isAdmin, isWatchedView = false }: Tickets
                                     </TableCell>
                                     <TableCell>
                                         <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${ticket.status === 'open' ? 'bg-green-100 text-green-800' :
-                                                ticket.status === 'in_progress' ? 'bg-blue-100 text-blue-800' :
-                                                    ticket.status === 'resolved' ? 'bg-gray-100 text-gray-800' :
-                                                        'bg-red-100 text-red-800'
+                                            ticket.status === 'in_progress' ? 'bg-blue-100 text-blue-800' :
+                                                ticket.status === 'resolved' ? 'bg-gray-100 text-gray-800' :
+                                                    'bg-red-100 text-red-800'
                                             }`}>
                                             {translateStatus(ticket.status)}
                                         </span>

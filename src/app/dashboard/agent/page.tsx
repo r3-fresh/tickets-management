@@ -26,7 +26,7 @@ export default async function AgentDashboardPage() {
 
     return (
         <div className="space-y-6">
-            <h1 className="text-3xl font-bold tracking-tight text-gray-900">Bandeja de Tickets</h1>
+            <h1 className="text-3xl font-bold tracking-tight">Bandeja de Tickets</h1>
             <AgentTicketsTable tickets={allTickets} />
         </div>
     );

@@ -31,10 +31,10 @@ export default async function AdminRolesPage() {
 
     return (
         <div className="space-y-6">
-            <h1 className="text-3xl font-bold tracking-tight text-gray-900">Gestión de Roles</h1>
-            <p className="text-gray-600">Administra los roles de los usuarios del sistema.</p>
+            <h1 className="text-3xl font-bold tracking-tight">Gestión de Roles</h1>
+            <p className="text-muted-foreground">Administra los roles de los usuarios del sistema.</p>
 
-            <div className="rounded-md border bg-white shadow-sm">
+            <div className="rounded-md border bg-card shadow-sm">
                 <Table>
                     <TableHeader>
                         <TableRow>
@@ -63,7 +63,7 @@ export default async function AdminRolesPage() {
                                             <span className="font-medium">{user.name}</span>
                                         </div>
                                     </TableCell>
-                                    <TableCell className="text-gray-600">{user.email}</TableCell>
+                                    <TableCell className="text-muted-foreground">{user.email}</TableCell>
                                     <TableCell>
                                         <Badge variant={user.role === "admin" ? "default" : "secondary"}>
                                             {user.role === "admin" ? "Administrador" : "Usuario"}

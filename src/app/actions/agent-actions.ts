@@ -58,3 +58,29 @@ export async function updateTicketStatus(ticketId: number, newStatus: "open" | "
         return { error: "Error al actualizar el estado" };
     }
 }
+
+export async function unassignTicket(ticketId: number) {
+    const session = await auth.api.getSession({
+        headers: await headers(),
+    });
+
+    if (!session?.user || session.user.role !== "admin") {
+        return { error: "No autorizado" };
+    }
+
+    try {
+        await db.update(tickets)
+            .set({
+                assignedToId: null,
+                updatedAt: new Date()
+            })
+            .where(eq(tickets.id, ticketId));
+
+        revalidatePath(`/dashboard/tickets/${ticketId}`);
+        revalidatePath("/dashboard/agent");
+        return { success: true };
+    } catch (error) {
+        console.error("Error unassigning ticket:", error);
+        return { error: "Error al desasignar el ticket" };
+    }
+}

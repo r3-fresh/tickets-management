@@ -92,7 +92,7 @@ export function AgentTicketsTable({ tickets }: AgentTicketsTableProps) {
         <div className="space-y-6">
             <TicketFilters onFilterChange={setFilters} assignedUsers={assignedUsers} />
 
-            <div className="rounded-md border bg-white shadow-sm">
+            <div className="rounded-md border bg-card shadow-sm">
                 <Table>
                     <TableHeader>
                         <TableRow>
@@ -144,9 +144,9 @@ export function AgentTicketsTable({ tickets }: AgentTicketsTableProps) {
                                         </TableCell>
                                         <TableCell>
                                             <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${ticket.status === 'open' ? 'bg-green-100 text-green-800' :
-                                                    ticket.status === 'in_progress' ? 'bg-blue-100 text-blue-800' :
-                                                        ticket.status === 'resolved' ? 'bg-gray-100 text-gray-800' :
-                                                            'bg-red-100 text-red-800'
+                                                ticket.status === 'in_progress' ? 'bg-blue-100 text-blue-800' :
+                                                    ticket.status === 'resolved' ? 'bg-gray-100 text-gray-800' :
+                                                        'bg-red-100 text-red-800'
                                                 }`}>
                                                 {translateStatus(ticket.status)}
                                             </span>

@@ -43,8 +43,8 @@ export function RichTextEditor({ value, onChange, placeholder, disabled }: RichT
     }
 
     return (
-        <div className="border rounded-md bg-white">
-            <div className="flex flex-wrap items-center gap-1 p-1 border-b bg-gray-50">
+        <div className="border border-input rounded-md bg-transparent">
+            <div className="flex flex-wrap items-center gap-1 p-1 border-b border-input bg-muted/50">
                 <Toggle
                     size="sm"
                     pressed={editor.isActive("bold")}
