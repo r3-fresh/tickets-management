@@ -100,7 +100,7 @@ export default function DashboardLayout({
                                 <ModeToggle />
                             </div>
                             <Avatar className="h-12 w-12">
-                                <AvatarImage src={session?.user?.image || undefined} />
+                                <AvatarImage src={session?.user?.image || undefined} referrerPolicy="no-referrer" />
                                 <AvatarFallback className="bg-teal-500 text-white text-lg">
                                     {session?.user?.name?.charAt(0) || "U"}
                                 </AvatarFallback>
@@ -165,7 +165,7 @@ export default function DashboardLayout({
                 <div className="border-t p-4">
                     <div className="flex items-center mb-4">
                         <Avatar className="h-9 w-9">
-                            <AvatarImage src={session?.user?.image || undefined} />
+                            <AvatarImage src={session?.user?.image || undefined} referrerPolicy="no-referrer" />
                             <AvatarFallback>{session?.user?.name?.charAt(0) || "U"}</AvatarFallback>
                         </Avatar>
                         <div className="ml-3">

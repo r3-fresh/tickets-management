@@ -1,5 +1,5 @@
 import { db } from "@/db";
-import { tickets } from "@/db/schema";
+import { tickets, comments } from "@/db/schema";
 import { auth } from "@/lib/auth";
 import { headers } from "next/headers";
 import { redirect } from "next/navigation";
@@ -32,15 +32,18 @@ export default async function WatchedTicketsPage() {
             assignedToId: tickets.assignedToId,
             createdAt: tickets.createdAt,
             updatedAt: tickets.updatedAt,
-            unreadCommentCount: sql<number>`cast(0 as integer)`, // TODO: implement later
+            unreadCommentCount: sql<number>`cast(0 as integer)`,
+            commentCount: sql<number>`cast(count(${comments.id}) as integer)`,
         })
         .from(tickets)
+        .leftJoin(comments, eq(tickets.id, comments.ticketId))
         .where(
             and(
                 not(eq(tickets.createdById, session.user.id)), // NOT created by me
                 sql`${session.user.id} = ANY(${tickets.watchers})` // I am a watcher
             )
         )
+        .groupBy(tickets.id)
         .orderBy(desc(tickets.createdAt));
 
     // Fetch assigned users and creators separately
@@ -63,6 +66,7 @@ export default async function WatchedTicketsPage() {
             ...ticket,
             assignedTo: withRelations?.assignedTo || null,
             createdBy: withRelations?.createdBy || null,
+            commentCount: ticket.commentCount,
         };
     });
 

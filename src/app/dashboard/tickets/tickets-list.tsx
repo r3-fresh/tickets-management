@@ -13,6 +13,7 @@ import { Badge } from "@/components/ui/badge";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Plus, MessageCircle } from "lucide-react";
+import { differenceInDays } from "date-fns";
 import { CopyLinkButton } from "./copy-link-button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { TicketFilters } from "./ticket-filters";
@@ -32,6 +33,7 @@ interface Ticket {
     assignedTo: { id: string; name: string; image: string | null } | null;
     createdBy?: { id: string; name: string; image: string | null } | null;
     unreadCommentCount?: number;
+    commentCount?: number;
 }
 
 interface TicketsListProps {
@@ -113,13 +115,14 @@ export function TicketsList({ tickets, isAdmin, isWatchedView = false }: Tickets
                         <TableRow>
                             <TableHead className="w-[100px]">ID</TableHead>
                             <TableHead>Asunto</TableHead>
-                            <TableHead>Categoría</TableHead>
                             <TableHead>Prioridad</TableHead>
                             <TableHead>Estado</TableHead>
-                            <TableHead>{isWatchedView ? "Solicitante" : "Asignado a"}</TableHead>
-                            <TableHead className="text-center w-[100px]">Comentarios</TableHead>
+                            <TableHead>Solicitante</TableHead>
+                            <TableHead>Asignado a</TableHead>
+                            <TableHead className="text-center w-[120px]">Comentarios</TableHead>
+                            <TableHead className="text-center">Días</TableHead>
                             <TableHead className="text-right">Fecha</TableHead>
-                            <TableHead className="text-center w-[100px]">Compartir</TableHead>
+                            <TableHead className="text-center w-[100px]">Link</TableHead>
                         </TableRow>
                     </TableHeader>
                     <TableBody>
@@ -140,11 +143,11 @@ export function TicketsList({ tickets, isAdmin, isWatchedView = false }: Tickets
                                         {ticket.ticketCode || `#${ticket.id}`}
                                     </TableCell>
                                     <TableCell>
-                                        <Link href={`/dashboard/tickets/${ticket.id}`} className="hover:underline font-medium text-blue-600">
+                                        <Link href={`/dashboard/tickets/${ticket.id}`} className="hover:underline font-medium text-blue-600 block">
                                             {ticket.title}
                                         </Link>
+                                        <div className="text-xs text-muted-foreground mt-0.5">{ticket.subcategory}</div>
                                     </TableCell>
-                                    <TableCell>{ticket.subcategory}</TableCell>
                                     <TableCell>
                                         <Badge variant="outline">{translatePriority(ticket.priority)}</Badge>
                                     </TableCell>
@@ -158,41 +161,52 @@ export function TicketsList({ tickets, isAdmin, isWatchedView = false }: Tickets
                                         </span>
                                     </TableCell>
                                     <TableCell>
-                                        {isWatchedView ? (
-                                            ticket.createdBy ? (
-                                                <div className="flex items-center space-x-2">
-                                                    <Avatar className="h-6 w-6">
-                                                        <AvatarImage src={ticket.createdBy.image || undefined} />
-                                                        <AvatarFallback>{ticket.createdBy.name.charAt(0)}</AvatarFallback>
-                                                    </Avatar>
-                                                    <span className="text-sm">{ticket.createdBy.name}</span>
-                                                </div>
-                                            ) : (
-                                                <span className="text-sm text-gray-400">Desconocido</span>
-                                            )
+                                        {ticket.createdBy ? (
+                                            <div className="flex items-center space-x-2">
+                                                <Avatar className="h-6 w-6">
+                                                    <AvatarImage src={ticket.createdBy.image || undefined} referrerPolicy="no-referrer" />
+                                                    <AvatarFallback className="bg-cyan-600 text-white text-[10px] font-bold">
+                                                        {ticket.createdBy.name.charAt(0)}
+                                                    </AvatarFallback>
+                                                </Avatar>
+                                                <span className="text-sm truncate max-w-[120px]">{ticket.createdBy.name}</span>
+                                            </div>
                                         ) : (
-                                            ticket.assignedTo ? (
-                                                <div className="flex items-center space-x-2">
-                                                    <Avatar className="h-6 w-6">
-                                                        <AvatarImage src={ticket.assignedTo.image || undefined} />
-                                                        <AvatarFallback>{ticket.assignedTo.name.charAt(0)}</AvatarFallback>
-                                                    </Avatar>
-                                                    <span className="text-sm">{ticket.assignedTo.name}</span>
-                                                </div>
-                                            ) : (
-                                                <span className="text-sm text-gray-400">Sin asignar</span>
-                                            )
+                                            <span className="text-sm text-gray-400">Desconocido</span>
+                                        )}
+                                    </TableCell>
+                                    <TableCell>
+                                        {ticket.assignedTo ? (
+                                            <div className="flex items-center space-x-2">
+                                                <Avatar className="h-6 w-6">
+                                                    <AvatarImage src={ticket.assignedTo.image || undefined} referrerPolicy="no-referrer" />
+                                                    <AvatarFallback className="bg-indigo-600 text-white text-[10px] font-bold">
+                                                        {ticket.assignedTo.name.charAt(0)}
+                                                    </AvatarFallback>
+                                                </Avatar>
+                                                <span className="text-sm truncate max-w-[120px]">{ticket.assignedTo.name}</span>
+                                            </div>
+                                        ) : (
+                                            <span className="text-sm text-gray-400">Sin asignar</span>
                                         )}
                                     </TableCell>
                                     <TableCell className="text-center">
-                                        {ticket.unreadCommentCount && ticket.unreadCommentCount > 0 ? (
-                                            <div className="flex items-center justify-center space-x-1">
-                                                <MessageCircle className="h-4 w-4 text-blue-500" fill="currentColor" />
-                                                <span className="text-xs bg-blue-500 text-white px-2 py-0.5 rounded-full font-medium">
+                                        <div className="flex flex-col items-center gap-1">
+                                            <div className="flex items-center gap-1 text-muted-foreground">
+                                                <MessageCircle className="h-3.5 w-3.5" />
+                                                <span className="text-xs">{ticket.commentCount || 0}</span>
+                                            </div>
+                                            {ticket.unreadCommentCount !== undefined && ticket.unreadCommentCount > 0 && (
+                                                <span className="text-[10px] bg-blue-500 text-white px-1.5 py-0.5 rounded-full font-medium">
                                                     {ticket.unreadCommentCount} nuevo{ticket.unreadCommentCount > 1 ? 's' : ''}
                                                 </span>
-                                            </div>
-                                        ) : null}
+                                            )}
+                                        </div>
+                                    </TableCell>
+                                    <TableCell className="text-center">
+                                        <span className={`text-sm font-medium ${differenceInDays(new Date(), new Date(ticket.createdAt)) > 3 && ticket.status !== 'resolved' ? "text-red-600" : "text-muted-foreground"}`}>
+                                            {differenceInDays(new Date(), new Date(ticket.createdAt))}
+                                        </span>
                                     </TableCell>
                                     <TableCell className="text-right text-muted-foreground">
                                         {formatDate(ticket.createdAt)}

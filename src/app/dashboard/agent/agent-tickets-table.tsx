@@ -13,6 +13,7 @@ import { Badge } from "@/components/ui/badge";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { differenceInDays } from "date-fns";
+import { MessageCircle } from "lucide-react";
 import { CopyLinkButton } from "@/app/dashboard/tickets/copy-link-button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { TicketFilters } from "@/app/dashboard/tickets/ticket-filters";
@@ -31,6 +32,8 @@ interface Ticket {
     updatedAt: Date;
     assignedTo: { id: string; name: string; image: string | null } | null;
     createdBy?: { id: string; name: string; image: string | null } | null;
+    unreadCommentCount?: number;
+    commentCount?: number;
 }
 
 interface AgentTicketsTableProps {
@@ -102,6 +105,7 @@ export function AgentTicketsTable({ tickets }: AgentTicketsTableProps) {
                             <TableHead>Prioridad</TableHead>
                             <TableHead>Estado</TableHead>
                             <TableHead>Asignado a</TableHead>
+                            <TableHead className="text-center">Comentarios</TableHead>
                             <TableHead className="text-center">Días</TableHead>
                             <TableHead className="text-right">Fecha Ref.</TableHead>
                             <TableHead className="text-center w-[50px]">Link</TableHead>
@@ -132,7 +136,9 @@ export function AgentTicketsTable({ tickets }: AgentTicketsTableProps) {
                                             <div className="flex items-center space-x-2">
                                                 <Avatar className="h-6 w-6">
                                                     <AvatarImage src={ticket.createdBy?.image || undefined} />
-                                                    <AvatarFallback>{ticket.createdBy?.name.charAt(0) || "U"}</AvatarFallback>
+                                                    <AvatarFallback className="bg-cyan-600 text-white text-[10px] font-bold">
+                                                        {ticket.createdBy?.name.charAt(0) || "U"}
+                                                    </AvatarFallback>
                                                 </Avatar>
                                                 <span className="text-sm truncate max-w-[100px]" title={ticket.createdBy?.name}>
                                                     {ticket.createdBy?.name}
@@ -156,18 +162,33 @@ export function AgentTicketsTable({ tickets }: AgentTicketsTableProps) {
                                                 <div className="flex items-center space-x-2">
                                                     <Avatar className="h-6 w-6">
                                                         <AvatarImage src={ticket.assignedTo.image || undefined} />
-                                                        <AvatarFallback>{ticket.assignedTo.name.charAt(0)}</AvatarFallback>
+                                                        <AvatarFallback className="bg-indigo-600 text-white text-[10px] font-bold">
+                                                            {ticket.assignedTo.name.charAt(0)}
+                                                        </AvatarFallback>
                                                     </Avatar>
                                                     <span className="text-sm truncate max-w-[100px]" title={ticket.assignedTo.name}>
                                                         {ticket.assignedTo.name}
                                                     </span>
                                                 </div>
                                             ) : (
-                                                <span className="text-sm text-gray-400">Sin asignar</span>
+                                                <span className="text-sm text-muted-foreground whitespace-nowrap">Sin asignar</span>
                                             )}
                                         </TableCell>
                                         <TableCell className="text-center">
-                                            <span className={`text-sm font-medium ${daysOpen > 3 && ticket.status !== 'resolved' ? "text-red-600" : "text-gray-600"}`}>
+                                            <div className="flex flex-col items-center gap-1">
+                                                <div className="flex items-center justify-center gap-1 text-muted-foreground">
+                                                    <MessageCircle className="h-3.5 w-3.5" />
+                                                    <span className="text-xs">{ticket.commentCount || 0}</span>
+                                                </div>
+                                                {ticket.unreadCommentCount !== undefined && ticket.unreadCommentCount > 0 && (
+                                                    <span className="text-[10px] bg-blue-500 text-white px-1.5 py-0.5 rounded-full font-medium">
+                                                        {ticket.unreadCommentCount} nuevo{ticket.unreadCommentCount > 1 ? 's' : ''}
+                                                    </span>
+                                                )}
+                                            </div>
+                                        </TableCell>
+                                        <TableCell className="text-center">
+                                            <span className={`text-sm font-medium ${daysOpen > 3 && ticket.status !== 'resolved' ? "text-red-600" : "text-muted-foreground"}`}>
                                                 {daysOpen}
                                             </span>
                                         </TableCell>

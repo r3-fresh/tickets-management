@@ -1,6 +1,4 @@
-"use client";
-
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Button } from "@/components/ui/button";
 import { Calendar } from "@/components/ui/calendar";
@@ -23,6 +21,21 @@ export function TicketFilters({ onFilterChange, assignedUsers }: TicketFiltersPr
     const [status, setStatus] = useState<string>("");
     const [assignedTo, setAssignedTo] = useState<string>("");
     const [dateRange, setDateRange] = useState<DateRange | undefined>();
+    const [mounted, setMounted] = useState(false);
+
+    useEffect(() => {
+        setMounted(true);
+    }, []);
+
+    if (!mounted) {
+        return (
+            <div className="flex flex-wrap gap-3 items-center opacity-50 pointer-events-none">
+                <Button variant="outline" disabled className="w-[180px]">Cargando...</Button>
+                <Button variant="outline" disabled className="w-[200px]">Cargando...</Button>
+                <Button variant="outline" disabled className="w-[280px]">Cargando...</Button>
+            </div>
+        );
+    }
 
     const handleStatusChange = (value: string) => {
         const newStatus = value === "all" ? "" : value;

@@ -42,6 +42,7 @@ export default async function TicketsPage() {
                     ) as integer
                 )
             `,
+            commentCount: sql<number>`cast(count(${comments.id}) as integer)`,
         })
         .from(tickets)
         .leftJoin(comments, eq(tickets.id, comments.ticketId))
@@ -71,6 +72,7 @@ export default async function TicketsPage() {
         return {
             ...ticket,
             assignedTo: withAssigned?.assignedTo || null,
+            commentCount: ticket.commentCount,
         };
     });
 

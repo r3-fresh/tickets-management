@@ -71,31 +71,33 @@ export default async function TicketDetailPage({ params }: { params: Promise<{ i
                 {/* Main Content */}
                 <div className="md:col-span-2 space-y-6">
                     <Card>
-                        <CardHeader>
-                            <div className="flex justify-between items-start">
-                                <div>
-                                    <Badge variant="outline" className="mb-2">{ticket.subcategory}</Badge>
-                                    <div className="flex items-center gap-2">
-                                        <span className="text-muted-foreground font-mono text-sm">{ticket.ticketCode}</span>
-                                        <CardTitle className="text-2xl">{ticket.title}</CardTitle>
-                                    </div>
-                                </div>
-                                <div className="flex flex-col items-end gap-2">
-                                    <Badge className={
-                                        ticket.status === 'open' ? 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400' :
-                                            ticket.status === 'in_progress' ? 'bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-400' :
-                                                ticket.status === 'resolved' ? 'bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-300' :
-                                                    'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400'
-                                    }>
-                                        {translateStatus(ticket.status)}
-                                    </Badge>
-                                    {isCreator && !isTicketClosed && (
-                                        <CancelTicketButton ticketId={ticketId} />
-                                    )}
-                                </div>
+                        <CardHeader className="pb-4">
+                            <div className="flex justify-between items-start mb-2">
+                                <Badge variant="secondary" className="px-2 py-0.5 text-xs font-semibold uppercase tracking-wider bg-blue-50 text-blue-700 hover:bg-blue-100 border-none">
+                                    {ticket.subcategory}
+                                </Badge>
+                                <Badge className={
+                                    ticket.status === 'open' ? 'bg-green-100 text-green-800 hover:bg-green-100/80' :
+                                        ticket.status === 'in_progress' ? 'bg-blue-100 text-blue-800 hover:bg-blue-100/80' :
+                                            ticket.status === 'resolved' ? 'bg-gray-100 text-gray-800 hover:bg-gray-100/80' :
+                                                'bg-red-100 text-red-800 hover:bg-red-100/80'
+                                }>
+                                    {translateStatus(ticket.status)}
+                                </Badge>
                             </div>
-                            <CardDescription className="flex items-center space-x-2 mt-2">
-                                <span>Creado el {formatDate(ticket.createdAt)}</span>
+
+                            <div className="flex justify-between items-center">
+                                <div className="flex items-center gap-3">
+                                    <span className="text-muted-foreground font-mono text-lg">{ticket.ticketCode}</span>
+                                    <h2 className="text-2xl font-bold tracking-tight">{ticket.title}</h2>
+                                </div>
+                                {isCreator && !isTicketClosed && (
+                                    <CancelTicketButton ticketId={ticketId} />
+                                )}
+                            </div>
+
+                            <CardDescription className="pt-2 text-xs">
+                                Creado el {formatDate(ticket.createdAt)}
                             </CardDescription>
                         </CardHeader>
                         <CardContent>
@@ -125,7 +127,7 @@ export default async function TicketDetailPage({ params }: { params: Promise<{ i
                                         <div className="flex items-start space-x-4">
                                             <Avatar className="h-8 w-8">
                                                 <AvatarImage src={comment.author.image || undefined} />
-                                                <AvatarFallback>{comment.author.name.charAt(0)}</AvatarFallback>
+                                                <AvatarFallback className="bg-cyan-600 text-white font-bold">{comment.author.name.charAt(0)}</AvatarFallback>
                                             </Avatar>
                                             <div className="flex-1">
                                                 <div className="flex items-center justify-between">
