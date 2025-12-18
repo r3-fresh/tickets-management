@@ -25,7 +25,7 @@ export function LoginForm() {
     };
 
     return (
-        <div className="flex min-h-screen items-center justify-center bg-gray-50 p-4">
+        <div className="flex min-h-screen items-center justify-center p-4">
             <Card className="w-full max-w-md shadow-lg">
                 <CardHeader className="text-center">
                     <CardTitle className="text-2xl font-bold">Gestión de Tickets TSI</CardTitle>
