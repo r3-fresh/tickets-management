@@ -37,6 +37,7 @@ export default async function WatchedTicketsPage() {
                     count(
                         case 
                             when ${comments.createdAt} > coalesce(${ticketViews.lastViewedAt}, ${tickets.createdAt})
+                            and ${comments.userId} != ${session.user.id}
                             then 1 
                         end
                     ) as integer

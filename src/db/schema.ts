@@ -41,7 +41,6 @@ export const accounts = pgTable("account", {
     createdAt: timestamp("created_at").notNull(),
     updatedAt: timestamp("updated_at").notNull(),
 });
-
 export const verifications = pgTable("verification", {
     id: text("id").primaryKey(),
     identifier: text("identifier").notNull(),
@@ -50,8 +49,6 @@ export const verifications = pgTable("verification", {
     createdAt: timestamp("created_at"),
     updatedAt: timestamp("updated_at"),
 });
-
-// --- APP SCHEMA ---
 
 // --- APP SCHEMA ---
 
