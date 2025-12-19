@@ -1,4 +1,5 @@
 import "better-auth/react";
+import type { UserRole } from "./index";
 
 declare module "better-auth/react" {
     interface Session {
@@ -10,7 +11,7 @@ declare module "better-auth/react" {
             emailVerified: boolean;
             createdAt: Date;
             updatedAt: Date;
-            role: string;
+            role: UserRole;
         };
     }
 }

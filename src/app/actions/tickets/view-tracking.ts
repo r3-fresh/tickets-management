@@ -2,18 +2,11 @@
 
 import { db } from "@/db";
 import { ticketViews } from "@/db/schema";
-import { auth } from "@/lib/auth";
-import { headers } from "next/headers";
+import { requireAuth } from "@/lib/utils/server-auth";
 import { eq, and } from "drizzle-orm";
 
 export async function markTicketAsViewed(ticketId: number) {
-    const session = await auth.api.getSession({
-        headers: await headers(),
-    });
-
-    if (!session?.user) {
-        return { error: "No autorizado" };
-    }
+    const session = await requireAuth();
 
     try {
         // Check if view record exists

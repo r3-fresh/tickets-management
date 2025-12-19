@@ -2,7 +2,7 @@
 
 import { Button } from "@/components/ui/button";
 import { Ban } from "lucide-react";
-import { userCancelTicketAction } from "@/app/actions/ticket-actions";
+import { userCancelTicketAction } from "@/app/actions/tickets";
 import { toast } from "sonner";
 import { useState } from "react";
 import {

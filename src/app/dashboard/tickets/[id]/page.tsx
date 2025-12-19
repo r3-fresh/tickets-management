@@ -16,6 +16,7 @@ import { AdminTicketControls } from "./admin-ticket-controls";
 import { MarkAsViewed } from "./mark-as-viewed";
 import { WatchersManager } from "./watchers-manager";
 import { CancelTicketButton } from "./cancel-ticket-button";
+import { UserValidationControls } from "./user-validation-controls";
 import { RichTextEditor } from "@/components/rich-text-editor";
 import { CommentForm } from "./comment-form";
 
@@ -66,6 +67,11 @@ export default async function TicketDetailPage({ params }: { params: Promise<{ i
                 <ArrowLeft className="mr-2 h-4 w-4" />
                 Volver al listado de tickets
             </Link>
+
+            {/* User Validation Controls - Only show for creators when pending validation */}
+            {ticket.status === 'pending_validation' && ticket.createdById === session.user.id && (
+                <UserValidationControls ticketId={ticket.id} />
+            )}
 
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                 {/* Main Content */}
@@ -210,12 +216,36 @@ export default async function TicketDetailPage({ params }: { params: Promise<{ i
                             <CardHeader>
                                 <CardTitle className="text-sm font-medium">Controles de Administrador</CardTitle>
                             </CardHeader>
-                            <CardContent>
+                            <CardContent className="space-y-4">
                                 <AdminTicketControls
                                     ticketId={ticketId}
                                     currentStatus={ticket.status}
                                     isAssigned={!!ticket.assignedToId}
                                 />
+
+                                {/* Closure Details - Only for closed tickets */}
+                                {ticket.status === 'resolved' && ticket.closedBy && (
+                                    <>
+                                        <Separator />
+                                        <div>
+                                            <h4 className="text-sm font-semibold mb-2">Detalles de Cierre</h4>
+                                            <div className="space-y-2 text-sm text-muted-foreground">
+                                                <div>
+                                                    <span className="font-medium">Cerrado por: </span>
+                                                    {ticket.closedBy === 'user' && 'Usuario (Validado)'}
+                                                    {ticket.closedBy === 'admin' && 'Administrador'}
+                                                    {ticket.closedBy === 'system' && 'Sistema (Auto-cierre 48hrs)'}
+                                                </div>
+                                                {ticket.closedAt && (
+                                                    <div>
+                                                        <span className="font-medium">Fecha de cierre: </span>
+                                                        {formatDate(ticket.closedAt)}
+                                                    </div>
+                                                )}
+                                            </div>
+                                        </div>
+                                    </>
+                                )}
                             </CardContent>
                         </Card>
                     )}

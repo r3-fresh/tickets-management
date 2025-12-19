@@ -64,7 +64,7 @@ export const tickets = pgTable("ticket", {
     ticketCode: text("ticket_code").notNull().unique(), // Format: YYYY-####
     title: text("title").notNull(),
     description: text("description").notNull(),
-    status: text("status").notNull().default("open"), // 'open', 'in_progress', 'resolved', 'voided'
+    status: text("status").notNull().default("open"), // 'open', 'in_progress', 'pending_validation', 'resolved', 'voided'
     priority: text("priority").notNull(), // 'low', 'medium', 'high', 'critical'
 
     createdById: text("created_by_id").notNull().references(() => users.id),
@@ -73,11 +73,19 @@ export const tickets = pgTable("ticket", {
     categoryId: integer("category_id"), // Just the ID, no FK constraint
     subcategory: text("subcategory"),
 
-    // Nuevos campos opcionales
+    // Campos opcionales
     area: text("area").default("No aplica"), // GRI, Servicios presenciales, etc.
     campus: text("campus").default("No aplica"), // Corporativo, Huancayo, etc.
 
     watchers: text("watchers").array(), // User IDs que monitorean el ticket
+
+    // Validation tracking
+    validationRequestedAt: timestamp("validation_requested_at"), // When validation was requested
+
+    // Closure tracking
+    closedBy: text("closed_by"), // 'user' | 'admin' | 'system'
+    closedAt: timestamp("closed_at"), // When ticket was closed
+    closedByUserId: text("closed_by_user_id").references(() => users.id), // Who closed it (if user/admin)
 
     createdAt: timestamp("created_at").defaultNow().notNull(),
     updatedAt: timestamp("updated_at").defaultNow().notNull(),

@@ -1,7 +1,7 @@
 "use client";
 
 import { Button } from "@/components/ui/button";
-import { updateUserRole } from "@/app/actions/admin-actions";
+import { updateUserRole } from "@/app/actions/admin";
 import { toast } from "sonner";
 import { useTransition } from "react";
 import { Shield, User } from "lucide-react";

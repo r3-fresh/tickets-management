@@ -1,19 +1,12 @@
 import { db } from "@/db";
 import { tickets, comments, ticketViews } from "@/db/schema";
-import { auth } from "@/lib/auth";
-import { headers } from "next/headers";
+import { requireAuth } from "@/lib/utils/server-auth";
 import { redirect } from "next/navigation";
 import { eq, desc, sql, and, gt } from "drizzle-orm";
 import { TicketsList } from "./tickets-list";
 
 export default async function TicketsPage() {
-    const session = await auth.api.getSession({
-        headers: await headers(),
-    });
-
-    if (!session?.user) {
-        redirect("/login");
-    }
+    const session = await requireAuth();
 
     // Fetch tickets with unread comment count
     const userTickets = await db
@@ -77,5 +70,5 @@ export default async function TicketsPage() {
         };
     });
 
-    return <TicketsList tickets={mergedTickets} isAdmin={(session.user as any).role === "admin"} />;
+    return <TicketsList tickets={mergedTickets} isAdmin={session.user.role === "admin"} />;
 }

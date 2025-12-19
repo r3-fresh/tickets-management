@@ -1,19 +1,12 @@
 import { db } from "@/db";
 import { tickets, comments, ticketViews } from "@/db/schema";
-import { auth } from "@/lib/auth";
-import { headers } from "next/headers";
+import { requireAuth } from "@/lib/utils/server-auth";
 import { redirect } from "next/navigation";
 import { desc, sql, and, not, eq } from "drizzle-orm";
 import { TicketsList } from "../tickets-list";
 
 export default async function WatchedTicketsPage() {
-    const session = await auth.api.getSession({
-        headers: await headers(),
-    });
-
-    if (!session?.user) {
-        redirect("/login");
-    }
+    const session = await requireAuth();
 
     // Fetch tickets where user is a watcher BUT NOT the creator
     const watchedTickets = await db
@@ -87,5 +80,5 @@ export default async function WatchedTicketsPage() {
         };
     });
 
-    return <TicketsList tickets={mergedTickets} isAdmin={(session.user as any).role === "admin"} isWatchedView={true} />;
+    return <TicketsList tickets={mergedTickets} isAdmin={session.user.role === "admin"} isWatchedView={true} />;
 }

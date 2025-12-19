@@ -22,7 +22,7 @@ import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Check, Plus, X, Eye } from "lucide-react";
 import { toast } from "sonner";
-import { updateWatchersAction } from "@/app/actions/ticket-actions";
+import { updateWatchersAction } from "@/app/actions/tickets";
 
 interface User {
     id: string;

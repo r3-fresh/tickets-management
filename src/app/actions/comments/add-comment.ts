@@ -1,21 +1,14 @@
-
 "use server";
 
 import { db } from "@/db";
 import { comments, tickets } from "@/db/schema";
-import { auth } from "@/lib/auth";
-import { headers } from "next/headers";
+import { requireAuth } from "@/lib/utils/server-auth";
 import { revalidatePath } from "next/cache";
 import { eq } from "drizzle-orm";
+import { TICKET_STATUS } from "@/lib/constants/tickets";
 
 export async function addCommentAction(formData: FormData) {
-    const session = await auth.api.getSession({
-        headers: await headers(),
-    });
-
-    if (!session?.user) {
-        return { error: "No autorizado" };
-    }
+    const session = await requireAuth();
 
     const ticketId = Number(formData.get("ticketId"));
     const content = formData.get("content") as string;
@@ -33,7 +26,7 @@ export async function addCommentAction(formData: FormData) {
 
         if (!ticket) return { error: "Ticket no encontrado" };
 
-        if (ticket.status === "resolved" || ticket.status === "voided") {
+        if (ticket.status === TICKET_STATUS.RESOLVED || ticket.status === TICKET_STATUS.VOIDED) {
             return { error: "No se puede comentar en un ticket cerrado" };
         }
 

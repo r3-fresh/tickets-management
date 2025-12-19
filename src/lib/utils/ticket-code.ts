@@ -1,6 +1,6 @@
 import { db } from "@/db";
 import { tickets } from "@/db/schema";
-import { desc, like, sql } from "drizzle-orm";
+import { desc, like } from "drizzle-orm";
 
 /**
  * Genera el próximo código de ticket para el año actual

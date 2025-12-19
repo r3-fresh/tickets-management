@@ -6,7 +6,11 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "eslint"
+    "lint": "eslint",
+    "db:generate": "drizzle-kit generate",
+    "db:migrate": "tsx src/scripts/migrate.ts",
+    "db:drop": "tsx src/scripts/drop-db.ts",
+    "db:reset": "pnpm db:drop && pnpm db:migrate"
   },
   "dependencies": {
     "@hookform/resolvers": "^5.2.2",

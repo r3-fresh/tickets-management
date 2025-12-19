@@ -10,7 +10,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { toast } from "sonner";
-import { createTicketAction } from "@/app/actions/ticket-actions";
+import { createTicketAction } from "@/app/actions/tickets";
 import { useState, useTransition } from "react";
 import { Loader2 } from "lucide-react";
 import { UserSelector } from "@/components/ui/user-selector";

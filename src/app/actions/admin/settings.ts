@@ -2,19 +2,12 @@
 
 import { db } from "@/db";
 import { appSettings } from "@/db/schema";
-import { auth } from "@/lib/auth";
-import { headers } from "next/headers";
+import { requireAdmin } from "@/lib/utils/server-auth";
 import { eq } from "drizzle-orm";
 import { revalidatePath } from "next/cache";
 
 export async function updateAppSetting(key: string, value: string) {
-    const session = await auth.api.getSession({
-        headers: await headers(),
-    });
-
-    if (!session?.user || (session.user as any).role !== "admin") {
-        return { error: "No autorizado" };
-    }
+    await requireAdmin();
 
     try {
         // Check if setting exists

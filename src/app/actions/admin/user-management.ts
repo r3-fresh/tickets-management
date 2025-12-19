@@ -2,19 +2,13 @@
 
 import { db } from "@/db";
 import { users } from "@/db/schema";
-import { auth } from "@/lib/auth";
-import { headers } from "next/headers";
+import { requireAdmin } from "@/lib/utils/server-auth";
 import { eq } from "drizzle-orm";
 import { revalidatePath } from "next/cache";
+import type { UserRole } from "@/types";
 
-export async function updateUserRole(userId: string, newRole: "user" | "admin") {
-    const session = await auth.api.getSession({
-        headers: await headers(),
-    });
-
-    if (!session?.user || session.user.role !== "admin") {
-        return { error: "No autorizado" };
-    }
+export async function updateUserRole(userId: string, newRole: UserRole) {
+    await requireAdmin();
 
     try {
         await db.update(users)

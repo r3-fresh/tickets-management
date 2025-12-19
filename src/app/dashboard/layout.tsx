@@ -58,7 +58,9 @@ export default function DashboardLayout({
         { href: "/dashboard/admin/settings", label: "Configuración", icon: Settings },
     ];
 
-    const allNavItems = (session?.user as any)?.role === "admin"
+    // Type assertion for better-auth session with role
+    const userRole = (session?.user as { role?: string })?.role;
+    const allNavItems = userRole === "admin"
         ? adminItems
         : navItems;
 

@@ -1,19 +1,12 @@
 import { db } from "@/db";
 import { tickets, comments, ticketViews } from "@/db/schema";
-import { auth } from "@/lib/auth";
-import { headers } from "next/headers";
+import { requireAdmin } from "@/lib/utils/server-auth";
 import { redirect } from "next/navigation";
 import { desc, sql, eq, and } from "drizzle-orm";
 import { AgentTicketsTable } from "./agent-tickets-table";
 
 export default async function AgentDashboardPage() {
-    const session = await auth.api.getSession({
-        headers: await headers(),
-    });
-
-    if (!session?.user) {
-        redirect("/login");
-    }
+    const session = await requireAdmin();
 
     // Fetch ALL tickets with unread count for current agent
     const allTicketsWithUnread = await db
@@ -79,7 +72,7 @@ export default async function AgentDashboardPage() {
     return (
         <div className="space-y-6">
             <h1 className="text-3xl font-bold tracking-tight">Bandeja de Tickets</h1>
-            <AgentTicketsTable tickets={mergedTickets as any} />
+            <AgentTicketsTable tickets={mergedTickets} />
         </div>
     );
 }

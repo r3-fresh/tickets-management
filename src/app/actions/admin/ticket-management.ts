@@ -2,24 +2,20 @@
 
 import { db } from "@/db";
 import { tickets } from "@/db/schema";
-import { auth } from "@/lib/auth";
-import { headers } from "next/headers";
+import { requireAdmin } from "@/lib/utils/server-auth";
 import { eq } from "drizzle-orm";
 import { revalidatePath } from "next/cache";
+import { TICKET_STATUS } from "@/lib/constants/tickets";
+import type { TicketStatus } from "@/types";
 
 export async function assignTicketToSelf(ticketId: number) {
-    const session = await auth.api.getSession({
-        headers: await headers(),
-    });
-
-    if (!session?.user || session.user.role !== "admin") {
-        return { error: "No autorizado" };
-    }
+    const session = await requireAdmin();
 
     try {
         await db.update(tickets)
             .set({
                 assignedToId: session.user.id,
+                status: TICKET_STATUS.IN_PROGRESS,
                 updatedAt: new Date()
             })
             .where(eq(tickets.id, ticketId));
@@ -33,40 +29,8 @@ export async function assignTicketToSelf(ticketId: number) {
     }
 }
 
-export async function updateTicketStatus(ticketId: number, newStatus: "open" | "in_progress" | "resolved" | "voided") {
-    const session = await auth.api.getSession({
-        headers: await headers(),
-    });
-
-    if (!session?.user || session.user.role !== "admin") {
-        return { error: "No autorizado" };
-    }
-
-    try {
-        await db.update(tickets)
-            .set({
-                status: newStatus,
-                updatedAt: new Date()
-            })
-            .where(eq(tickets.id, ticketId));
-
-        revalidatePath(`/dashboard/tickets/${ticketId}`);
-        revalidatePath("/dashboard/agent");
-        return { success: true };
-    } catch (error) {
-        console.error("Error updating ticket status:", error);
-        return { error: "Error al actualizar el estado" };
-    }
-}
-
 export async function unassignTicket(ticketId: number) {
-    const session = await auth.api.getSession({
-        headers: await headers(),
-    });
-
-    if (!session?.user || session.user.role !== "admin") {
-        return { error: "No autorizado" };
-    }
+    await requireAdmin();
 
     try {
         await db.update(tickets)
@@ -82,5 +46,25 @@ export async function unassignTicket(ticketId: number) {
     } catch (error) {
         console.error("Error unassigning ticket:", error);
         return { error: "Error al desasignar el ticket" };
+    }
+}
+
+export async function updateTicketStatus(ticketId: number, newStatus: TicketStatus) {
+    await requireAdmin();
+
+    try {
+        await db.update(tickets)
+            .set({
+                status: newStatus,
+                updatedAt: new Date()
+            })
+            .where(eq(tickets.id, ticketId));
+
+        revalidatePath(`/dashboard/tickets/${ticketId}`);
+        revalidatePath("/dashboard/agent");
+        return { success: true };
+    } catch (error) {
+        console.error("Error updating ticket status:", error);
+        return { error: "Error al actualizar el estado" };
     }
 }

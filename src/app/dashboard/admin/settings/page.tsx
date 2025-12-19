@@ -1,19 +1,12 @@
 import { db } from "@/db";
 import { appSettings } from "@/db/schema";
 import { eq } from "drizzle-orm";
-import { auth } from "@/lib/auth";
-import { headers } from "next/headers";
+import { requireAdmin } from "@/lib/utils/server-auth";
 import { redirect } from "next/navigation";
 import { SettingsForm } from "./settings-form";
 
 export default async function AdminSettingsPage() {
-    const session = await auth.api.getSession({
-        headers: await headers(),
-    });
-
-    if (!session?.user || (session.user as any).role !== "admin") {
-        redirect("/dashboard");
-    }
+    const session = await requireAdmin();
 
     // Fetch current setting
     const setting = await db.query.appSettings.findFirst({
