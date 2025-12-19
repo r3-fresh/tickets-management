@@ -1,5 +1,5 @@
 import { db } from "@/db";
-import { tickets, comments } from "@/db/schema";
+import { tickets, comments, ticketViews } from "@/db/schema";
 import { auth } from "@/lib/auth";
 import { headers } from "next/headers";
 import { redirect } from "next/navigation";
@@ -32,18 +32,34 @@ export default async function WatchedTicketsPage() {
             assignedToId: tickets.assignedToId,
             createdAt: tickets.createdAt,
             updatedAt: tickets.updatedAt,
-            unreadCommentCount: sql<number>`cast(0 as integer)`,
+            unreadCommentCount: sql<number>`
+                cast(
+                    count(
+                        case 
+                            when ${comments.createdAt} > coalesce(${ticketViews.lastViewedAt}, ${tickets.createdAt})
+                            then 1 
+                        end
+                    ) as integer
+                )
+            `,
             commentCount: sql<number>`cast(count(${comments.id}) as integer)`,
         })
         .from(tickets)
         .leftJoin(comments, eq(tickets.id, comments.ticketId))
+        .leftJoin(
+            ticketViews,
+            and(
+                eq(tickets.id, ticketViews.ticketId),
+                eq(ticketViews.userId, session.user.id)
+            )
+        )
         .where(
             and(
                 not(eq(tickets.createdById, session.user.id)), // NOT created by me
                 sql`${session.user.id} = ANY(${tickets.watchers})` // I am a watcher
             )
         )
-        .groupBy(tickets.id)
+        .groupBy(tickets.id, ticketViews.lastViewedAt)
         .orderBy(desc(tickets.createdAt));
 
     // Fetch assigned users and creators separately

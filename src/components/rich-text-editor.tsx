@@ -1,6 +1,7 @@
 "use client";
 
 import { useEditor, EditorContent } from "@tiptap/react";
+import { useEffect } from "react";
 import StarterKit from "@tiptap/starter-kit";
 import Link from "@tiptap/extension-link";
 import { TextStyle } from "@tiptap/extension-text-style";
@@ -43,10 +44,17 @@ export function RichTextEditor({ value, onChange, placeholder, disabled }: RichT
         },
         editorProps: {
             attributes: {
-                class: "prose prose-sm dark:prose-invert max-w-none p-3 min-h-[100px] outline-none break-words [&_a]:break-all",
+                class: "prose prose-sm dark:prose-invert max-w-none p-3 min-h-[100px] outline-none break-words [&_a]:break-all [&_p]:my-1",
             },
         },
     });
+
+    // Reset editor content when value prop changes to empty (e.g. after comment submission)
+    useEffect(() => {
+        if (editor && value === "" && editor.getHTML() !== "<p></p>") {
+            editor.commands.setContent("");
+        }
+    }, [value, editor]);
 
     if (!editor) {
         return null;

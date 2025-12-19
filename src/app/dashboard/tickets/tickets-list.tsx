@@ -117,10 +117,9 @@ export function TicketsList({ tickets, isAdmin, isWatchedView = false }: Tickets
                             <TableHead>Asunto</TableHead>
                             <TableHead>Prioridad</TableHead>
                             <TableHead>Estado</TableHead>
-                            <TableHead>Solicitante</TableHead>
+                            {isWatchedView && <TableHead>Solicitante</TableHead>}
                             <TableHead>Asignado a</TableHead>
                             <TableHead className="text-center w-[120px]">Comentarios</TableHead>
-                            <TableHead className="text-center">Días</TableHead>
                             <TableHead className="text-right">Fecha</TableHead>
                             <TableHead className="text-center w-[100px]">Link</TableHead>
                         </TableRow>
@@ -160,21 +159,23 @@ export function TicketsList({ tickets, isAdmin, isWatchedView = false }: Tickets
                                             {translateStatus(ticket.status)}
                                         </span>
                                     </TableCell>
-                                    <TableCell>
-                                        {ticket.createdBy ? (
-                                            <div className="flex items-center space-x-2">
-                                                <Avatar className="h-6 w-6">
-                                                    <AvatarImage src={ticket.createdBy.image || undefined} referrerPolicy="no-referrer" />
-                                                    <AvatarFallback className="bg-cyan-600 text-white text-[10px] font-bold">
-                                                        {ticket.createdBy.name.charAt(0)}
-                                                    </AvatarFallback>
-                                                </Avatar>
-                                                <span className="text-sm truncate max-w-[120px]">{ticket.createdBy.name}</span>
-                                            </div>
-                                        ) : (
-                                            <span className="text-sm text-gray-400">Desconocido</span>
-                                        )}
-                                    </TableCell>
+                                    {isWatchedView && (
+                                        <TableCell>
+                                            {ticket.createdBy ? (
+                                                <div className="flex items-center space-x-2">
+                                                    <Avatar className="h-6 w-6">
+                                                        <AvatarImage src={ticket.createdBy.image || undefined} referrerPolicy="no-referrer" />
+                                                        <AvatarFallback className="bg-cyan-600 text-white text-[10px] font-bold">
+                                                            {ticket.createdBy.name.charAt(0)}
+                                                        </AvatarFallback>
+                                                    </Avatar>
+                                                    <span className="text-sm truncate max-w-[120px]">{ticket.createdBy.name}</span>
+                                                </div>
+                                            ) : (
+                                                <span className="text-sm text-gray-400">Desconocido</span>
+                                            )}
+                                        </TableCell>
+                                    )}
                                     <TableCell>
                                         {ticket.assignedTo ? (
                                             <div className="flex items-center space-x-2">
@@ -202,11 +203,6 @@ export function TicketsList({ tickets, isAdmin, isWatchedView = false }: Tickets
                                                 </span>
                                             )}
                                         </div>
-                                    </TableCell>
-                                    <TableCell className="text-center">
-                                        <span className={`text-sm font-medium ${differenceInDays(new Date(), new Date(ticket.createdAt)) > 3 && ticket.status !== 'resolved' ? "text-red-600" : "text-muted-foreground"}`}>
-                                            {differenceInDays(new Date(), new Date(ticket.createdAt))}
-                                        </span>
                                     </TableCell>
                                     <TableCell className="text-right text-muted-foreground">
                                         {formatDate(ticket.createdAt)}

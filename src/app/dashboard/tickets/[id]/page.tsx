@@ -183,16 +183,18 @@ export default async function TicketDetailPage({ params }: { params: Promise<{ i
                                 ) : (
                                     <span className="text-muted-foreground italic text-sm">No hay watchers asignados</span>
                                 )}
-                                <WatchersManager
-                                    ticketId={ticketId}
-                                    currentWatchers={ticket.watchers || []}
-                                    allUsers={allUsers.map(u => ({
-                                        id: u.id,
-                                        name: u.name,
-                                        email: u.email,
-                                        image: u.image
-                                    }))}
-                                />
+                                {!isTicketClosed && (
+                                    <WatchersManager
+                                        ticketId={ticketId}
+                                        currentWatchers={ticket.watchers || []}
+                                        allUsers={allUsers.map(u => ({
+                                            id: u.id,
+                                            name: u.name,
+                                            email: u.email,
+                                            image: u.image
+                                        }))}
+                                    />
+                                )}
                             </div>
                             <Separator />
                             <div>

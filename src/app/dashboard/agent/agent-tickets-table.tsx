@@ -106,7 +106,6 @@ export function AgentTicketsTable({ tickets }: AgentTicketsTableProps) {
                             <TableHead>Estado</TableHead>
                             <TableHead>Asignado a</TableHead>
                             <TableHead className="text-center">Comentarios</TableHead>
-                            <TableHead className="text-center">Días</TableHead>
                             <TableHead className="text-right">Fecha Ref.</TableHead>
                             <TableHead className="text-center w-[50px]">Link</TableHead>
                         </TableRow>
@@ -186,11 +185,6 @@ export function AgentTicketsTable({ tickets }: AgentTicketsTableProps) {
                                                     </span>
                                                 )}
                                             </div>
-                                        </TableCell>
-                                        <TableCell className="text-center">
-                                            <span className={`text-sm font-medium ${daysOpen > 3 && ticket.status !== 'resolved' ? "text-red-600" : "text-muted-foreground"}`}>
-                                                {daysOpen}
-                                            </span>
                                         </TableCell>
                                         <TableCell className="text-right text-muted-foreground whitespace-nowrap text-xs">
                                             {formatDate(ticket.createdAt)}
