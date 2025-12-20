@@ -25,6 +25,7 @@
     "@radix-ui/react-separator": "^1.1.8",
     "@radix-ui/react-slot": "^1.2.4",
     "@radix-ui/react-switch": "^1.1.1",
+    "@radix-ui/react-tabs": "^1.1.13",
     "@radix-ui/react-toggle": "^1.1.10",
     "@tailwindcss/typography": "^0.5.19",
     "@tiptap/extension-color": "^3.13.0",

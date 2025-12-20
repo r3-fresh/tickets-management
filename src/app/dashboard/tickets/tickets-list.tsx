@@ -26,7 +26,8 @@ interface Ticket {
     ticketCode: string;
     title: string;
     subcategoryId: number | null;
-    subcategoryName: string | null;
+    categoryId: number | null;
+    categoryName: string | null;
     areaId: number | null;
     campusId: number | null;
     priority: string;
@@ -50,6 +51,7 @@ export function TicketsList({ tickets, isAdmin, isWatchedView = false }: Tickets
         status?: string;
         assignedTo?: string;
         dateRange?: DateRange;
+        category?: string;
     }>({});
 
     // Get unique assigned users for filter
@@ -61,6 +63,17 @@ export function TicketsList({ tickets, isAdmin, isWatchedView = false }: Tickets
                 index === self.findIndex((u) => u.id === user.id)
             );
         return users;
+    }, [tickets]);
+
+    // Get unique categories for filter
+    const categories = useMemo(() => {
+        const categoriesMap = new Map<number, string>();
+        tickets.forEach(ticket => {
+            if (ticket.categoryId && ticket.categoryName) {
+                categoriesMap.set(ticket.categoryId, ticket.categoryName);
+            }
+        });
+        return Array.from(categoriesMap.entries()).map(([id, name]) => ({ id, name }));
     }, [tickets]);
 
     // Filter tickets
@@ -79,6 +92,11 @@ export function TicketsList({ tickets, isAdmin, isWatchedView = false }: Tickets
                 if (filters.assignedTo !== "unassigned" && ticket.assignedTo?.id !== filters.assignedTo) {
                     return false;
                 }
+            }
+
+            // Category filter
+            if (filters.category && ticket.categoryId?.toString() !== filters.category) {
+                return false;
             }
 
             // Date range filter
@@ -110,7 +128,7 @@ export function TicketsList({ tickets, isAdmin, isWatchedView = false }: Tickets
                 </Button>
             </div>
 
-            <TicketFilters onFilterChange={setFilters} assignedUsers={assignedUsers} />
+            <TicketFilters onFilterChange={setFilters} assignedUsers={assignedUsers} categories={categories} />
 
             <div className="rounded-md border bg-card shadow-sm">
                 <Table>
@@ -148,8 +166,8 @@ export function TicketsList({ tickets, isAdmin, isWatchedView = false }: Tickets
                                         <Link href={`/dashboard/tickets/${ticket.id}`} className="hover:underline font-medium text-blue-600 block">
                                             {ticket.title}
                                         </Link>
-                                        {ticket.subcategoryName && (
-                                            <div className="text-xs text-muted-foreground mt-0.5">{ticket.subcategoryName}</div>
+                                        {ticket.categoryName && (
+                                            <div className="text-xs text-muted-foreground mt-0.5">{ticket.categoryName}</div>
                                         )}
                                     </TableCell>
                                     <TableCell>

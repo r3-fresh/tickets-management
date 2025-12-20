@@ -13,14 +13,17 @@ interface TicketFiltersProps {
         status?: string;
         assignedTo?: string;
         dateRange?: DateRange;
+        category?: string;
     }) => void;
     assignedUsers: Array<{ id: string; name: string }>;
+    categories?: Array<{ id: number; name: string }>;
 }
 
-export function TicketFilters({ onFilterChange, assignedUsers }: TicketFiltersProps) {
+export function TicketFilters({ onFilterChange, assignedUsers, categories = [] }: TicketFiltersProps) {
     const [status, setStatus] = useState<string>("");
     const [assignedTo, setAssignedTo] = useState<string>("");
     const [dateRange, setDateRange] = useState<DateRange | undefined>();
+    const [category, setCategory] = useState<string>("");
     const [mounted, setMounted] = useState(false);
 
     useEffect(() => {
@@ -40,28 +43,35 @@ export function TicketFilters({ onFilterChange, assignedUsers }: TicketFiltersPr
     const handleStatusChange = (value: string) => {
         const newStatus = value === "all" ? "" : value;
         setStatus(newStatus);
-        onFilterChange({ status: newStatus, assignedTo, dateRange });
+        onFilterChange({ status: newStatus, assignedTo, dateRange, category });
     };
 
     const handleAssignedToChange = (value: string) => {
         const newAssignedTo = value === "all" ? "" : value;
         setAssignedTo(newAssignedTo);
-        onFilterChange({ status, assignedTo: newAssignedTo, dateRange });
+        onFilterChange({ status, assignedTo: newAssignedTo, dateRange, category });
     };
 
     const handleDateRangeChange = (range: DateRange | undefined) => {
         setDateRange(range);
-        onFilterChange({ status, assignedTo, dateRange: range });
+        onFilterChange({ status, assignedTo, dateRange: range, category });
+    };
+
+    const handleCategoryChange = (value: string) => {
+        const newCategory = value === "all" ? "" : value;
+        setCategory(newCategory);
+        onFilterChange({ status, assignedTo, dateRange, category: newCategory });
     };
 
     const clearFilters = () => {
         setStatus("");
         setAssignedTo("");
         setDateRange(undefined);
+        setCategory("");
         onFilterChange({});
     };
 
-    const hasActiveFilters = status || assignedTo || dateRange;
+    const hasActiveFilters = status || assignedTo || dateRange || category;
 
     return (
         <div className="flex flex-wrap gap-3 items-center">
@@ -92,6 +102,22 @@ export function TicketFilters({ onFilterChange, assignedUsers }: TicketFiltersPr
                     ))}
                 </SelectContent>
             </Select>
+
+            {categories.length > 0 && (
+                <Select value={category || "all"} onValueChange={handleCategoryChange}>
+                    <SelectTrigger className="w-[200px]">
+                        <SelectValue placeholder="Categoría" />
+                    </SelectTrigger>
+                    <SelectContent>
+                        <SelectItem value="all">Todas las categorías</SelectItem>
+                        {categories.map((cat) => (
+                            <SelectItem key={cat.id} value={cat.id.toString()}>
+                                {cat.name}
+                            </SelectItem>
+                        ))}
+                    </SelectContent>
+                </Select>
+            )}
 
             <Popover>
                 <PopoverTrigger asChild>

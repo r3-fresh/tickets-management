@@ -3,81 +3,61 @@
 import { db } from "@/db";
 import { ticketCategories } from "@/db/schema";
 import { requireAdmin } from "@/lib/utils/server-auth";
-import { eq } from "drizzle-orm";
+import { eq, sql, gt, lt } from "drizzle-orm";
 import { revalidatePath } from "next/cache";
 
-export async function getCategories() {
-    await requireAdmin();
-
-    try {
-        const categories = await db.query.ticketCategories.findMany({
-            orderBy: (categories, { asc }) => [asc(categories.displayOrder)],
-            with: {
-                subcategories: {
-                    orderBy: (subcategories, { asc }) => [asc(subcategories.displayOrder)],
-                },
-            },
-        });
-
-        return { success: true, data: categories };
-    } catch (error) {
-        console.error("Error fetching categories:", error);
-        return { error: "Error al obtener categorías" };
-    }
-}
-
-export async function createCategory(name: string, description?: string) {
+export async function createCategory(name: string, description: string, isActive: boolean) {
     await requireAdmin();
 
     try {
         // Get max display order
-        const categories = await db.select().from(ticketCategories);
-        const maxOrder = Math.max(...categories.map(c => c.displayOrder), 0);
+        const result = await db
+            .select({ maxOrder: sql<number>`coalesce(max(${ticketCategories.displayOrder}), 0)` })
+            .from(ticketCategories);
 
-        const [newCategory] = await db.insert(ticketCategories).values({
+        const newOrder = (result[0]?.maxOrder || 0) + 1;
+
+        await db.insert(ticketCategories).values({
             name,
-            description,
-            displayOrder: maxOrder + 1,
-        }).returning();
+            description: description || null,
+            isActive,
+            displayOrder: newOrder,
+        });
 
-        revalidatePath("/dashboard/admin/config");
-        return { success: true, data: newCategory };
+        revalidatePath("/dashboard/admin/settings");
+        revalidatePath("/dashboard/tickets/new");
+        return { success: true };
     } catch (error) {
         console.error("Error creating category:", error);
         return { error: "Error al crear categoría" };
     }
 }
 
-export async function updateCategory(id: number, data: { name?: string; description?: string }) {
+export async function updateCategory(
+    id: number,
+    name: string,
+    description: string,
+    isActive: boolean
+) {
     await requireAdmin();
 
     try {
-        const [updated] = await db.update(ticketCategories)
-            .set({ ...data, updatedAt: new Date() })
-            .where(eq(ticketCategories.id, id))
-            .returning();
+        await db
+            .update(ticketCategories)
+            .set({
+                name,
+                description: description || null,
+                isActive,
+                updatedAt: new Date(),
+            })
+            .where(eq(ticketCategories.id, id));
 
-        revalidatePath("/dashboard/admin/config");
-        return { success: true, data: updated };
+        revalidatePath("/dashboard/admin/settings");
+        revalidatePath("/dashboard/tickets/new");
+        return { success: true };
     } catch (error) {
         console.error("Error updating category:", error);
         return { error: "Error al actualizar categoría" };
-    }
-}
-
-export async function toggleCategoryActive(id: number, isActive: boolean) {
-    await requireAdmin();
-
-    try {
-        await db.update(ticketCategories)
-            .set({ isActive, updatedAt: new Date() })
-            .where(eq(ticketCategories.id, id));
-
-        revalidatePath("/dashboard/admin/config");
-        return { success: true };
-    } catch (error) {
-        console.error("Error toggling category:", error);
-        return { error: "Error al cambiar estado de categoría" };
     }
 }
 
@@ -85,10 +65,10 @@ export async function deleteCategory(id: number) {
     await requireAdmin();
 
     try {
-        // Subcategories will cascade delete due to FK constraint
         await db.delete(ticketCategories).where(eq(ticketCategories.id, id));
 
-        revalidatePath("/dashboard/admin/config");
+        revalidatePath("/dashboard/admin/settings");
+        revalidatePath("/dashboard/tickets/new");
         return { success: true };
     } catch (error) {
         console.error("Error deleting category:", error);
@@ -96,21 +76,97 @@ export async function deleteCategory(id: number) {
     }
 }
 
-export async function reorderCategories(orderedIds: number[]) {
+export async function toggleCategoryActive(id: number) {
     await requireAdmin();
 
     try {
-        // Update display order for each category
-        for (let i = 0; i < orderedIds.length; i++) {
-            await db.update(ticketCategories)
-                .set({ displayOrder: i, updatedAt: new Date() })
-                .where(eq(ticketCategories.id, orderedIds[i]));
+        const category = await db.query.ticketCategories.findFirst({
+            where: eq(ticketCategories.id, id),
+        });
+
+        if (!category) {
+            return { error: "Categoría no encontrada" };
         }
 
-        revalidatePath("/dashboard/admin/config");
+        await db
+            .update(ticketCategories)
+            .set({
+                isActive: !category.isActive,
+                updatedAt: new Date(),
+            })
+            .where(eq(ticketCategories.id, id));
+
+        revalidatePath("/dashboard/admin/settings");
+        revalidatePath("/dashboard/tickets/new");
         return { success: true };
     } catch (error) {
-        console.error("Error reordering categories:", error);
-        return { error: "Error al reordenar categorías" };
+        console.error("Error toggling category:", error);
+        return { error: "Error al cambiar estado" };
+    }
+}
+
+export async function moveCategoryUp(id: number, currentOrder: number) {
+    await requireAdmin();
+
+    try {
+        // Find the category with the previous order
+        const prevCategory = await db.query.ticketCategories.findFirst({
+            where: lt(ticketCategories.displayOrder, currentOrder),
+            orderBy: (categories, { desc }) => [desc(categories.displayOrder)],
+        });
+
+        if (!prevCategory) {
+            return { error: "No se puede mover más arriba" };
+        }
+
+        // Swap orders
+        await db
+            .update(ticketCategories)
+            .set({ displayOrder: prevCategory.displayOrder })
+            .where(eq(ticketCategories.id, id));
+
+        await db
+            .update(ticketCategories)
+            .set({ displayOrder: currentOrder })
+            .where(eq(ticketCategories.id, prevCategory.id));
+
+        revalidatePath("/dashboard/admin/settings");
+        return { success: true };
+    } catch (error) {
+        console.error("Error moving category:", error);
+        return { error: "Error al mover categoría" };
+    }
+}
+
+export async function moveCategoryDown(id: number, currentOrder: number) {
+    await requireAdmin();
+
+    try {
+        // Find the category with the next order
+        const nextCategory = await db.query.ticketCategories.findFirst({
+            where: gt(ticketCategories.displayOrder, currentOrder),
+            orderBy: (categories, { asc }) => [asc(categories.displayOrder)],
+        });
+
+        if (!nextCategory) {
+            return { error: "No se puede mover más abajo" };
+        }
+
+        // Swap orders
+        await db
+            .update(ticketCategories)
+            .set({ displayOrder: nextCategory.displayOrder })
+            .where(eq(ticketCategories.id, id));
+
+        await db
+            .update(ticketCategories)
+            .set({ displayOrder: currentOrder })
+            .where(eq(ticketCategories.id, nextCategory.id));
+
+        revalidatePath("/dashboard/admin/settings");
+        return { success: true };
+    } catch (error) {
+        console.error("Error moving category:", error);
+        return { error: "Error al mover categoría" };
     }
 }

@@ -26,7 +26,7 @@ interface Ticket {
     ticketCode: string;
     title: string;
     subcategoryId: number | null;
-    subcategoryName: string | null;
+    categoryName: string | null;
     areaId: number | null;
     campusId: number | null;
     priority: string;
@@ -132,8 +132,8 @@ export function AdminTicketsTable({ tickets }: AdminTicketsTableProps) {
                                             <Link href={`/dashboard/tickets/${ticket.id}`} className="hover:underline font-medium text-blue-600">
                                                 {ticket.title}
                                             </Link>
-                                            {ticket.subcategoryName && (
-                                                <div className="text-xs text-gray-500">{ticket.subcategoryName}</div>
+                                            {ticket.categoryName && (
+                                                <div className="text-xs text-gray-500">{ticket.categoryName}</div>
                                             )}
                                         </TableCell>
                                         <TableCell>

@@ -1,18 +1,18 @@
 "use server";
 
 import { db } from "@/db";
-import { campusLocations } from "@/db/schema";
+import { workAreas } from "@/db/schema";
 import { requireAdmin } from "@/lib/utils/server-auth";
 import { eq } from "drizzle-orm";
 import { revalidatePath } from "next/cache";
 
-export async function createCampus(name: string, code: string, isActive: boolean) {
+export async function createWorkArea(name: string, description: string, isActive: boolean) {
     await requireAdmin();
 
     try {
-        await db.insert(campusLocations).values({
+        await db.insert(workAreas).values({
             name,
-            code,
+            description: description || null,
             isActive,
         });
 
@@ -20,74 +20,74 @@ export async function createCampus(name: string, code: string, isActive: boolean
         revalidatePath("/dashboard/tickets/new");
         return { success: true };
     } catch (error) {
-        console.error("Error creating campus:", error);
-        return { error: "Error al crear campus" };
+        console.error("Error creating work area:", error);
+        return { error: "Error al crear área de trabajo" };
     }
 }
 
-export async function updateCampus(id: number, name: string, code: string, isActive: boolean) {
+export async function updateWorkArea(id: number, name: string, description: string, isActive: boolean) {
     await requireAdmin();
 
     try {
         await db
-            .update(campusLocations)
+            .update(workAreas)
             .set({
                 name,
-                code,
+                description: description || null,
                 isActive,
                 updatedAt: new Date(),
             })
-            .where(eq(campusLocations.id, id));
+            .where(eq(workAreas.id, id));
 
         revalidatePath("/dashboard/admin/settings");
         revalidatePath("/dashboard/tickets/new");
         return { success: true };
     } catch (error) {
-        console.error("Error updating campus:", error);
-        return { error: "Error al actualizar campus" };
+        console.error("Error updating work area:", error);
+        return { error: "Error al actualizar área de trabajo" };
     }
 }
 
-export async function deleteCampus(id: number) {
+export async function deleteWorkArea(id: number) {
     await requireAdmin();
 
     try {
-        await db.delete(campusLocations).where(eq(campusLocations.id, id));
+        await db.delete(workAreas).where(eq(workAreas.id, id));
 
         revalidatePath("/dashboard/admin/settings");
         revalidatePath("/dashboard/tickets/new");
         return { success: true };
     } catch (error) {
-        console.error("Error deleting campus:", error);
-        return { error: "Error al eliminar campus" };
+        console.error("Error deleting work area:", error);
+        return { error: "Error al eliminar área de trabajo" };
     }
 }
 
-export async function toggleCampusActive(id: number) {
+export async function toggleWorkAreaActive(id: number) {
     await requireAdmin();
 
     try {
-        const campusItem = await db.query.campusLocations.findFirst({
-            where: eq(campusLocations.id, id),
+        const area = await db.query.workAreas.findFirst({
+            where: eq(workAreas.id, id),
         });
 
-        if (!campusItem) {
-            return { error: "Campus no encontrado" };
+        if (!area) {
+            return { error: "Área de trabajo no encontrada" };
         }
 
         await db
-            .update(campusLocations)
+            .update(workAreas)
             .set({
-                isActive: !campusItem.isActive,
+                isActive: !area.isActive,
                 updatedAt: new Date(),
             })
-            .where(eq(campusLocations.id, id));
+            .where(eq(workAreas.id, id));
 
         revalidatePath("/dashboard/admin/settings");
         revalidatePath("/dashboard/tickets/new");
         return { success: true };
     } catch (error) {
-        console.error("Error toggling campus:", error);
+        console.error("Error toggling work area:", error);
         return { error: "Error al cambiar estado" };
     }
 }

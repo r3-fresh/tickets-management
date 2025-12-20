@@ -3,89 +3,70 @@
 import { db } from "@/db";
 import { ticketSubcategories } from "@/db/schema";
 import { requireAdmin } from "@/lib/utils/server-auth";
-import { eq } from "drizzle-orm";
+import { eq, sql, gt, lt } from "drizzle-orm";
 import { revalidatePath } from "next/cache";
 
-export async function getSubcategories(categoryId?: number) {
-    await requireAdmin();
-
-    try {
-        if (categoryId) {
-            const subcategories = await db.query.ticketSubcategories.findMany({
-                where: (subcategories, { eq }) => eq(subcategories.categoryId, categoryId),
-                orderBy: (subcategories, { asc }) => [asc(subcategories.displayOrder)],
-            });
-            return { success: true, data: subcategories };
-        } else {
-            const subcategories = await db.query.ticketSubcategories.findMany({
-                orderBy: (subcategories, { asc }) => [asc(subcategories.displayOrder)],
-                with: {
-                    category: true,
-                },
-            });
-            return { success: true, data: subcategories };
-        }
-    } catch (error) {
-        console.error("Error fetching subcategories:", error);
-        return { error: "Error al obtener subcategorías" };
-    }
-}
-
-export async function createSubcategory(categoryId: number, name: string, description?: string) {
+export async function createSubcategory(
+    categoryId: number,
+    name: string,
+    description: string,
+    isActive: boolean
+) {
     await requireAdmin();
 
     try {
         // Get max display order for this category
-        const subcategories = await db.select()
+        const result = await db
+            .select({ maxOrder: sql<number>`coalesce(max(${ticketSubcategories.displayOrder}), 0)` })
             .from(ticketSubcategories)
             .where(eq(ticketSubcategories.categoryId, categoryId));
-        const maxOrder = Math.max(...subcategories.map(s => s.displayOrder), 0);
 
-        const [newSubcategory] = await db.insert(ticketSubcategories).values({
+        const newOrder = (result[0]?.maxOrder || 0) + 1;
+
+        await db.insert(ticketSubcategories).values({
             categoryId,
             name,
-            description,
-            displayOrder: maxOrder + 1,
-        }).returning();
+            description: description || null,
+            isActive,
+            displayOrder: newOrder,
+        });
 
-        revalidatePath("/dashboard/admin/config");
-        return { success: true, data: newSubcategory };
+        revalidatePath("/dashboard/admin/settings");
+        revalidatePath("/dashboard/tickets/new");
+        return { success: true };
     } catch (error) {
         console.error("Error creating subcategory:", error);
         return { error: "Error al crear subcategoría" };
     }
 }
 
-export async function updateSubcategory(id: number, data: { name?: string; description?: string }) {
+export async function updateSubcategory(
+    id: number,
+    categoryId: number,
+    name: string,
+    description: string,
+    isActive: boolean
+) {
     await requireAdmin();
 
     try {
-        const [updated] = await db.update(ticketSubcategories)
-            .set({ ...data, updatedAt: new Date() })
-            .where(eq(ticketSubcategories.id, id))
-            .returning();
+        await db
+            .update(ticketSubcategories)
+            .set({
+                categoryId,
+                name,
+                description: description || null,
+                isActive,
+                updatedAt: new Date(),
+            })
+            .where(eq(ticketSubcategories.id, id));
 
-        revalidatePath("/dashboard/admin/config");
-        return { success: true, data: updated };
+        revalidatePath("/dashboard/admin/settings");
+        revalidatePath("/dashboard/tickets/new");
+        return { success: true };
     } catch (error) {
         console.error("Error updating subcategory:", error);
         return { error: "Error al actualizar subcategoría" };
-    }
-}
-
-export async function toggleSubcategoryActive(id: number, isActive: boolean) {
-    await requireAdmin();
-
-    try {
-        await db.update(ticketSubcategories)
-            .set({ isActive, updatedAt: new Date() })
-            .where(eq(ticketSubcategories.id, id));
-
-        revalidatePath("/dashboard/admin/config");
-        return { success: true };
-    } catch (error) {
-        console.error("Error toggling subcategory:", error);
-        return { error: "Error al cambiar estado de subcategoría" };
     }
 }
 
@@ -95,10 +76,110 @@ export async function deleteSubcategory(id: number) {
     try {
         await db.delete(ticketSubcategories).where(eq(ticketSubcategories.id, id));
 
-        revalidatePath("/dashboard/admin/config");
+        revalidatePath("/dashboard/admin/settings");
+        revalidatePath("/dashboard/tickets/new");
         return { success: true };
     } catch (error) {
         console.error("Error deleting subcategory:", error);
         return { error: "Error al eliminar subcategoría" };
+    }
+}
+
+export async function toggleSubcategoryActive(id: number) {
+    await requireAdmin();
+
+    try {
+        const subcategory = await db.query.ticketSubcategories.findFirst({
+            where: eq(ticketSubcategories.id, id),
+        });
+
+        if (!subcategory) {
+            return { error: "Subcategoría no encontrada" };
+        }
+
+        await db
+            .update(ticketSubcategories)
+            .set({
+                isActive: !subcategory.isActive,
+                updatedAt: new Date(),
+            })
+            .where(eq(ticketSubcategories.id, id));
+
+        revalidatePath("/dashboard/admin/settings");
+        revalidatePath("/dashboard/tickets/new");
+        return { success: true };
+    } catch (error) {
+        console.error("Error toggling subcategory:", error);
+        return { error: "Error al cambiar estado" };
+    }
+}
+
+export async function moveSubcategoryUp(id: number, categoryId: number, currentOrder: number) {
+    await requireAdmin();
+
+    try {
+        const prevSubcategory = await db.query.ticketSubcategories.findFirst({
+            where: (subcategories, { and, eq, lt }) =>
+                and(
+                    eq(subcategories.categoryId, categoryId),
+                    lt(subcategories.displayOrder, currentOrder)
+                ),
+            orderBy: (subcategories, { desc }) => [desc(subcategories.displayOrder)],
+        });
+
+        if (!prevSubcategory) {
+            return { error: "No se puede mover más arriba" };
+        }
+
+        await db
+            .update(ticketSubcategories)
+            .set({ displayOrder: prevSubcategory.displayOrder })
+            .where(eq(ticketSubcategories.id, id));
+
+        await db
+            .update(ticketSubcategories)
+            .set({ displayOrder: currentOrder })
+            .where(eq(ticketSubcategories.id, prevSubcategory.id));
+
+        revalidatePath("/dashboard/admin/settings");
+        return { success: true };
+    } catch (error) {
+        console.error("Error moving subcategory:", error);
+        return { error: "Error al mover subcategoría" };
+    }
+}
+
+export async function moveSubcategoryDown(id: number, categoryId: number, currentOrder: number) {
+    await requireAdmin();
+
+    try {
+        const nextSubcategory = await db.query.ticketSubcategories.findFirst({
+            where: (subcategories, { and, eq, gt }) =>
+                and(
+                    eq(subcategories.categoryId, categoryId),
+                    gt(subcategories.displayOrder, currentOrder)
+                ),
+            orderBy: (subcategories, { asc }) => [asc(subcategories.displayOrder)],
+        });
+
+        if (!nextSubcategory) {
+            return { error: "No se puede mover más abajo" };
+        }
+
+        await db
+            .update(ticketSubcategories)
+            .set({ displayOrder: nextSubcategory.displayOrder })
+            .where(eq(ticketSubcategories.id, id));
+
+        await db
+            .update(ticketSubcategories)
+            .set({ displayOrder: currentOrder })
+            .where(eq(ticketSubcategories.id, nextSubcategory.id));
+
+        revalidatePath("/dashboard/admin/settings");
+        return { success: true };
+    } catch (error) {
+        console.error("Error moving subcategory:", error);
+        return { error: "Error al mover subcategoría" };
     }
 }
