@@ -1,11 +1,13 @@
 "use server";
 
 import { db } from "@/db";
-import { tickets } from "@/db/schema";
+import { tickets, users } from "@/db/schema";
 import { createTicketSchema } from "@/lib/schemas";
 import { requireAuth } from "@/lib/utils/server-auth";
 import { redirect } from "next/navigation";
 import { TICKET_STATUS } from "@/lib/constants/tickets";
+import { sendTicketCreatedEmail } from "@/lib/email-templates";
+import { eq, inArray } from "drizzle-orm";
 
 export async function createTicketAction(formData: FormData) {
     const session = await requireAuth();
@@ -44,7 +46,7 @@ export async function createTicketAction(formData: FormData) {
         const { generateNextTicketCode } = await import("@/lib/utils/ticket-code");
         const ticketCode = await generateNextTicketCode();
 
-        await db.insert(tickets).values({
+        const [newTicket] = await db.insert(tickets).values({
             ticketCode,
             title,
             description,
@@ -56,7 +58,42 @@ export async function createTicketAction(formData: FormData) {
             createdById: session.user.id,
             watchers: watcherList,
             status: TICKET_STATUS.OPEN,
-        });
+        }).returning({ id: tickets.id });
+
+        // Send email notification
+        // TO: cendoc@continental.edu.pe
+        // CC: Creator + Watchers + All Admins
+        try {
+            // Get watcher emails
+            let watcherEmails: string[] = [];
+            if (watcherList.length > 0) {
+                const watcherData = await db.select({ email: users.email })
+                    .from(users)
+                    .where(inArray(users.id, watcherList));
+                watcherEmails = watcherData.map(w => w.email);
+            }
+
+            // Get all admin emails
+            const adminData = await db.select({ email: users.email })
+                .from(users)
+                .where(eq(users.role, 'admin'));
+            const adminEmails = adminData.map(a => a.email);
+
+            await sendTicketCreatedEmail({
+                ticketCode,
+                title,
+                description,
+                priority,
+                createdBy: session.user.name,
+                createdByEmail: session.user.email,
+                ticketId: newTicket.id,
+                watcherEmails,
+                adminEmails,
+            });
+        } catch (emailError) {
+            // Log error but don't fail ticket creation
+            console.error("Error sending email:", emailError);
+        }
 
     } catch (error) {
         console.error("Error creating ticket:", error);

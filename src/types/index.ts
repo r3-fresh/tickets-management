@@ -10,6 +10,8 @@ export type UserRole = 'user' | 'admin';
 // BetterAuthUser already includes id, name, email, etc.
 export interface AppUser extends BetterAuthUser {
     id: string; // Explicitly include id for clarity
+    name: string; // Explicitly include name
+    email: string; // Explicitly include email
     role: UserRole;
 }
 

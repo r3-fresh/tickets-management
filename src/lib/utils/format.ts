@@ -10,14 +10,14 @@ export function formatDate(date: Date | string | null | undefined): string {
     return format(d, "dd/MM/yyyy HH:mm", { locale: es });
 }
 
-export function translateStatus(status: TicketStatus): string {
-    return STATUS_LABELS[status] || status;
+export function translateStatus(status: string): string {
+    return STATUS_LABELS[status as TicketStatus] || status;
 }
 
-export function translatePriority(priority: TicketPriority): string {
-    return PRIORITY_LABELS[priority] || priority;
+export function translatePriority(priority: string): string {
+    return PRIORITY_LABELS[priority as TicketPriority] || priority;
 }
 
-export function translateClosureType(closureType: ClosedBy): string {
-    return CLOSURE_TYPE_LABELS[closureType] || closureType;
+export function translateClosureType(closureType: string): string {
+    return CLOSURE_TYPE_LABELS[closureType as ClosedBy] || closureType;
 }

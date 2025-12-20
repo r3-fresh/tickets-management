@@ -48,6 +48,15 @@ export default async function TicketDetailPage({ params }: { params: Promise<{ i
 
     if (!ticket) notFound();
 
+    // Access control: Only creator, watchers, or admins can view
+    const isCreator = ticket.createdById === session.user.id;
+    const isWatcher = ticket.watchers?.includes(session.user.id) || false;
+    const isAdmin = session.user.role === "admin";
+
+    if (!isCreator && !isWatcher && !isAdmin) {
+        redirect("/dashboard/tickets");
+    }
+
     const allUsers = await db.select().from(users);
 
     // Fetch watchers details
@@ -58,7 +67,6 @@ export default async function TicketDetailPage({ params }: { params: Promise<{ i
 
     const isTicketClosed = ticket.status === 'resolved' || ticket.status === 'voided';
     const canComment = !isTicketClosed;
-    const isCreator = ticket.createdById === session.user.id;
 
     return (
         <div className="space-y-6 max-w-4xl mx-auto">
@@ -193,6 +201,7 @@ export default async function TicketDetailPage({ params }: { params: Promise<{ i
                                     <WatchersManager
                                         ticketId={ticketId}
                                         currentWatchers={ticket.watchers || []}
+                                        currentUserId={session.user.id}
                                         allUsers={allUsers.map(u => ({
                                             id: u.id,
                                             name: u.name,

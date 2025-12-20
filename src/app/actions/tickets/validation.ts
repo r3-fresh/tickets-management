@@ -3,9 +3,11 @@
 import { db } from "@/db";
 import { tickets } from "@/db/schema";
 import { requireAuth } from "@/lib/utils/server-auth";
-import { eq } from "drizzle-orm";
+import { eq, inArray } from "drizzle-orm";
 import { revalidatePath } from "next/cache";
 import { TICKET_STATUS, CLOSURE_TYPE } from "@/lib/constants/tickets";
+import { sendValidationRequestEmail } from "@/lib/email-templates";
+import { users } from "@/db/schema";
 
 /**
  * User approves ticket closure - moves from pending_validation to resolved
@@ -107,9 +109,12 @@ export async function requestValidation(ticketId: number) {
     try {
         const ticket = await db.query.tickets.findFirst({
             where: eq(tickets.id, ticketId),
+            with: {
+                createdBy: true,
+            }
         });
 
-        if (!ticket) {
+        if (!ticket || !ticket.createdBy) {
             return { error: "Ticket no encontrado" };
         }
 
@@ -128,6 +133,39 @@ export async function requestValidation(ticketId: number) {
                 updatedAt: new Date()
             })
             .where(eq(tickets.id, ticketId));
+
+        // Send email notification
+        // TO: cendoc@continental.edu.pe
+        // CC: Creator + All Watchers + All Admins
+        try {
+            // Get all watcher emails
+            let watcherEmails: string[] = [];
+            if (ticket.watchers && ticket.watchers.length > 0) {
+                const watcherData = await db.select({ email: users.email })
+                    .from(users)
+                    .where(inArray(users.id, ticket.watchers));
+                watcherEmails = watcherData.map(w => w.email);
+            }
+
+            // Get all admin emails
+            const adminData = await db.select({ email: users.email })
+                .from(users)
+                .where(eq(users.role, 'admin'));
+            const adminEmails = adminData.map(a => a.email);
+
+            await sendValidationRequestEmail({
+                ticketCode: ticket.ticketCode,
+                title: ticket.title,
+                createdByEmail: ticket.createdBy.email,
+                createdByName: ticket.createdBy.name,
+                ticketId: ticket.id,
+                watcherEmails,
+                adminEmails,
+            });
+        } catch (emailError) {
+            // Log error but don't fail the validation request
+            console.error("Error sending email:", emailError);
+        }
 
         revalidatePath(`/dashboard/tickets/${ticketId}`);
         revalidatePath("/dashboard/agent");

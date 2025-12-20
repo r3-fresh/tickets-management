@@ -35,12 +35,16 @@ interface WatchersManagerProps {
     ticketId: number;
     currentWatchers: string[];
     allUsers: User[];
+    currentUserId: string;  // Add current user ID to prevent self-watching
 }
 
-export function WatchersManager({ ticketId, currentWatchers, allUsers }: WatchersManagerProps) {
+export function WatchersManager({ ticketId, currentWatchers, allUsers, currentUserId }: WatchersManagerProps) {
     const [open, setOpen] = useState(false);
     const [selectedWatchers, setSelectedWatchers] = useState<string[]>(currentWatchers);
     const [loading, setLoading] = useState(false);
+
+    // Filter out current user from available watchers
+    const availableUsers = allUsers.filter(user => user.id !== currentUserId);
 
     const handleToggleWatcher = (userId: string) => {
         const newWatchers = selectedWatchers.includes(userId)
@@ -112,7 +116,7 @@ export function WatchersManager({ ticketId, currentWatchers, allUsers }: Watcher
                             <CommandList>
                                 <CommandEmpty>No se encontraron usuarios.</CommandEmpty>
                                 <CommandGroup heading="Usuarios">
-                                    {allUsers.map((user) => (
+                                    {availableUsers.map((user) => (
                                         <CommandItem
                                             key={user.id}
                                             onSelect={() => handleToggleWatcher(user.id)}
