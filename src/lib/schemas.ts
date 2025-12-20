@@ -6,9 +6,9 @@ export const createTicketSchema = z.object({
     description: z.string().min(10, "La descripción debe tener al menos 10 caracteres"),
     priority: z.enum(["low", "medium", "high", "critical"]),
     categoryId: z.coerce.number().min(1, "Selecciona una categoría"),
-    subcategory: z.string().min(1, "Selecciona una subcategoría"),
-    area: z.string().optional().default("No aplica"),
-    campus: z.string().optional().default("No aplica"),
+    subcategoryId: z.coerce.number().min(1, "Selecciona una subcategoría"),
+    campusId: z.coerce.number().optional(),
+    areaId: z.coerce.number().optional(),
 });
 
 export type CreateTicketSchema = z.infer<typeof createTicketSchema>;

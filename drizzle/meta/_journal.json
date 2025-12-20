@@ -22,6 +22,13 @@
       "when": 1766240055067,
       "tag": "0002_stormy_spitfire",
       "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "7",
+      "when": 1766244542023,
+      "tag": "0003_brief_multiple_man",
+      "breakpoints": true
     }
   ]
 }

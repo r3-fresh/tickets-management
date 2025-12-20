@@ -17,9 +17,9 @@ export async function createTicketAction(formData: FormData) {
         description: formData.get("description"),
         priority: formData.get("priority"),
         categoryId: formData.get("categoryId"),
-        subcategory: formData.get("subcategory"),
-        area: formData.get("area") || "No aplica",
-        campus: formData.get("campus") || "No aplica",
+        subcategoryId: formData.get("subcategoryId"),
+        campusId: formData.get("campusId"),
+        areaId: formData.get("areaId"),
     };
 
     const result = createTicketSchema.safeParse(rawData);
@@ -28,7 +28,7 @@ export async function createTicketAction(formData: FormData) {
         return { error: "Datos inválidos", details: result.error.flatten() };
     }
 
-    const { title, description, priority, categoryId, subcategory, area, campus } = result.data;
+    const { title, description, priority, categoryId, subcategoryId, campusId, areaId } = result.data;
 
     // Parse watchers (user IDs)
     let watcherList: string[] = [];
@@ -51,13 +51,13 @@ export async function createTicketAction(formData: FormData) {
             title,
             description,
             priority,
-            categoryId,
-            subcategory,
-            area: area || "No aplica",
-            campus: campus || "No aplica",
-            createdById: session.user.id,
-            watchers: watcherList,
             status: TICKET_STATUS.OPEN,
+            createdById: session.user.id,
+            categoryId,
+            subcategoryId,
+            campusId: campusId || null,
+            areaId: areaId || null,
+            watchers: watcherList,
         }).returning({ id: tickets.id });
 
         // Send email notification

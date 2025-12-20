@@ -37,6 +37,10 @@ export default async function TicketDetailPage({ params }: { params: Promise<{ i
         where: eq(tickets.id, ticketId),
         with: {
             createdBy: true,
+            category: true,
+            subcategory: true,
+            campus: true,
+            area: true,
             comments: {
                 with: {
                     author: true
@@ -88,7 +92,7 @@ export default async function TicketDetailPage({ params }: { params: Promise<{ i
                         <CardHeader className="pb-4">
                             <div className="flex justify-between items-start mb-2">
                                 <Badge variant="secondary" className="px-2 py-0.5 text-xs font-semibold uppercase tracking-wider bg-blue-50 text-blue-700 hover:bg-blue-100 border-none">
-                                    {ticket.subcategory}
+                                    {ticket.subcategory?.name || "Sin subcategoría"}
                                 </Badge>
                                 <Badge className={
                                     ticket.status === 'open' ? 'bg-green-100 text-green-800 hover:bg-green-100/80' :

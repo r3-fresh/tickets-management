@@ -25,7 +25,10 @@ interface Ticket {
     id: number;
     ticketCode: string;
     title: string;
-    subcategory: string | null;
+    subcategoryId: number | null;
+    subcategoryName: string | null;
+    areaId: number | null;
+    campusId: number | null;
     priority: string;
     status: string;
     createdAt: Date;
@@ -36,11 +39,11 @@ interface Ticket {
     commentCount?: number;
 }
 
-interface AgentTicketsTableProps {
+interface AdminTicketsTableProps {
     tickets: Ticket[];
 }
 
-export function AgentTicketsTable({ tickets }: AgentTicketsTableProps) {
+export function AdminTicketsTable({ tickets }: AdminTicketsTableProps) {
     const [filters, setFilters] = useState<{
         status?: string;
         assignedTo?: string;
@@ -129,7 +132,9 @@ export function AgentTicketsTable({ tickets }: AgentTicketsTableProps) {
                                             <Link href={`/dashboard/tickets/${ticket.id}`} className="hover:underline font-medium text-blue-600">
                                                 {ticket.title}
                                             </Link>
-                                            <div className="text-xs text-gray-500">{ticket.subcategory}</div>
+                                            {ticket.subcategoryName && (
+                                                <div className="text-xs text-gray-500">{ticket.subcategoryName}</div>
+                                            )}
                                         </TableCell>
                                         <TableCell>
                                             <div className="flex items-center space-x-2">

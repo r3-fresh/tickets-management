@@ -60,10 +60,55 @@ export const verifications = pgTable("verification", {
 
 export const appSettings = pgTable("app_settings", {
     id: serial("id").primaryKey(),
-    key: text("key").notNull().unique(), // e.g., "allow_new_tickets"
+    key: text("key").notNull().unique(), // e.g., "allow_new_tickets", "ticket_disabled_message", "ticket_disabled_title"
     value: text("value").notNull(), // JSON string or simple value
     updatedAt: timestamp("updated_at").defaultNow().notNull(),
 });
+
+// --- CONFIGURATION TABLES ---
+
+export const ticketCategories = pgTable("ticket_category", {
+    id: serial("id").primaryKey(),
+    name: text("name").notNull(),
+    description: text("description"),
+    isActive: boolean("is_active").notNull().default(true),
+    displayOrder: integer("display_order").notNull().default(0),
+    createdAt: timestamp("created_at").defaultNow().notNull(),
+    updatedAt: timestamp("updated_at").defaultNow().notNull(),
+});
+
+export const ticketSubcategories = pgTable("ticket_subcategory", {
+    id: serial("id").primaryKey(),
+    categoryId: integer("category_id").notNull().references(() => ticketCategories.id, { onDelete: 'cascade' }),
+    name: text("name").notNull(),
+    description: text("description"),
+    isActive: boolean("is_active").notNull().default(true),
+    displayOrder: integer("display_order").notNull().default(0),
+    createdAt: timestamp("created_at").defaultNow().notNull(),
+    updatedAt: timestamp("updated_at").defaultNow().notNull(),
+});
+
+export const campusLocations = pgTable("campus_location", {
+    id: serial("id").primaryKey(),
+    name: text("name").notNull(),
+    code: text("code"),
+    isActive: boolean("is_active").notNull().default(true),
+    displayOrder: integer("display_order").notNull().default(0),
+    createdAt: timestamp("created_at").defaultNow().notNull(),
+    updatedAt: timestamp("updated_at").defaultNow().notNull(),
+});
+
+export const workAreas = pgTable("work_area", {
+    id: serial("id").primaryKey(),
+    name: text("name").notNull(),
+    description: text("description"),
+    isActive: boolean("is_active").notNull().default(true),
+    displayOrder: integer("display_order").notNull().default(0),
+    createdAt: timestamp("created_at").defaultNow().notNull(),
+    updatedAt: timestamp("updated_at").defaultNow().notNull(),
+});
+
+// --- TICKETS ---
 
 export const tickets = pgTable("ticket", {
     id: serial("id").primaryKey(),
@@ -76,12 +121,11 @@ export const tickets = pgTable("ticket", {
     createdById: text("created_by_id").notNull().references(() => users.id),
     assignedToId: text("assigned_to_id").references(() => users.id),
 
-    categoryId: integer("category_id"), // Just the ID, no FK constraint
-    subcategory: text("subcategory"),
-
-    // Campos opcionales
-    area: text("area").default("No aplica"), // GRI, Servicios presenciales, etc.
-    campus: text("campus").default("No aplica"), // Corporativo, Huancayo, etc.
+    // FK references to configuration tables
+    categoryId: integer("category_id").references(() => ticketCategories.id),
+    subcategoryId: integer("subcategory_id").references(() => ticketSubcategories.id),
+    campusId: integer("campus_id").references(() => campusLocations.id),
+    areaId: integer("area_id").references(() => workAreas.id),
 
     watchers: text("watchers").array(), // User IDs que monitorean el ticket
 
@@ -130,6 +174,22 @@ export const ticketsRelations = relations(tickets, ({ one, many }) => ({
         references: [users.id],
         relationName: "assignedTickets",
     }),
+    category: one(ticketCategories, {
+        fields: [tickets.categoryId],
+        references: [ticketCategories.id],
+    }),
+    subcategory: one(ticketSubcategories, {
+        fields: [tickets.subcategoryId],
+        references: [ticketSubcategories.id],
+    }),
+    campus: one(campusLocations, {
+        fields: [tickets.campusId],
+        references: [campusLocations.id],
+    }),
+    area: one(workAreas, {
+        fields: [tickets.areaId],
+        references: [workAreas.id],
+    }),
     comments: many(comments),
 }));
 
@@ -148,4 +208,26 @@ export const usersRelations = relations(users, ({ many }) => ({
     createdTickets: many(tickets, { relationName: "createdTickets" }),
     assignedTickets: many(tickets, { relationName: "assignedTickets" }),
     comments: many(comments),
+}));
+
+// Configuration tables relations
+export const ticketCategoriesRelations = relations(ticketCategories, ({ many }) => ({
+    subcategories: many(ticketSubcategories),
+    tickets: many(tickets),
+}));
+
+export const ticketSubcategoriesRelations = relations(ticketSubcategories, ({ one, many }) => ({
+    category: one(ticketCategories, {
+        fields: [ticketSubcategories.categoryId],
+        references: [ticketCategories.id],
+    }),
+    tickets: many(tickets),
+}));
+
+export const campusLocationsRelations = relations(campusLocations, ({ many }) => ({
+    tickets: many(tickets),
+}));
+
+export const workAreasRelations = relations(workAreas, ({ many }) => ({
+    tickets: many(tickets),
 }));

@@ -5,26 +5,16 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { createTicketSchema, CreateTicketSchema } from "@/lib/schemas";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { toast } from "sonner";
 import { createTicketAction } from "@/app/actions/tickets";
 import { useState, useTransition } from "react";
-import { Loader2 } from "lucide-react";
+import { Loader2, ArrowLeft } from "lucide-react";
 import { UserSelector } from "@/components/ui/user-selector";
 import Link from "next/link";
-import { ArrowLeft } from "lucide-react";
 import { RichTextEditor } from "@/components/rich-text-editor";
-
-// Mock categories for now since DB might be down
-const CATEGORIES = [
-    { id: 1, name: "Sistema de Gestión Bibliotecaria", subcategories: ["Accesos", "Reportes", "Errores", "Mejoras"] },
-    { id: 2, name: "Plataformas Web", subcategories: ["Landing Pages", "Intranet", "Portal de Clientes", "CMS"] },
-    { id: 3, name: "Sistematización y Reportería", subcategories: ["Power BI", "Excel Automations", "Dashboards"] },
-    { id: 4, name: "Infraestructura y Redes", subcategories: ["VPN", "Wifi", "Hardware", "Software License"] },
-];
 
 interface User {
     id: string;
@@ -33,12 +23,44 @@ interface User {
     image?: string | null;
 }
 
+interface Category {
+    id: number;
+    name: string;
+    subcategories: Array<{
+        id: number;
+        name: string;
+    }>;
+}
+
+interface Campus {
+    id: number;
+    name: string;
+}
+
+interface WorkArea {
+    id: number;
+    name: string;
+}
+
 interface NewTicketFormProps {
     availableUsers: User[];
     allowNewTickets?: boolean;
+    categories: Category[];
+    campuses: Campus[];
+    workAreas: WorkArea[];
+    disabledTitle?: string | null;
+    disabledMessage?: string | null;
 }
 
-export function NewTicketForm({ availableUsers, allowNewTickets = true }: NewTicketFormProps) {
+export function NewTicketForm({
+    availableUsers,
+    allowNewTickets = true,
+    categories,
+    campuses,
+    workAreas,
+    disabledTitle,
+    disabledMessage
+}: NewTicketFormProps) {
     const [isPending, startTransition] = useTransition();
     const [selectedCategory, setSelectedCategory] = useState<number | null>(null);
     const [selectedWatchers, setSelectedWatchers] = useState<string[]>([]);
@@ -47,10 +69,11 @@ export function NewTicketForm({ availableUsers, allowNewTickets = true }: NewTic
         return (
             <div className="max-w-2xl mx-auto text-center py-12">
                 <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-6">
-                    <h2 className="text-xl font-semibold text-yellow-800 mb-2">Creación de tickets temporalmente inhabilitada</h2>
+                    <h2 className="text-xl font-semibold text-yellow-800 mb-2">
+                        {disabledTitle || "Creación de tickets temporalmente inhabilitada"}
+                    </h2>
                     <p className="text-yellow-700">
-                        El sistema no está aceptando nuevos tickets en este momento por motivos de mantenimiento o periodo vacacional.
-                        Por favor, intente nuevamente más tarde.
+                        {disabledMessage || "El sistema no está aceptando nuevos tickets en este momento. Por favor, intente nuevamente más tarde."}
                     </p>
                     <div className="mt-6">
                         <Link href="/dashboard/tickets" className="text-blue-600 hover:underline">
@@ -62,21 +85,21 @@ export function NewTicketForm({ availableUsers, allowNewTickets = true }: NewTic
         );
     }
 
-    const form = useForm({
-        resolver: zodResolver(createTicketSchema),
+    const form = useForm<CreateTicketSchema>({
+        resolver: zodResolver(createTicketSchema) as any,
         defaultValues: {
             priority: "medium",
             title: "",
             description: "",
-            area: "No aplica",
-            campus: "No aplica",
         },
     });
 
     const onSubmit = (data: CreateTicketSchema) => {
         const formData = new FormData();
         Object.entries(data).forEach(([key, value]) => {
-            formData.append(key, value.toString());
+            if (value !== undefined && value !== null) {
+                formData.append(key, value.toString());
+            }
         });
 
         // Add watchers
@@ -92,7 +115,7 @@ export function NewTicketForm({ availableUsers, allowNewTickets = true }: NewTic
         });
     };
 
-    const currentSubcategories = CATEGORIES.find(c => c.id === selectedCategory)?.subcategories || [];
+    const currentSubcategories = categories.find(c => c.id === selectedCategory)?.subcategories || [];
 
     return (
         <div className="space-y-6 max-w-2xl mx-auto">
@@ -107,7 +130,6 @@ export function NewTicketForm({ availableUsers, allowNewTickets = true }: NewTic
                 <CardContent>
                     <Form {...form}>
                         <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-
                             <FormField
                                 control={form.control}
                                 name="title"
@@ -131,11 +153,11 @@ export function NewTicketForm({ availableUsers, allowNewTickets = true }: NewTic
                                             <FormLabel>Categoría <span className="text-red-500">*</span></FormLabel>
                                             <Select
                                                 onValueChange={(val) => {
-                                                    field.onChange(val);
+                                                    field.onChange(Number(val));
                                                     setSelectedCategory(Number(val));
-                                                    form.setValue("subcategory", ""); // Reset subcategory
+                                                    form.setValue("subcategoryId", undefined as any);
                                                 }}
-                                                defaultValue={field.value?.toString()}
+                                                value={field.value?.toString()}
                                             >
                                                 <FormControl>
                                                     <SelectTrigger>
@@ -143,7 +165,7 @@ export function NewTicketForm({ availableUsers, allowNewTickets = true }: NewTic
                                                     </SelectTrigger>
                                                 </FormControl>
                                                 <SelectContent>
-                                                    {CATEGORIES.map((cat) => (
+                                                    {categories.map((cat) => (
                                                         <SelectItem key={cat.id} value={cat.id.toString()}>
                                                             {cat.name}
                                                         </SelectItem>
@@ -157,11 +179,15 @@ export function NewTicketForm({ availableUsers, allowNewTickets = true }: NewTic
 
                                 <FormField
                                     control={form.control}
-                                    name="subcategory"
+                                    name="subcategoryId"
                                     render={({ field }) => (
                                         <FormItem>
                                             <FormLabel>Subcategoría <span className="text-red-500">*</span></FormLabel>
-                                            <Select onValueChange={field.onChange} defaultValue={field.value} disabled={!selectedCategory}>
+                                            <Select
+                                                onValueChange={(val) => field.onChange(Number(val))}
+                                                value={field.value?.toString()}
+                                                disabled={!selectedCategory || currentSubcategories.length === 0}
+                                            >
                                                 <FormControl>
                                                     <SelectTrigger>
                                                         <SelectValue placeholder="Selecciona..." />
@@ -169,8 +195,8 @@ export function NewTicketForm({ availableUsers, allowNewTickets = true }: NewTic
                                                 </FormControl>
                                                 <SelectContent>
                                                     {currentSubcategories.map((sub) => (
-                                                        <SelectItem key={sub} value={sub}>
-                                                            {sub}
+                                                        <SelectItem key={sub.id} value={sub.id.toString()}>
+                                                            {sub.name}
                                                         </SelectItem>
                                                     ))}
                                                 </SelectContent>
@@ -181,51 +207,52 @@ export function NewTicketForm({ availableUsers, allowNewTickets = true }: NewTic
                                 />
                             </div>
 
+                            <FormField
+                                control={form.control}
+                                name="priority"
+                                render={({ field }) => (
+                                    <FormItem>
+                                        <FormLabel>Prioridad <span className="text-red-500">*</span></FormLabel>
+                                        <Select onValueChange={field.onChange} defaultValue={field.value}>
+                                            <FormControl>
+                                                <SelectTrigger>
+                                                    <SelectValue placeholder="Selecciona..." />
+                                                </SelectTrigger>
+                                            </FormControl>
+                                            <SelectContent>
+                                                <SelectItem value="low">Baja</SelectItem>
+                                                <SelectItem value="medium">Media</SelectItem>
+                                                <SelectItem value="high">Alta</SelectItem>
+                                                <SelectItem value="critical">Crítica</SelectItem>
+                                            </SelectContent>
+                                        </Select>
+                                        <FormMessage />
+                                    </FormItem>
+                                )}
+                            />
+
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                 <FormField
                                     control={form.control}
-                                    name="priority"
+                                    name="areaId"
                                     render={({ field }) => (
                                         <FormItem>
-                                            <FormLabel>Prioridad <span className="text-red-500">*</span></FormLabel>
-                                            <Select onValueChange={field.onChange} defaultValue={field.value}>
+                                            <FormLabel>Área <span className="text-gray-400 font-normal">(Opcional)</span></FormLabel>
+                                            <Select
+                                                onValueChange={(val) => field.onChange(val ? Number(val) : undefined)}
+                                                value={field.value?.toString()}
+                                            >
                                                 <FormControl>
                                                     <SelectTrigger>
                                                         <SelectValue placeholder="Selecciona..." />
                                                     </SelectTrigger>
                                                 </FormControl>
                                                 <SelectContent>
-                                                    <SelectItem value="low">Baja</SelectItem>
-                                                    <SelectItem value="medium">Media</SelectItem>
-                                                    <SelectItem value="high">Alta</SelectItem>
-                                                    <SelectItem value="critical">Crítica</SelectItem>
-                                                </SelectContent>
-                                            </Select>
-                                            <FormMessage />
-                                        </FormItem>
-                                    )}
-                                />
-                            </div>
-
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                <FormField
-                                    control={form.control}
-                                    name="area"
-                                    render={({ field }) => (
-                                        <FormItem>
-                                            <FormLabel>Área de Procedencia <span className="text-gray-400 font-normal">(Opcional)</span></FormLabel>
-                                            <Select onValueChange={field.onChange} defaultValue={field.value}>
-                                                <FormControl>
-                                                    <SelectTrigger>
-                                                        <SelectValue placeholder="Selecciona..." />
-                                                    </SelectTrigger>
-                                                </FormControl>
-                                                <SelectContent>
-                                                    <SelectItem value="No aplica">No aplica</SelectItem>
-                                                    <SelectItem value="GRI">GRI</SelectItem>
-                                                    <SelectItem value="Servicios presenciales">Servicios presenciales</SelectItem>
-                                                    <SelectItem value="Servicios virtuales">Servicios virtuales</SelectItem>
-                                                    <SelectItem value="Apoyo a la investigación">Apoyo a la investigación</SelectItem>
+                                                    {workAreas.map((area) => (
+                                                        <SelectItem key={area.id} value={area.id.toString()}>
+                                                            {area.name}
+                                                        </SelectItem>
+                                                    ))}
                                                 </SelectContent>
                                             </Select>
                                             <FormMessage />
@@ -235,26 +262,25 @@ export function NewTicketForm({ availableUsers, allowNewTickets = true }: NewTic
 
                                 <FormField
                                     control={form.control}
-                                    name="campus"
+                                    name="campusId"
                                     render={({ field }) => (
                                         <FormItem>
                                             <FormLabel>Campus <span className="text-gray-400 font-normal">(Opcional)</span></FormLabel>
-                                            <Select onValueChange={field.onChange} defaultValue={field.value}>
+                                            <Select
+                                                onValueChange={(val) => field.onChange(val ? Number(val) : undefined)}
+                                                value={field.value?.toString()}
+                                            >
                                                 <FormControl>
                                                     <SelectTrigger>
                                                         <SelectValue placeholder="Selecciona..." />
                                                     </SelectTrigger>
                                                 </FormControl>
                                                 <SelectContent>
-                                                    <SelectItem value="No aplica">No aplica</SelectItem>
-                                                    <SelectItem value="Corporativo">Corporativo</SelectItem>
-                                                    <SelectItem value="Huancayo">Huancayo</SelectItem>
-                                                    <SelectItem value="Instituto">Instituto</SelectItem>
-                                                    <SelectItem value="Arequipa">Arequipa</SelectItem>
-                                                    <SelectItem value="Los Olivos">Los Olivos</SelectItem>
-                                                    <SelectItem value="Miraflores">Miraflores</SelectItem>
-                                                    <SelectItem value="Ica">Ica</SelectItem>
-                                                    <SelectItem value="Ayacucho">Ayacucho</SelectItem>
+                                                    {campuses.map((campus) => (
+                                                        <SelectItem key={campus.id} value={campus.id.toString()}>
+                                                            {campus.name}
+                                                        </SelectItem>
+                                                    ))}
                                                 </SelectContent>
                                             </Select>
                                             <FormMessage />

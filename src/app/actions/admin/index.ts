@@ -1,5 +1,9 @@
 // Barrel exports for admin actions
-export { assignTicketToSelf, unassignTicket, updateTicketStatus } from "./ticket-management";
-export { updateUserRole, toggleUserActive } from "./user-management";
-export { updateAppSetting } from "./settings";
+export * from "./ticket-management";
+export * from "./user-management";
+export * from "./categories";
+export * from "./subcategories";
+export * from "./campus";
+export * from "./areas";
+export * from "./settings";
 export { requestValidation } from "../tickets/validation";

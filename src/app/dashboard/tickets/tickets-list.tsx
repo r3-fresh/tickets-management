@@ -25,7 +25,10 @@ interface Ticket {
     id: number;
     ticketCode: string;
     title: string;
-    subcategory: string | null;
+    subcategoryId: number | null;
+    subcategoryName: string | null;
+    areaId: number | null;
+    campusId: number | null;
     priority: string;
     status: string;
     createdAt: Date;
@@ -145,7 +148,9 @@ export function TicketsList({ tickets, isAdmin, isWatchedView = false }: Tickets
                                         <Link href={`/dashboard/tickets/${ticket.id}`} className="hover:underline font-medium text-blue-600 block">
                                             {ticket.title}
                                         </Link>
-                                        <div className="text-xs text-muted-foreground mt-0.5">{ticket.subcategory}</div>
+                                        {ticket.subcategoryName && (
+                                            <div className="text-xs text-muted-foreground mt-0.5">{ticket.subcategoryName}</div>
+                                        )}
                                     </TableCell>
                                     <TableCell>
                                         <Badge variant="outline">{translatePriority(ticket.priority)}</Badge>

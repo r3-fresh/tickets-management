@@ -1,5 +1,5 @@
 import { db } from "@/db";
-import { tickets, comments, ticketViews } from "@/db/schema";
+import { tickets, comments, ticketViews, ticketSubcategories } from "@/db/schema";
 import { requireAuth } from "@/lib/utils/server-auth";
 import { redirect } from "next/navigation";
 import { desc, sql, and, not, eq } from "drizzle-orm";
@@ -18,9 +18,10 @@ export default async function WatchedTicketsPage() {
             status: tickets.status,
             priority: tickets.priority,
             categoryId: tickets.categoryId,
-            subcategory: tickets.subcategory,
-            area: tickets.area,
-            campus: tickets.campus,
+            subcategoryId: tickets.subcategoryId,
+            subcategoryName: ticketSubcategories.name,
+            areaId: tickets.areaId,
+            campusId: tickets.campusId,
             createdById: tickets.createdById,
             assignedToId: tickets.assignedToId,
             createdAt: tickets.createdAt,
@@ -39,6 +40,7 @@ export default async function WatchedTicketsPage() {
             commentCount: sql<number>`cast(count(${comments.id}) as integer)`,
         })
         .from(tickets)
+        .leftJoin(ticketSubcategories, eq(tickets.subcategoryId, ticketSubcategories.id))
         .leftJoin(comments, eq(tickets.id, comments.ticketId))
         .leftJoin(
             ticketViews,
@@ -53,7 +55,7 @@ export default async function WatchedTicketsPage() {
                 sql`${session.user.id} = ANY(${tickets.watchers})` // I am a watcher
             )
         )
-        .groupBy(tickets.id, ticketViews.lastViewedAt)
+        .groupBy(tickets.id, ticketSubcategories.name, ticketViews.lastViewedAt)
         .orderBy(desc(tickets.createdAt));
 
     // Fetch assigned users and creators separately

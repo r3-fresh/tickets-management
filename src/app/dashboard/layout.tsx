@@ -53,7 +53,7 @@ export default function DashboardLayout({
     // Admin-only items
     const adminItems = [
         { href: "/dashboard/admin", label: "Dashboard", icon: LayoutDashboard },
-        { href: "/dashboard/agent", label: "Bandeja de Tickets", icon: User },
+        { href: "/dashboard/admin/tickets", label: "Bandeja de Tickets", icon: Ticket },
         { href: "/dashboard/admin/roles", label: "Gestión de Roles", icon: Shield },
         { href: "/dashboard/admin/settings", label: "Configuración", icon: Settings },
     ];

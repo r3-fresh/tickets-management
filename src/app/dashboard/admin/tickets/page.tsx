@@ -1,14 +1,14 @@
 import { db } from "@/db";
-import { tickets, comments, ticketViews } from "@/db/schema";
+import { tickets, comments, ticketViews, ticketSubcategories } from "@/db/schema";
 import { requireAdmin } from "@/lib/utils/server-auth";
 import { redirect } from "next/navigation";
 import { desc, sql, eq, and } from "drizzle-orm";
-import { AgentTicketsTable } from "./agent-tickets-table";
+import { AdminTicketsTable } from "./admin-tickets-table";
 
-export default async function AgentDashboardPage() {
+export default async function AdminTicketsPage() {
     const session = await requireAdmin();
 
-    // Fetch ALL tickets with unread count for current agent
+    // Fetch ALL tickets with unread count for current admin
     const allTicketsWithUnread = await db
         .select({
             id: tickets.id,
@@ -18,9 +18,10 @@ export default async function AgentDashboardPage() {
             status: tickets.status,
             priority: tickets.priority,
             categoryId: tickets.categoryId,
-            subcategory: tickets.subcategory,
-            area: tickets.area,
-            campus: tickets.campus,
+            subcategoryId: tickets.subcategoryId,
+            subcategoryName: ticketSubcategories.name,
+            areaId: tickets.areaId,
+            campusId: tickets.campusId,
             createdById: tickets.createdById,
             assignedToId: tickets.assignedToId,
             createdAt: tickets.createdAt,
@@ -39,6 +40,7 @@ export default async function AgentDashboardPage() {
             commentCount: sql<number>`cast(count(${comments.id}) as integer)`,
         })
         .from(tickets)
+        .leftJoin(ticketSubcategories, eq(tickets.subcategoryId, ticketSubcategories.id))
         .leftJoin(comments, eq(tickets.id, comments.ticketId))
         .leftJoin(
             ticketViews,
@@ -47,7 +49,7 @@ export default async function AgentDashboardPage() {
                 eq(ticketViews.userId, session.user.id)
             )
         )
-        .groupBy(tickets.id, ticketViews.lastViewedAt)
+        .groupBy(tickets.id, ticketSubcategories.name, ticketViews.lastViewedAt)
         .orderBy(desc(tickets.createdAt));
 
     // Fetch relations separately
@@ -72,7 +74,7 @@ export default async function AgentDashboardPage() {
     return (
         <div className="space-y-6">
             <h1 className="text-3xl font-bold tracking-tight">Bandeja de Tickets</h1>
-            <AgentTicketsTable tickets={mergedTickets} />
+            <AdminTicketsTable tickets={mergedTickets} />
         </div>
     );
 }
