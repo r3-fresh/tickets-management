@@ -1,5 +1,6 @@
 
-import { pgTable, text, timestamp, boolean, uuid, serial, integer, jsonb, unique } from "drizzle-orm/pg-core";
+
+import { pgTable, text, timestamp, boolean, uuid, serial, integer, jsonb, unique, type AnyPgColumn } from "drizzle-orm/pg-core";
 import { relations } from "drizzle-orm";
 
 // --- AUTH SCHEMA (Better-Auth Compatible) ---
@@ -13,6 +14,11 @@ export const users = pgTable("user", {
     createdAt: timestamp("created_at").notNull(),
     updatedAt: timestamp("updated_at").notNull(),
     role: text("role").default("user").notNull(), // 'user', 'admin'
+
+    // User activation fields
+    isActive: boolean("is_active").notNull().default(true),
+    deactivatedAt: timestamp("deactivated_at"),
+    deactivatedBy: text("deactivated_by").references((): AnyPgColumn => users.id),
 });
 
 export const sessions = pgTable("session", {

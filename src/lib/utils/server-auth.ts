@@ -14,15 +14,20 @@ export async function getSession(): Promise<AppSession | null> {
 }
 
 /**
- * Requires authentication. Throws error if user is not authenticated.
+ * Requires authentication. Throws error if user is not authenticated or is inactive.
  * @returns Session object
- * @throws Error if not authenticated
+ * @throws Error if not authenticated or user is deactivated
  */
 export async function requireAuth(): Promise<AppSession> {
     const session = await getSession();
 
     if (!session?.user) {
         throw new Error("No autorizado");
+    }
+
+    // Check if user is active
+    if (!session.user.isActive) {
+        throw new Error("Usuario desactivado. Contacta al administrador.");
     }
 
     return session;

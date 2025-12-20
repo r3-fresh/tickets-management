@@ -32,12 +32,21 @@ export async function sendTicketCreatedEmail(params: SendTicketCreatedEmailParam
     const ticketUrl = `${BASE_URL}/dashboard/tickets/${ticketId}`;
     const priorityLabel = translatePriority(priority);
 
-    // Combine all stakeholders in CC (creator, watchers, admins)
-    const ccEmails = [
-        createdByEmail,
-        ...watcherEmails,
-        ...adminEmails
-    ].filter((email, index, self) => self.indexOf(email) === index); // Remove duplicates
+    // Build stakeholder list for email body
+    const allStakeholders = [
+        { email: createdByEmail, role: 'Creador' },
+        ...watcherEmails.map(email => ({ email, role: 'Observador' })),
+        ...adminEmails.map(email => ({ email, role: 'Administrador' }))
+    ];
+
+    // Remove duplicates
+    const uniqueStakeholders = allStakeholders.filter((item, index, self) =>
+        index === self.findIndex(t => t.email === item.email)
+    );
+
+    const stakeholdersList = uniqueStakeholders.map(s =>
+        `<li><strong>${s.role}:</strong> ${s.email}</li>`
+    ).join('');
 
     const html = `
 <!DOCTYPE html>
@@ -49,6 +58,8 @@ export async function sendTicketCreatedEmail(params: SendTicketCreatedEmailParam
         .header { background-color: #4F46E5; color: white; padding: 20px; border-radius: 8px 8px 0 0; }
         .content { background-color: #f9fafb; padding: 20px; border-radius: 0 0 8px 8px; }
         .ticket-info { background-color: white; padding: 15px; border-radius: 6px; margin: 15px 0; }
+        .stakeholders { background-color: #EEF2FF; padding: 12px; border-radius: 6px; margin: 15px 0; border-left: 4px solid #4F46E5; }
+        .stakeholders ul { margin: 5px 0; padding-left: 20px; }
         .label { font-weight: bold; color: #6B7280; }
         .button { 
             display: inline-block;
@@ -90,10 +101,17 @@ export async function sendTicketCreatedEmail(params: SendTicketCreatedEmailParam
                 </div>
             </div>
 
+            <div class="stakeholders">
+                <p style="margin: 0 0 8px 0;"><strong>📧 Personas involucradas:</strong></p>
+                <ul style="margin: 5px 0;">
+                    ${stakeholdersList}
+                </ul>
+            </div>
+
             <a href="${ticketUrl}" class="button">Ver Detalle del Ticket</a>
             
             <p style="margin-top: 30px; font-size: 14px; color: #6B7280;">
-                Este es un correo automático del sistema de tickets. Por favor no respondas a este mensaje.
+                Este es un correo automático del sistema de tickets. Por favor reenvía este mensaje a las personas involucradas.
             </p>
         </div>
     </div>
@@ -101,8 +119,7 @@ export async function sendTicketCreatedEmail(params: SendTicketCreatedEmailParam
 </html>`;
 
     return await sendEmail({
-        to: MAIN_EMAIL,  // Always send to main verified email
-        cc: ccEmails,    // All stakeholders in CC
+        to: MAIN_EMAIL,  // Only send to verified email
         subject: `Nuevo Ticket: ${ticketCode} - ${title}`,
         html
     });
@@ -122,12 +139,21 @@ export async function sendValidationRequestEmail(params: SendValidationRequestEm
     const { ticketCode, title, createdByEmail, createdByName, ticketId, watcherEmails, adminEmails } = params;
     const ticketUrl = `${BASE_URL}/dashboard/tickets/${ticketId}`;
 
-    // Combine all stakeholders in CC
-    const ccEmails = [
-        createdByEmail,
-        ...watcherEmails,
-        ...adminEmails
-    ].filter((email, index, self) => self.indexOf(email) === index);
+    // Build stakeholder list for email body
+    const allStakeholders = [
+        { email: createdByEmail, role: 'Solicitante' },
+        ...watcherEmails.map(email => ({ email, role: 'Observador' })),
+        ...adminEmails.map(email => ({ email, role: 'Administrador' }))
+    ];
+
+    // Remove duplicates
+    const uniqueStakeholders = allStakeholders.filter((item, index, self) =>
+        index === self.findIndex(t => t.email === item.email)
+    );
+
+    const stakeholdersList = uniqueStakeholders.map(s =>
+        `<li><strong>${s.role}:</strong> ${s.email}</li>`
+    ).join('');
 
     const html = `
 <!DOCTYPE html>
@@ -139,6 +165,8 @@ export async function sendValidationRequestEmail(params: SendValidationRequestEm
         .header { background-color: #F59E0B; color: white; padding: 20px; border-radius: 8px 8px 0 0; }
         .content { background-color: #f9fafb; padding: 20px; border-radius: 0 0 8px 8px; }
         .ticket-info { background-color: white; padding: 15px; border-radius: 6px; margin: 15px 0; }
+        .stakeholders { background-color: #FEF3C7; padding: 12px; border-radius: 6px; margin: 15px 0; border-left: 4px solid #F59E0B; }
+        .stakeholders ul { margin: 5px 0; padding-left: 20px; }
         .label { font-weight: bold; color: #6B7280; }
         .button { 
             display: inline-block;
@@ -169,7 +197,14 @@ export async function sendValidationRequestEmail(params: SendValidationRequestEm
             <div class="ticket-info">
                 <p><span class="label">Código:</span> ${ticketCode}</p>
                 <p><span class="label">Título:</span> ${title}</p>
-                <p><span class="label">Solicitante:</span> ${createdByName}</p>
+                <p><span class="label">Solicitante:</span> ${createdByName} (${createdByEmail})</p>
+            </div>
+
+            <div class="stakeholders">
+                <p style="margin: 0 0 8px 0;"><strong>📧 Personas involucradas:</strong></p>
+                <ul style="margin: 5px 0;">
+                    ${stakeholdersList}
+                </ul>
             </div>
 
             <div class="alert">
@@ -181,7 +216,7 @@ export async function sendValidationRequestEmail(params: SendValidationRequestEm
             <a href="${ticketUrl}" class="button">Revisar y Validar Ticket</a>
             
             <p style="margin-top: 30px; font-size: 14px; color: #6B7280;">
-                El solicitante puede aprobar el cierre o rechazarlo si necesita ajustes adicionales.
+                El solicitante puede aprobar el cierre o rechazarlo si necesita ajustes adicionales. Por favor reenvía este mensaje a las personas involucradas.
             </p>
         </div>
     </div>
@@ -189,8 +224,7 @@ export async function sendValidationRequestEmail(params: SendValidationRequestEm
 </html>`;
 
     return await sendEmail({
-        to: MAIN_EMAIL,  // Always send to main verified email
-        cc: ccEmails,    // All stakeholders in CC
+        to: MAIN_EMAIL,  // Only send to verified email
         subject: `Validación Requerida: ${ticketCode} - ${title}`,
         html
     });

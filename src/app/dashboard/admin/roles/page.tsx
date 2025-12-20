@@ -15,6 +15,7 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { RoleToggleButton } from "./role-toggle-button";
+import { UserActiveToggle } from "./user-active-toggle";
 
 export default async function AdminRolesPage() {
     const session = await auth.api.getSession({
@@ -40,6 +41,7 @@ export default async function AdminRolesPage() {
                         <TableRow>
                             <TableHead>Usuario</TableHead>
                             <TableHead>Email</TableHead>
+                            <TableHead>Estado</TableHead>
                             <TableHead>Rol Actual</TableHead>
                             <TableHead className="text-right">Acciones</TableHead>
                         </TableRow>
@@ -47,7 +49,7 @@ export default async function AdminRolesPage() {
                     <TableBody>
                         {allUsers.length === 0 ? (
                             <TableRow>
-                                <TableCell colSpan={4} className="h-24 text-center text-muted-foreground">
+                                <TableCell colSpan={5} className="h-24 text-center text-muted-foreground">
                                     No hay usuarios registrados.
                                 </TableCell>
                             </TableRow>
@@ -65,16 +67,28 @@ export default async function AdminRolesPage() {
                                     </TableCell>
                                     <TableCell className="text-muted-foreground">{user.email}</TableCell>
                                     <TableCell>
+                                        <Badge variant={user.isActive ? "default" : "destructive"}>
+                                            {user.isActive ? "Activo" : "Inactivo"}
+                                        </Badge>
+                                    </TableCell>
+                                    <TableCell>
                                         <Badge variant={user.role === "admin" ? "default" : "secondary"}>
                                             {user.role === "admin" ? "Administrador" : "Usuario"}
                                         </Badge>
                                     </TableCell>
                                     <TableCell className="text-right">
-                                        <RoleToggleButton
-                                            userId={user.id}
-                                            currentRole={user.role}
-                                            disabled={user.id === session.user.id}
-                                        />
+                                        <div className="flex justify-end gap-2">
+                                            <RoleToggleButton
+                                                userId={user.id}
+                                                currentRole={user.role}
+                                                disabled={user.id === session.user.id}
+                                            />
+                                            <UserActiveToggle
+                                                userId={user.id}
+                                                isActive={user.isActive}
+                                                disabled={user.id === session.user.id}
+                                            />
+                                        </div>
                                     </TableCell>
                                 </TableRow>
                             ))

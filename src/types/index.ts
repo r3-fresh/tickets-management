@@ -13,6 +13,7 @@ export interface AppUser extends BetterAuthUser {
     name: string; // Explicitly include name
     email: string; // Explicitly include email
     role: UserRole;
+    isActive: boolean; // User activation status
 }
 
 export interface AppSession extends BetterAuthSession {

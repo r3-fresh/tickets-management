@@ -29,6 +29,12 @@ export const auth = betterAuth({
                 defaultValue: "user",
                 input: false, // Don't allow user to set their role
             },
+            isActive: {
+                type: "boolean",
+                required: false,
+                defaultValue: true,
+                input: false, // Don't allow user to set their active status
+            },
         },
     },
 });
