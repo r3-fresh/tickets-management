@@ -48,6 +48,10 @@ export async function sendTicketCreatedEmail(params: SendTicketCreatedEmailParam
         `<li><strong>${s.role}:</strong> ${s.email}</li>`
     ).join('');
 
+    // Prepare CC list (all stakeholders)
+    const ccEmails = [createdByEmail, ...watcherEmails, ...adminEmails]
+        .filter((email, index, self) => self.indexOf(email) === index); // Remove duplicates
+
     const html = `
 <!DOCTYPE html>
 <html>
@@ -117,9 +121,10 @@ export async function sendTicketCreatedEmail(params: SendTicketCreatedEmailParam
     </div>
 </body>
 </html>`;
-
+    // TODO: send to all stakeholders
     return await sendEmail({
-        to: MAIN_EMAIL,  // Only send to verified email
+        to: MAIN_EMAIL,  // Main verified email
+        // cc: ccEmails,    // All stakeholders in CC
         subject: `Nuevo Ticket: ${ticketCode} - ${title}`,
         html
     });
@@ -154,6 +159,10 @@ export async function sendValidationRequestEmail(params: SendValidationRequestEm
     const stakeholdersList = uniqueStakeholders.map(s =>
         `<li><strong>${s.role}:</strong> ${s.email}</li>`
     ).join('');
+
+    // Prepare CC list (all stakeholders)
+    const ccEmails = [createdByEmail, ...watcherEmails, ...adminEmails]
+        .filter((email, index, self) => self.indexOf(email) === index); // Remove duplicates
 
     const html = `
 <!DOCTYPE html>
@@ -222,9 +231,10 @@ export async function sendValidationRequestEmail(params: SendValidationRequestEm
     </div>
 </body>
 </html>`;
-
+    // TODO: send to all stakeholders
     return await sendEmail({
-        to: MAIN_EMAIL,  // Only send to verified email
+        to: MAIN_EMAIL,  // Main verified email
+        // cc: ccEmails,    // All stakeholders in CC
         subject: `Validación Requerida: ${ticketCode} - ${title}`,
         html
     });
