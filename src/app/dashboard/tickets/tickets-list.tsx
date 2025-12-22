@@ -9,6 +9,7 @@ import {
     TableHeader,
     TableRow,
 } from "@/components/ui/table";
+import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
@@ -54,6 +55,7 @@ export function TicketsList({ tickets, isAdmin, isWatchedView = false }: Tickets
         category?: string;
         year?: string;
     }>({});
+    const [searchQuery, setSearchQuery] = useState("");
 
     // Get unique assigned users for filter
     const assignedUsers = useMemo(() => {
@@ -119,12 +121,22 @@ export function TicketsList({ tickets, isAdmin, isWatchedView = false }: Tickets
                 }
             }
 
+            // Search filter
+            if (searchQuery) {
+                const query = searchQuery.toLowerCase();
+                const matchesCode = ticket.ticketCode.toLowerCase().includes(query);
+                const matchesTitle = ticket.title.toLowerCase().includes(query);
+                if (!matchesCode && !matchesTitle) {
+                    return false;
+                }
+            }
+
             return true;
         });
-    }, [tickets, filters]);
+    }, [tickets, filters, searchQuery]);
 
     return (
-        <div className="space-y-6">
+        <div className="space-y-4">
             <div className="flex items-center justify-between">
                 <h1 className="text-3xl font-bold tracking-tight">
                     {isWatchedView ? "Tickets Observados" : "Mis Tickets"}
@@ -137,20 +149,29 @@ export function TicketsList({ tickets, isAdmin, isWatchedView = false }: Tickets
                 </Button>
             </div>
 
+            <div className="mb-4">
+                <Input
+                    placeholder="Buscar por código o título..."
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    className="max-w-sm"
+                />
+            </div>
+
             <TicketFilters onFilterChange={setFilters} assignedUsers={assignedUsers} categories={categories} />
 
             <div className="rounded-md border bg-card shadow-sm">
                 <Table>
                     <TableHeader>
                         <TableRow>
-                            <TableHead className="w-[100px]">ID</TableHead>
-                            <TableHead>Asunto</TableHead>
+                            <TableHead className="w-[100px]">Código</TableHead>
+                            <TableHead>Título</TableHead>
                             <TableHead>Prioridad</TableHead>
                             <TableHead>Estado</TableHead>
                             {isWatchedView && <TableHead>Solicitante</TableHead>}
                             <TableHead>Asignado a</TableHead>
                             <TableHead className="text-center w-[120px]">Comentarios</TableHead>
-                            <TableHead className="text-right">Fecha</TableHead>
+                            <TableHead className="text-right">Fecha de creación</TableHead>
                             <TableHead className="text-center w-[100px]">Link</TableHead>
                         </TableRow>
                     </TableHeader>

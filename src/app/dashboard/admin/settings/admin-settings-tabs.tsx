@@ -46,6 +46,7 @@ interface WorkArea {
 
 interface AdminSettingsTabsProps {
     initialAllowNewTickets: boolean;
+    initialDisabledMessage?: string;
     initialCategories: Category[];
     initialSubcategories: Subcategory[];
     initialCampus: Campus[];
@@ -54,6 +55,7 @@ interface AdminSettingsTabsProps {
 
 export function AdminSettingsTabs({
     initialAllowNewTickets,
+    initialDisabledMessage,
     initialCategories,
     initialSubcategories,
     initialCampus,
@@ -90,7 +92,10 @@ export function AdminSettingsTabs({
                         </CardDescription>
                     </CardHeader>
                     <CardContent>
-                        <SettingsForm initialAllowNewTickets={initialAllowNewTickets} />
+                        <SettingsForm
+                            initialAllowNewTickets={initialAllowNewTickets}
+                            initialDisabledMessage={initialDisabledMessage}
+                        />
                     </CardContent>
                 </Card>
             </TabsContent>

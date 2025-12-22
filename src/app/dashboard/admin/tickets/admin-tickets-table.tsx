@@ -20,6 +20,7 @@ import { TicketFilters } from "@/app/dashboard/tickets/ticket-filters";
 import { DateRange } from "react-day-picker";
 import { formatDate, translateStatus, translatePriority } from "@/lib/utils/format";
 import { isWithinInterval } from "date-fns";
+import { Input } from "@/components/ui/input";
 
 interface Ticket {
     id: number;
@@ -27,6 +28,7 @@ interface Ticket {
     title: string;
     subcategoryId: number | null;
     categoryName: string | null;
+    categoryId: number | null;
     areaId: number | null;
     campusId: number | null;
     priority: string;
@@ -48,8 +50,10 @@ export function AdminTicketsTable({ tickets }: AdminTicketsTableProps) {
         status?: string;
         assignedTo?: string;
         dateRange?: DateRange;
+        category?: string;
+        year?: string;
     }>({});
-
+    const [searchQuery, setSearchQuery] = useState("");
     // Get unique assigned users for filter
     const assignedUsers = useMemo(() => {
         const users = tickets
@@ -59,6 +63,17 @@ export function AdminTicketsTable({ tickets }: AdminTicketsTableProps) {
                 index === self.findIndex((u) => u.id === user.id)
             );
         return users;
+    }, [tickets]);
+
+    // Get unique categories for filter
+    const categories = useMemo(() => {
+        const categoriesMap = new Map<number, string>();
+        tickets.forEach(ticket => {
+            if (ticket.categoryId && ticket.categoryName) {
+                categoriesMap.set(ticket.categoryId, ticket.categoryName);
+            }
+        });
+        return Array.from(categoriesMap.entries()).map(([id, name]) => ({ id, name }));
     }, [tickets]);
 
     // Filter tickets
@@ -90,26 +105,58 @@ export function AdminTicketsTable({ tickets }: AdminTicketsTableProps) {
                 }
             }
 
+            // Category filter
+            if (filters.category && ticket.categoryId?.toString() !== filters.category) {
+                return false;
+            }
+
+            // Year filter
+            if (filters.year && filters.year !== "all") {
+                const ticketYear = new Date(ticket.createdAt).getFullYear().toString();
+                if (ticketYear !== filters.year) {
+                    return false;
+                }
+            }
+
+            // Search filter
+            if (searchQuery) {
+                const query = searchQuery.toLowerCase();
+                const matchesCode = ticket.ticketCode.toLowerCase().includes(query);
+                const matchesTitle = ticket.title.toLowerCase().includes(query);
+                if (!matchesCode && !matchesTitle) {
+                    return false;
+                }
+            }
+
             return true;
         });
-    }, [tickets, filters]);
+    }, [tickets, filters, searchQuery]);
 
     return (
-        <div className="space-y-6">
-            <TicketFilters onFilterChange={setFilters} assignedUsers={assignedUsers} />
+        <div className="space-y-4">
+            <div className="mb-4">
+                <Input
+                    placeholder="Buscar por código o título..."
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    className="max-w-sm"
+                />
+            </div>
+
+            <TicketFilters onFilterChange={setFilters} assignedUsers={assignedUsers} categories={categories} />
 
             <div className="rounded-md border bg-card shadow-sm">
                 <Table>
                     <TableHeader>
                         <TableRow>
                             <TableHead className="w-[80px]">Código</TableHead>
-                            <TableHead>Asunto</TableHead>
+                            <TableHead>Título</TableHead>
                             <TableHead>Solicitante</TableHead>
                             <TableHead>Prioridad</TableHead>
                             <TableHead>Estado</TableHead>
                             <TableHead>Asignado a</TableHead>
                             <TableHead className="text-center">Comentarios</TableHead>
-                            <TableHead className="text-right">Fecha Ref.</TableHead>
+                            <TableHead className="text-right">Fecha de creación</TableHead>
                             <TableHead className="text-center w-[50px]">Link</TableHead>
                         </TableRow>
                     </TableHeader>

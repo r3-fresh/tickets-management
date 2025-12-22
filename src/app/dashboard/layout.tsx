@@ -70,7 +70,7 @@ export default function DashboardLayout({
             <div className="hidden md:flex md:w-64 md:flex-col">
                 <div className="flex flex-col flex-grow bg-white dark:bg-card border-r border-gray-200 dark:border-border pt-5 pb-4 overflow-y-auto">
                     <div className="flex items-center flex-shrink-0 px-4">
-                        <h1 className="text-xl font-bold">TSI Tickets</h1>
+                        <h1 className="text-xl font-bold">Gestión de Tickets</h1>
                     </div>
 
                     <nav className="mt-6 flex-1 space-y-1 px-2">
@@ -133,7 +133,7 @@ export default function DashboardLayout({
                     } md:hidden`} // Only show on mobile, hidden on md and up
             >
                 <div className="flex h-16 items-center justify-between px-4 border-b border-border">
-                    <span className="text-xl font-bold text-blue-600">TSI Tickets</span>
+                    <span className="text-xl font-bold text-blue-600">Gestión de Tickets</span>
                     <button
                         onClick={() => setIsSidebarOpen(false)}
                         className="md:hidden"
@@ -196,7 +196,7 @@ export default function DashboardLayout({
                     >
                         <Menu className="h-6 w-6" />
                     </button>
-                    <span className="text-lg font-bold">TSI Tickets</span>
+                    <span className="text-lg font-bold">Gestión de Tickets</span>
                     <div className="w-6" /> {/* Placeholder for balance */}
                 </header>
 

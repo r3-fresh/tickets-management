@@ -48,7 +48,6 @@ interface NewTicketFormProps {
     categories: Category[];
     campuses: Campus[];
     workAreas: WorkArea[];
-    disabledTitle?: string | null;
     disabledMessage?: string | null;
 }
 
@@ -58,7 +57,6 @@ export function NewTicketForm({
     categories,
     campuses,
     workAreas,
-    disabledTitle,
     disabledMessage
 }: NewTicketFormProps) {
     const [isPending, startTransition] = useTransition();
@@ -70,10 +68,10 @@ export function NewTicketForm({
             <div className="max-w-2xl mx-auto text-center py-12">
                 <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-6">
                     <h2 className="text-xl font-semibold text-yellow-800 mb-2">
-                        {disabledTitle || "Creación de tickets temporalmente inhabilitada"}
+                        Creación de Tickets Temporalmente Deshabilitada
                     </h2>
                     <p className="text-yellow-700">
-                        {disabledMessage || "El sistema no está aceptando nuevos tickets en este momento. Por favor, intente nuevamente más tarde."}
+                        {disabledMessage || "Actualmente no se pueden crear nuevos tickets. Por favor, intenta más tarde o contacta al administrador."}
                     </p>
                     <div className="mt-6">
                         <Link href="/dashboard/tickets" className="text-blue-600 hover:underline">

@@ -1,5 +1,6 @@
 import { auth } from "@/lib/auth";
 import { headers } from "next/headers";
+import { redirect } from "next/navigation";
 import type { AppSession } from "@/types";
 
 /**
@@ -14,35 +15,35 @@ export async function getSession(): Promise<AppSession | null> {
 }
 
 /**
- * Requires authentication. Throws error if user is not authenticated or is inactive.
+ * Requires authentication. Redirects if user is not authenticated or is inactive.
  * @returns Session object
- * @throws Error if not authenticated or user is deactivated
+ * @throws Redirects if not authenticated or user is deactivated
  */
 export async function requireAuth(): Promise<AppSession> {
     const session = await getSession();
 
     if (!session?.user) {
-        throw new Error("No autorizado");
+        redirect("/auth/signin?error=unauthorized");
     }
 
     // Check if user is active
     if (!session.user.isActive) {
-        throw new Error("Usuario desactivado. Contacta al administrador.");
+        redirect("/auth/signin?error=user_deactivated");
     }
 
     return session;
 }
 
 /**
- * Requires admin role. Throws error if user is not an admin.
+ * Requires admin role. Redirects if user is not an admin.
  * @returns Session object with admin user
- * @throws Error if not authenticated or not an admin
+ * @throws Redirects if not authenticated or not an admin
  */
 export async function requireAdmin(): Promise<AppSession> {
     const session = await requireAuth();
 
     if (session.user.role !== "admin") {
-        throw new Error("Se requieren permisos de administrador");
+        redirect("/dashboard?error=forbidden");
     }
 
     return session;

@@ -16,6 +16,12 @@ export default async function AdminSettingsPage() {
 
     const allowNewTickets = setting ? setting.value === "true" : true; // Default to true
 
+    // Fetch disabled message
+    const disabledMessageSetting = await db.query.appSettings.findFirst({
+        where: eq(appSettings.key, "ticket_disabled_message"),
+    });
+    const disabledMessage = disabledMessageSetting?.value || "";
+
     // Fetch all categories
     const categories = await db.query.ticketCategories.findMany({
         orderBy: [asc(ticketCategories.displayOrder)],
@@ -52,6 +58,7 @@ export default async function AdminSettingsPage() {
 
             <AdminSettingsTabs
                 initialAllowNewTickets={allowNewTickets}
+                initialDisabledMessage={disabledMessage}
                 initialCategories={categories}
                 initialSubcategories={subcategories}
                 initialCampus={campusData}
