@@ -10,6 +10,7 @@ import { Switch } from "@/components/ui/switch";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Plus, Pencil, Trash2 } from "lucide-react";
+import { DeleteConfirmDialog } from "@/components/delete-confirm-dialog";
 import { toast } from "sonner";
 import { createWorkArea, updateWorkArea, deleteWorkArea, toggleWorkAreaActive } from "@/app/actions/admin/work-areas";
 
@@ -26,6 +27,7 @@ interface WorkAreasManagementProps {
 
 export function WorkAreasManagement({ initialAreas }: WorkAreasManagementProps) {
     const [isPending, startTransition] = useTransition();
+    const [deleteId, setDeleteId] = useState<number | null>(null);
     const [isDialogOpen, setIsDialogOpen] = useState(false);
     const [editingArea, setEditingArea] = useState<WorkArea | null>(null);
     const router = useRouter();
@@ -74,16 +76,21 @@ export function WorkAreasManagement({ initialAreas }: WorkAreasManagementProps) 
     };
 
     const handleDelete = (id: number) => {
-        if (!confirm("¿Estás seguro de eliminar esta área de trabajo?")) return;
-
+        setDeleteId(id);
+    };
+    
+    const confirmDelete = () => {
+        if (!deleteId) return;
+        
         startTransition(async () => {
-            const result = await deleteWorkArea(id);
+            const result = await deleteWorkArea(deleteId);
             if (result.error) {
                 toast.error(result.error);
             } else {
                 toast.success("Área eliminada");
                 router.refresh();
             }
+            setDeleteId(null);
         });
     };
 
@@ -213,6 +220,13 @@ export function WorkAreasManagement({ initialAreas }: WorkAreasManagementProps) 
                                             >
                                                 <Trash2 className="h-4 w-4 text-destructive" />
                                             </Button>
+            <DeleteConfirmDialog
+                open={deleteId !== null}
+                onOpenChange={(open) => !open && setDeleteId(null)}
+                onConfirm={confirmDelete}
+                title="Eliminar Área de Trabajo"
+                description="¿Estás seguro de eliminar esta área de trabajo? Esta acción no se puede deshacer."
+            />
                                         </div>
                                     </TableCell>
                                 </TableRow>

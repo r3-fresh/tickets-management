@@ -7,6 +7,7 @@ import { CalendarIcon, X } from "lucide-react";
 import { format } from "date-fns";
 import { es } from "date-fns/locale";
 import { DateRange } from "react-day-picker";
+import { YearFilter } from "@/components/year-filter";
 
 interface TicketFiltersProps {
     onFilterChange: (filters: {
@@ -14,6 +15,7 @@ interface TicketFiltersProps {
         assignedTo?: string;
         dateRange?: DateRange;
         category?: string;
+        year?: string;
     }) => void;
     assignedUsers: Array<{ id: string; name: string }>;
     categories?: Array<{ id: number; name: string }>;
@@ -24,6 +26,7 @@ export function TicketFilters({ onFilterChange, assignedUsers, categories = [] }
     const [assignedTo, setAssignedTo] = useState<string>("");
     const [dateRange, setDateRange] = useState<DateRange | undefined>();
     const [category, setCategory] = useState<string>("");
+    const [year, setYear] = useState<string>("all");
     const [mounted, setMounted] = useState(false);
 
     useEffect(() => {
@@ -60,7 +63,12 @@ export function TicketFilters({ onFilterChange, assignedUsers, categories = [] }
     const handleCategoryChange = (value: string) => {
         const newCategory = value === "all" ? "" : value;
         setCategory(newCategory);
-        onFilterChange({ status, assignedTo, dateRange, category: newCategory });
+        onFilterChange({ status, assignedTo, dateRange, category: newCategory, year });
+    };
+
+    const handleYearChange = (value: string) => {
+        setYear(value);
+        onFilterChange({ status, assignedTo, dateRange, category, year: value });
     };
 
     const clearFilters = () => {
@@ -68,10 +76,11 @@ export function TicketFilters({ onFilterChange, assignedUsers, categories = [] }
         setAssignedTo("");
         setDateRange(undefined);
         setCategory("");
+        setYear("all");
         onFilterChange({});
     };
 
-    const hasActiveFilters = status || assignedTo || dateRange || category;
+    const hasActiveFilters = status || assignedTo || dateRange || category || year !== "all";
 
     return (
         <div className="flex flex-wrap gap-3 items-center">
@@ -149,6 +158,7 @@ export function TicketFilters({ onFilterChange, assignedUsers, categories = [] }
                     />
                 </PopoverContent>
             </Popover>
+            {/* <YearFilter value={year} onChange={handleYearChange} /> */}
 
             {hasActiveFilters && (
                 <Button variant="ghost" size="sm" onClick={clearFilters}>

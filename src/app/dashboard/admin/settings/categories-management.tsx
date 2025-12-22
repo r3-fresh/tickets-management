@@ -26,6 +26,7 @@ import {
 } from "@/components/ui/dialog";
 import { Plus, Pencil, Trash2, ArrowUp, ArrowDown } from "lucide-react";
 import { toast } from "sonner";
+import { DeleteConfirmDialog } from "@/components/delete-confirm-dialog";
 import {
     createCategory,
     updateCategory,
@@ -48,10 +49,10 @@ interface CategoriesManagementProps {
 }
 
 export function CategoriesManagement({ initialCategories }: CategoriesManagementProps) {
-    const [categories, setCategories] = useState<Category[]>(initialCategories);
     const [isPending, startTransition] = useTransition();
     const [isDialogOpen, setIsDialogOpen] = useState(false);
     const [editingCategory, setEditingCategory] = useState<Category | null>(null);
+    const [deleteId, setDeleteId] = useState<number | null>(null);
     const router = useRouter();
 
     const [formData, setFormData] = useState({
@@ -98,16 +99,21 @@ export function CategoriesManagement({ initialCategories }: CategoriesManagement
     };
 
     const handleDelete = (id: number) => {
-        if (!confirm("¿Estás seguro de eliminar esta categoría?")) return;
+        setDeleteId(id);
+    };
+
+    const confirmDelete = () => {
+        if (!deleteId) return;
 
         startTransition(async () => {
-            const result = await deleteCategory(id);
+            const result = await deleteCategory(deleteId);
             if (result.error) {
                 toast.error(result.error);
             } else {
                 toast.success("Categoría eliminada");
                 router.refresh();
             }
+            setDeleteId(null);
         });
     };
 
@@ -149,7 +155,7 @@ export function CategoriesManagement({ initialCategories }: CategoriesManagement
         <div className="space-y-4">
             <div className="flex justify-between items-center">
                 <p className="text-sm text-muted-foreground">
-                    {categories.length} categoría(s) total(es)
+                    {initialCategories.length} categoría(s) total(es)
                 </p>
                 <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
                     <DialogTrigger asChild>
@@ -222,14 +228,14 @@ export function CategoriesManagement({ initialCategories }: CategoriesManagement
                         </TableRow>
                     </TableHeader>
                     <TableBody>
-                        {categories.length === 0 ? (
+                        {initialCategories.length === 0 ? (
                             <TableRow>
                                 <TableCell colSpan={5} className="text-center text-muted-foreground">
                                     No hay categorías creadas
                                 </TableCell>
                             </TableRow>
                         ) : (
-                            categories.map((category, index) => (
+                            initialCategories.map((category, index) => (
                                 <TableRow key={category.id}>
                                     <TableCell>
                                         <div className="flex gap-1">
@@ -245,7 +251,7 @@ export function CategoriesManagement({ initialCategories }: CategoriesManagement
                                                 variant="ghost"
                                                 size="sm"
                                                 onClick={() => handleMoveDown(category.id, category.displayOrder)}
-                                                disabled={index === categories.length - 1 || isPending}
+                                                disabled={index === initialCategories.length - 1 || isPending}
                                             >
                                                 <ArrowDown className="h-3 w-3" />
                                             </Button>
@@ -288,6 +294,13 @@ export function CategoriesManagement({ initialCategories }: CategoriesManagement
                     </TableBody>
                 </Table>
             </div>
+            <DeleteConfirmDialog
+                open={deleteId !== null}
+                onOpenChange={(open) => !open && setDeleteId(null)}
+                onConfirm={confirmDelete}
+                title="Eliminar Categor\u00eda"
+                description="\u00bfEst\u00e1s seguro de eliminar esta categor\u00eda? Esta acci\u00f3n no se puede deshacer y puede afectar tickets existentes."
+            />
         </div>
     );
 }

@@ -52,6 +52,7 @@ export function TicketsList({ tickets, isAdmin, isWatchedView = false }: Tickets
         assignedTo?: string;
         dateRange?: DateRange;
         category?: string;
+        year?: string;
     }>({});
 
     // Get unique assigned users for filter
@@ -106,6 +107,14 @@ export function TicketsList({ tickets, isAdmin, isWatchedView = false }: Tickets
                 const to = filters.dateRange.to || from;
 
                 if (!isWithinInterval(ticketDate, { start: from, end: to })) {
+                    return false;
+                }
+            }
+
+            // Year filter
+            if (filters.year && filters.year !== "all") {
+                const ticketYear = new Date(ticket.createdAt).getFullYear().toString();
+                if (ticketYear !== filters.year) {
                     return false;
                 }
             }

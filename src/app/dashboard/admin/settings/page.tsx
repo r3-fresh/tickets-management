@@ -1,5 +1,5 @@
 import { db } from "@/db";
-import { appSettings, ticketCategories, campusLocations, workAreas } from "@/db/schema";
+import { appSettings, ticketCategories, campusLocations, workAreas, ticketSubcategories } from "@/db/schema";
 import { eq, asc } from "drizzle-orm";
 import { requireAdmin } from "@/lib/utils/server-auth";
 import { redirect } from "next/navigation";
@@ -19,6 +19,15 @@ export default async function AdminSettingsPage() {
     // Fetch all categories
     const categories = await db.query.ticketCategories.findMany({
         orderBy: [asc(ticketCategories.displayOrder)],
+    });
+
+
+    // Fetch all subcategories with category relation
+    const subcategories = await db.query.ticketSubcategories.findMany({
+        orderBy: [asc(ticketSubcategories.categoryId), asc(ticketSubcategories.displayOrder)],
+        with: {
+            category: true,
+        },
     });
 
     // Fetch all campus
@@ -44,6 +53,7 @@ export default async function AdminSettingsPage() {
             <AdminSettingsTabs
                 initialAllowNewTickets={allowNewTickets}
                 initialCategories={categories}
+                initialSubcategories={subcategories}
                 initialCampus={campusData}
                 initialAreas={areas}
             />

@@ -10,6 +10,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Plus, Pencil, Trash2 } from "lucide-react";
 import { toast } from "sonner";
+import { DeleteConfirmDialog } from "@/components/delete-confirm-dialog";
 import { createCampus, updateCampus, deleteCampus, toggleCampusActive } from "@/app/actions/admin/campus";
 
 interface Campus {
@@ -27,6 +28,7 @@ export function CampusManagement({ initialCampus }: CampusManagementProps) {
     const [isPending, startTransition] = useTransition();
     const [isDialogOpen, setIsDialogOpen] = useState(false);
     const [editingCampus, setEditingCampus] = useState<Campus | null>(null);
+    const [deleteId, setDeleteId] = useState<number | null>(null);
     const router = useRouter();
 
     const [formData, setFormData] = useState({
@@ -73,16 +75,21 @@ export function CampusManagement({ initialCampus }: CampusManagementProps) {
     };
 
     const handleDelete = (id: number) => {
-        if (!confirm("¿Estás seguro de eliminar este campus?")) return;
+        setDeleteId(id);
+    };
+
+    const confirmDelete = () => {
+        if (!deleteId) return;
 
         startTransition(async () => {
-            const result = await deleteCampus(id);
+            const result = await deleteCampus(deleteId);
             if (result.error) {
                 toast.error(result.error);
             } else {
                 toast.success("Campus eliminado");
                 router.refresh();
             }
+            setDeleteId(null);
         });
     };
 
@@ -217,6 +224,14 @@ export function CampusManagement({ initialCampus }: CampusManagementProps) {
                     </TableBody>
                 </Table>
             </div>
+
+            <DeleteConfirmDialog
+                open={deleteId !== null}
+                onOpenChange={(open) => !open && setDeleteId(null)}
+                onConfirm={confirmDelete}
+                title="Eliminar Campus"
+                description="¿Estás seguro de eliminar este campus? Esta acción no se puede deshacer."
+            />
         </div>
-    );
+    )
 }

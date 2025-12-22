@@ -4,6 +4,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { SettingsForm } from "./settings-form";
 import { CategoriesManagement } from "./categories-management";
+import { SubcategoriesManagement } from "./subcategories-management";
 import { CampusManagement } from "./campus-management";
 import { WorkAreasManagement } from "./work-areas-management";
 import { Tag, Grid3x3, MapPin, Briefcase } from "lucide-react";
@@ -14,6 +15,19 @@ interface Category {
     description: string | null;
     isActive: boolean;
     displayOrder: number;
+}
+
+interface Subcategory {
+    id: number;
+    categoryId: number;
+    name: string;
+    description: string | null;
+    isActive: boolean;
+    displayOrder: number;
+    category?: {
+        id: number;
+        name: string;
+    };
 }
 
 interface Campus {
@@ -33,6 +47,7 @@ interface WorkArea {
 interface AdminSettingsTabsProps {
     initialAllowNewTickets: boolean;
     initialCategories: Category[];
+    initialSubcategories: Subcategory[];
     initialCampus: Campus[];
     initialAreas: WorkArea[];
 }
@@ -40,6 +55,7 @@ interface AdminSettingsTabsProps {
 export function AdminSettingsTabs({
     initialAllowNewTickets,
     initialCategories,
+    initialSubcategories,
     initialCampus,
     initialAreas
 }: AdminSettingsTabsProps) {
@@ -102,7 +118,10 @@ export function AdminSettingsTabs({
                         </CardDescription>
                     </CardHeader>
                     <CardContent>
-                        <p className="text-sm text-muted-foreground">Panel de subcategorías en construcción...</p>
+                        <SubcategoriesManagement
+                            initialSubcategories={initialSubcategories}
+                            categories={initialCategories}
+                        />
                     </CardContent>
                 </Card>
             </TabsContent>
