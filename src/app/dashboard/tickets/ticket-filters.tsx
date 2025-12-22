@@ -148,7 +148,7 @@ export function TicketFilters({ onFilterChange, assignedUsers, categories = [] }
                 </PopoverTrigger>
                 <PopoverContent className="w-auto p-0" align="start">
                     <Calendar
-                        initialFocus
+                        autoFocus
                         mode="range"
                         defaultMonth={dateRange?.from}
                         selected={dateRange}
@@ -158,7 +158,7 @@ export function TicketFilters({ onFilterChange, assignedUsers, categories = [] }
                     />
                 </PopoverContent>
             </Popover>
-            {/* <YearFilter value={year} onChange={handleYearChange} /> */}
+            <YearFilter value={year} onChange={handleYearChange} />
 
             {hasActiveFilters && (
                 <Button variant="ghost" size="sm" onClick={clearFilters}>

@@ -11,7 +11,7 @@ interface YearFilterProps {
 export function YearFilter({ value, onChange }: YearFilterProps) {
     const years = useMemo(() => {
         const currentYear = new Date().getFullYear();
-        return Array.from({ length: 10 }, (_, i) => currentYear - i);
+        return Array.from({ length: 1 }, (_, i) => currentYear - i);
     }, []);
 
     return (
