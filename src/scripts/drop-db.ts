@@ -19,7 +19,6 @@ async function main() {
         `);
 
         console.log('✅ All tables dropped successfully!');
-        console.log('📝 Now run: pnpm tsx src/scripts/migrate.ts');
     } catch (error) {
         console.error('❌ Error dropping tables:');
         console.error(error);
