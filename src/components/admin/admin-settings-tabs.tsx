@@ -2,11 +2,11 @@
 
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { SettingsForm } from "./settings-form";
-import { CategoriesManagement } from "./categories-management";
-import { SubcategoriesManagement } from "./subcategories-management";
-import { CampusManagement } from "./campus-management";
-import { WorkAreasManagement } from "./work-areas-management";
+import { SettingsForm } from "@/components/admin/settings-form";
+import { CategoriesManagement } from "@/components/admin/categories-management";
+import { SubcategoriesManagement } from "@/components/admin/subcategories-management";
+import { CampusManagement } from "@/components/admin/campus-management";
+import { WorkAreasManagement } from "@/components/admin/work-areas-management";
 import { Tag, Grid3x3, MapPin, Briefcase } from "lucide-react";
 
 interface Category {

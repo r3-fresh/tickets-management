@@ -4,7 +4,7 @@ import { auth } from "@/lib/auth";
 import { headers } from "next/headers";
 import { redirect } from "next/navigation";
 import { desc } from "drizzle-orm";
-import { RolesTable } from "./roles-table";
+import { RolesTable } from "@/components/admin/roles-table";
 
 export default async function AdminRolesPage() {
     const session = await auth.api.getSession({
@@ -23,8 +23,7 @@ export default async function AdminRolesPage() {
         <div className="space-y-6">
             <h1 className="text-3xl font-bold tracking-tight">Gestión de Roles</h1>
             <p className="text-muted-foreground">Administra los roles de los usuarios del sistema.</p>
-
-            <RolesTable users={allUsers} />
+            <RolesTable users={allUsers} currentUserId={session.user.id} />
         </div>
     );
 }

@@ -5,8 +5,8 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Input } from "@/components/ui/input";
-import { RoleToggleButton } from "./role-toggle-button";
-import { UserActiveToggle } from "./user-active-toggle";
+import { RoleToggleButton } from "@/components/admin/role-toggle-button";
+import { UserActiveToggle } from "@/components/admin/user-active-toggle";
 
 interface User {
     id: string;
@@ -19,9 +19,10 @@ interface User {
 
 interface RolesTableProps {
     users: User[];
+    currentUserId: string;
 }
 
-export function RolesTable({ users }: RolesTableProps) {
+export function RolesTable({ users, currentUserId }: RolesTableProps) {
     const [searchQuery, setSearchQuery] = useState("");
 
     const filteredUsers = useMemo(() => {
@@ -92,10 +93,12 @@ export function RolesTable({ users }: RolesTableProps) {
                                             <RoleToggleButton
                                                 userId={user.id}
                                                 currentRole={user.role}
+                                                disabled={user.id === currentUserId}
                                             />
                                             <UserActiveToggle
                                                 userId={user.id}
                                                 isActive={user.isActive}
+                                                disabled={user.id === currentUserId}
                                             />
                                         </div>
                                     </TableCell>

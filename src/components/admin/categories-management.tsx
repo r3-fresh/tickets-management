@@ -7,29 +7,52 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Switch } from "@/components/ui/switch";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
-import { Plus, Pencil, Trash2 } from "lucide-react";
-import { DeleteConfirmDialog } from "@/components/delete-confirm-dialog";
+import {
+    Table,
+    TableBody,
+    TableCell,
+    TableHead,
+    TableHeader,
+    TableRow,
+} from "@/components/ui/table";
+import {
+    Dialog,
+    DialogContent,
+    DialogDescription,
+    DialogFooter,
+    DialogHeader,
+    DialogTitle,
+    DialogTrigger,
+} from "@/components/ui/dialog";
+import { Plus, Pencil, Trash2, ArrowUp, ArrowDown } from "lucide-react";
 import { toast } from "sonner";
-import { createWorkArea, updateWorkArea, deleteWorkArea, toggleWorkAreaActive } from "@/app/actions/admin/work-areas";
+import { DeleteConfirmDialog } from "@/components/shared/delete-confirm-dialog";
+import {
+    createCategory,
+    updateCategory,
+    deleteCategory,
+    toggleCategoryActive,
+    moveCategoryUp,
+    moveCategoryDown,
+} from "@/app/actions/admin/categories";
 
-interface WorkArea {
+interface Category {
     id: number;
     name: string;
     description: string | null;
     isActive: boolean;
+    displayOrder: number;
 }
 
-interface WorkAreasManagementProps {
-    initialAreas: WorkArea[];
+interface CategoriesManagementProps {
+    initialCategories: Category[];
 }
 
-export function WorkAreasManagement({ initialAreas }: WorkAreasManagementProps) {
+export function CategoriesManagement({ initialCategories }: CategoriesManagementProps) {
     const [isPending, startTransition] = useTransition();
-    const [deleteId, setDeleteId] = useState<number | null>(null);
     const [isDialogOpen, setIsDialogOpen] = useState(false);
-    const [editingArea, setEditingArea] = useState<WorkArea | null>(null);
+    const [editingCategory, setEditingCategory] = useState<Category | null>(null);
+    const [deleteId, setDeleteId] = useState<number | null>(null);
     const router = useRouter();
 
     const [formData, setFormData] = useState({
@@ -40,15 +63,15 @@ export function WorkAreasManagement({ initialAreas }: WorkAreasManagementProps) 
 
     const resetForm = () => {
         setFormData({ name: "", description: "", isActive: true });
-        setEditingArea(null);
+        setEditingCategory(null);
     };
 
-    const handleEdit = (area: WorkArea) => {
-        setEditingArea(area);
+    const handleEdit = (category: Category) => {
+        setEditingCategory(category);
         setFormData({
-            name: area.name,
-            description: area.description || "",
-            isActive: area.isActive,
+            name: category.name,
+            description: category.description || "",
+            isActive: category.isActive,
         });
         setIsDialogOpen(true);
     };
@@ -60,14 +83,14 @@ export function WorkAreasManagement({ initialAreas }: WorkAreasManagementProps) 
         }
 
         startTransition(async () => {
-            const result = editingArea
-                ? await updateWorkArea(editingArea.id, formData.name, formData.description, formData.isActive)
-                : await createWorkArea(formData.name, formData.description, formData.isActive);
+            const result = editingCategory
+                ? await updateCategory(editingCategory.id, formData.name, formData.description, formData.isActive)
+                : await createCategory(formData.name, formData.description, formData.isActive);
 
             if (result.error) {
                 toast.error(result.error);
             } else {
-                toast.success(editingArea ? "Área actualizada" : "Área creada");
+                toast.success(editingCategory ? "Categoría actualizada" : "Categoría creada");
                 setIsDialogOpen(false);
                 resetForm();
                 router.refresh();
@@ -78,16 +101,16 @@ export function WorkAreasManagement({ initialAreas }: WorkAreasManagementProps) 
     const handleDelete = (id: number) => {
         setDeleteId(id);
     };
-    
+
     const confirmDelete = () => {
         if (!deleteId) return;
-        
+
         startTransition(async () => {
-            const result = await deleteWorkArea(deleteId);
+            const result = await deleteCategory(deleteId);
             if (result.error) {
                 toast.error(result.error);
             } else {
-                toast.success("Área eliminada");
+                toast.success("Categoría eliminada");
                 router.refresh();
             }
             setDeleteId(null);
@@ -96,7 +119,7 @@ export function WorkAreasManagement({ initialAreas }: WorkAreasManagementProps) 
 
     const handleToggleActive = (id: number) => {
         startTransition(async () => {
-            const result = await toggleWorkAreaActive(id);
+            const result = await toggleCategoryActive(id);
             if (result.error) {
                 toast.error(result.error);
             } else {
@@ -106,28 +129,50 @@ export function WorkAreasManagement({ initialAreas }: WorkAreasManagementProps) 
         });
     };
 
+    const handleMoveUp = (id: number, displayOrder: number) => {
+        startTransition(async () => {
+            const result = await moveCategoryUp(id, displayOrder);
+            if (result.error) {
+                toast.error(result.error);
+            } else {
+                router.refresh();
+            }
+        });
+    };
+
+    const handleMoveDown = (id: number, displayOrder: number) => {
+        startTransition(async () => {
+            const result = await moveCategoryDown(id, displayOrder);
+            if (result.error) {
+                toast.error(result.error);
+            } else {
+                router.refresh();
+            }
+        });
+    };
+
     return (
         <div className="space-y-4">
             <div className="flex justify-between items-center">
                 <p className="text-sm text-muted-foreground">
-                    {initialAreas.length} área(s) de trabajo total(es)
+                    {initialCategories.length} categoría(s) total(es)
                 </p>
                 <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
                     <DialogTrigger asChild>
                         <Button onClick={resetForm}>
                             <Plus className="h-4 w-4 mr-2" />
-                            Nueva Área
+                            Nueva Categoría
                         </Button>
                     </DialogTrigger>
                     <DialogContent>
                         <DialogHeader>
                             <DialogTitle>
-                                {editingArea ? "Editar Área de Trabajo" : "Nueva Área de Trabajo"}
+                                {editingCategory ? "Editar Categoría" : "Nueva Categoría"}
                             </DialogTitle>
                             <DialogDescription>
-                                {editingArea
-                                    ? "Modifica los datos del área de trabajo"
-                                    : "Crea una nueva área de trabajo"}
+                                {editingCategory
+                                    ? "Modifica los datos de la categoría"
+                                    : "Crea una nueva categoría de tickets"}
                             </DialogDescription>
                         </DialogHeader>
                         <div className="space-y-4 py-4">
@@ -137,7 +182,7 @@ export function WorkAreasManagement({ initialAreas }: WorkAreasManagementProps) 
                                     id="name"
                                     value={formData.name}
                                     onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                                    placeholder="Ej: Recursos Humanos"
+                                    placeholder="Ej: Soporte Técnico"
                                 />
                             </div>
                             <div className="space-y-2">
@@ -146,7 +191,7 @@ export function WorkAreasManagement({ initialAreas }: WorkAreasManagementProps) 
                                     id="description"
                                     value={formData.description}
                                     onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-                                    placeholder="Descripción opcional del área"
+                                    placeholder="Descripción opcional de la categoría"
                                     rows={3}
                                 />
                             </div>
@@ -164,7 +209,7 @@ export function WorkAreasManagement({ initialAreas }: WorkAreasManagementProps) 
                                 Cancelar
                             </Button>
                             <Button onClick={handleSubmit} disabled={isPending}>
-                                {editingArea ? "Actualizar" : "Crear"}
+                                {editingCategory ? "Actualizar" : "Crear"}
                             </Button>
                         </DialogFooter>
                     </DialogContent>
@@ -175,6 +220,7 @@ export function WorkAreasManagement({ initialAreas }: WorkAreasManagementProps) 
                 <Table>
                     <TableHeader>
                         <TableRow>
+                            <TableHead className="w-[50px]">Orden</TableHead>
                             <TableHead>Nombre</TableHead>
                             <TableHead>Descripción</TableHead>
                             <TableHead className="w-[100px]">Estado</TableHead>
@@ -182,23 +228,43 @@ export function WorkAreasManagement({ initialAreas }: WorkAreasManagementProps) 
                         </TableRow>
                     </TableHeader>
                     <TableBody>
-                        {initialAreas.length === 0 ? (
+                        {initialCategories.length === 0 ? (
                             <TableRow>
-                                <TableCell colSpan={4} className="text-center text-muted-foreground">
-                                    No hay áreas de trabajo creadas
+                                <TableCell colSpan={5} className="text-center text-muted-foreground">
+                                    No hay categorías creadas
                                 </TableCell>
                             </TableRow>
                         ) : (
-                            initialAreas.map((area) => (
-                                <TableRow key={area.id}>
-                                    <TableCell className="font-medium">{area.name}</TableCell>
+                            initialCategories.map((category, index) => (
+                                <TableRow key={category.id}>
+                                    <TableCell>
+                                        <div className="flex gap-1">
+                                            <Button
+                                                variant="ghost"
+                                                size="sm"
+                                                onClick={() => handleMoveUp(category.id, category.displayOrder)}
+                                                disabled={index === 0 || isPending}
+                                            >
+                                                <ArrowUp className="h-3 w-3" />
+                                            </Button>
+                                            <Button
+                                                variant="ghost"
+                                                size="sm"
+                                                onClick={() => handleMoveDown(category.id, category.displayOrder)}
+                                                disabled={index === initialCategories.length - 1 || isPending}
+                                            >
+                                                <ArrowDown className="h-3 w-3" />
+                                            </Button>
+                                        </div>
+                                    </TableCell>
+                                    <TableCell className="font-medium">{category.name}</TableCell>
                                     <TableCell className="text-sm text-muted-foreground">
-                                        {area.description || "-"}
+                                        {category.description || "-"}
                                     </TableCell>
                                     <TableCell>
                                         <Switch
-                                            checked={area.isActive}
-                                            onCheckedChange={() => handleToggleActive(area.id)}
+                                            checked={category.isActive}
+                                            onCheckedChange={() => handleToggleActive(category.id)}
                                             disabled={isPending}
                                         />
                                     </TableCell>
@@ -207,7 +273,7 @@ export function WorkAreasManagement({ initialAreas }: WorkAreasManagementProps) 
                                             <Button
                                                 variant="ghost"
                                                 size="sm"
-                                                onClick={() => handleEdit(area)}
+                                                onClick={() => handleEdit(category)}
                                                 disabled={isPending}
                                             >
                                                 <Pencil className="h-4 w-4" />
@@ -215,18 +281,11 @@ export function WorkAreasManagement({ initialAreas }: WorkAreasManagementProps) 
                                             <Button
                                                 variant="ghost"
                                                 size="sm"
-                                                onClick={() => handleDelete(area.id)}
+                                                onClick={() => handleDelete(category.id)}
                                                 disabled={isPending}
                                             >
                                                 <Trash2 className="h-4 w-4 text-destructive" />
                                             </Button>
-            <DeleteConfirmDialog
-                open={deleteId !== null}
-                onOpenChange={(open) => !open && setDeleteId(null)}
-                onConfirm={confirmDelete}
-                title="Eliminar Área de Trabajo"
-                description="¿Estás seguro de eliminar esta área de trabajo? Esta acción no se puede deshacer."
-            />
                                         </div>
                                     </TableCell>
                                 </TableRow>
@@ -235,6 +294,13 @@ export function WorkAreasManagement({ initialAreas }: WorkAreasManagementProps) 
                     </TableBody>
                 </Table>
             </div>
+            <DeleteConfirmDialog
+                open={deleteId !== null}
+                onOpenChange={(open) => !open && setDeleteId(null)}
+                onConfirm={confirmDelete}
+                title="Eliminar Categor\u00eda"
+                description="\u00bfEst\u00e1s seguro de eliminar esta categor\u00eda? Esta acci\u00f3n no se puede deshacer y puede afectar tickets existentes."
+            />
         </div>
     );
 }

@@ -7,7 +7,7 @@ import { CalendarIcon, X } from "lucide-react";
 import { format } from "date-fns";
 import { es } from "date-fns/locale";
 import { DateRange } from "react-day-picker";
-import { YearFilter } from "@/components/year-filter";
+import { YearFilter } from "@/components/tickets/year-filter";
 
 interface TicketFiltersProps {
     onFilterChange: (filters: {

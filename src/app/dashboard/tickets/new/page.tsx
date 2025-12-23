@@ -43,7 +43,6 @@ export default async function NewTicketPage() {
     const workAreas = await getActiveWorkAreas();
 
     // Fetch custom disabled message
-    const disabledTitle = await getAppSetting("ticket_disabled_title");
     const disabledMessage = await getAppSetting("ticket_disabled_message");
 
     return (
@@ -53,7 +52,6 @@ export default async function NewTicketPage() {
             categories={categories}
             campuses={campuses}
             workAreas={workAreas}
-            disabledTitle={disabledTitle}
             disabledMessage={disabledMessage}
         />
     );

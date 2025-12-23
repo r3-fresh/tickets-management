@@ -3,7 +3,7 @@ import { tickets, comments, ticketViews, ticketCategories } from "@/db/schema";
 import { requireAdmin } from "@/lib/utils/server-auth";
 import { redirect } from "next/navigation";
 import { desc, sql, eq, and } from "drizzle-orm";
-import { AdminTicketsTable } from "./admin-tickets-table";
+import { AdminTicketsTable } from "@/components/admin/admin-tickets-table";
 
 export default async function AdminTicketsPage() {
     const session = await requireAdmin();

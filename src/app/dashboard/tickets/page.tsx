@@ -3,7 +3,7 @@ import { tickets, comments, ticketViews, ticketCategories } from "@/db/schema";
 import { requireAuth } from "@/lib/utils/server-auth";
 import { redirect } from "next/navigation";
 import { eq, desc, sql, and, gt } from "drizzle-orm";
-import { TicketsList } from "./tickets-list";
+import { TicketsList } from "@/components/tickets/tickets-list";
 
 export default async function TicketsPage() {
     const session = await requireAuth();

@@ -17,7 +17,7 @@ import { MarkAsViewed } from "./mark-as-viewed";
 import { WatchersManager } from "./watchers-manager";
 import { CancelTicketButton } from "./cancel-ticket-button";
 import { UserValidationControls } from "./user-validation-controls";
-import { RichTextEditor } from "@/components/rich-text-editor";
+import { RichTextEditor } from "@/components/shared/rich-text-editor";
 import { CommentForm } from "./comment-form";
 
 export default async function TicketDetailPage({ params }: { params: Promise<{ id: string }> }) {

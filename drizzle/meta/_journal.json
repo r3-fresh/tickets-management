@@ -5,29 +5,8 @@
     {
       "idx": 0,
       "version": "7",
-      "when": 1766162268526,
-      "tag": "0000_youthful_mentor",
-      "breakpoints": true
-    },
-    {
-      "idx": 1,
-      "version": "7",
-      "when": 1766163880369,
-      "tag": "0001_flashy_frank_castle",
-      "breakpoints": true
-    },
-    {
-      "idx": 2,
-      "version": "7",
-      "when": 1766240055067,
-      "tag": "0002_stormy_spitfire",
-      "breakpoints": true
-    },
-    {
-      "idx": 3,
-      "version": "7",
-      "when": 1766244542023,
-      "tag": "0003_brief_multiple_man",
+      "when": 1766498113001,
+      "tag": "0000_greedy_captain_universe",
       "breakpoints": true
     }
   ]

@@ -14,7 +14,7 @@ import { useState, useTransition } from "react";
 import { Loader2, ArrowLeft } from "lucide-react";
 import { UserSelector } from "@/components/ui/user-selector";
 import Link from "next/link";
-import { RichTextEditor } from "@/components/rich-text-editor";
+import { RichTextEditor } from "@/components/shared/rich-text-editor";
 
 interface User {
     id: string;

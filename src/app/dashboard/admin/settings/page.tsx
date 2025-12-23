@@ -4,7 +4,7 @@ import { eq, asc } from "drizzle-orm";
 import { requireAdmin } from "@/lib/utils/server-auth";
 import { redirect } from "next/navigation";
 import { Settings } from "lucide-react";
-import { AdminSettingsTabs } from "./admin-settings-tabs";
+import { AdminSettingsTabs } from "@/components/admin/admin-settings-tabs";
 
 export default async function AdminSettingsPage() {
     const session = await requireAdmin();
