@@ -1,254 +1,107 @@
 # Sistema de Gestión de Tickets TSI
 
-Sistema completo de gestión de tickets para instituciones educativas, construido con Next.js 15, TypeScript, y PostgreSQL.
-
-## 🚀 Características
-
-- ✅ **Autenticación con Google OAuth** (via Better Auth)
-- ✅ **Gestión Completa de Tickets** (CRUD, asignación, prioridades, estados)
-- ✅ **Sistema de Comentarios** con Rich Text Editor
-- ✅ **Notificaciones en Tiempo Real**
-- ✅ **Panel de Administración** completo
-- ✅ **Gestión de Roles** (Admin/User) con activación/desactivación
-- ✅ **Configuración Dinámica** (categorías, campus, áreas de trabajo)
-- ✅ **Filtros Avanzados** (estado, categoría, año, búsqueda)
-- ✅ **Watchers** para seguimiento de tickets
-- ✅ **Modo Oscuro** incluido
+Sistema institucional de gestión de tickets construido con **Next.js 15**, **TypeScript**, **PostgreSQL** y **Better Auth**.
 
 ---
 
-## 📋 Requisitos Previos
+## 🚀 Inicio Rápido
 
-- **Node.js** v18 o superior
-- **pnpm** v8 o superior (recomendado)
-- **PostgreSQL** v14 o superior
-- Cuenta de **Google Cloud** para OAuth
+### 1. Requisitos
+- Node.js v18+ y pnpm.
+- PostgreSQL v14+.
+- Proyecto en Google Cloud Console (para OAuth).
 
----
-
-## ⚡ Inicio Rápido
-
-### 1. Clonar e Instalar
-
+### 2. Instalación
 ```bash
 git clone <repository-url>
 cd tickets-tsi
 pnpm install
-```
-
-### 2. Configurar Variables de Entorno
-
-```bash
 cp .env.example .env.local
 ```
 
-Edita `.env.local` con tus credenciales (ver [documentación de setup](./docs/SETUP.md))
-
-### 3. Configurar Base de Datos
-
+### 3. Configuración de Base de Datos
 ```bash
-# Crear base de datos PostgreSQL
-createdb tickets_tsi
-
-# Ejecutar migraciones y seed
+# Crear base de datos y ejecutar todo el set inicial
 pnpm setup
 ```
 
-### 4. Iniciar Servidor de Desarrollo
-
+### 4. Ejecución
 ```bash
 pnpm dev
 ```
-
 Abre [http://localhost:3000](http://localhost:3000)
 
 ---
 
-## 📚 Documentación
+## ⚙️ Configuración (.env.local)
 
-- **[Setup Completo](./docs/SETUP.md)** - Guía paso a paso para deployment
-- **[Database Schema](./docs/DATABASE.md)** - Documentación del schema y queries
-- **[CRON Jobs](./docs/CRON_JOBS.md)** - Configuración de tareas programadas
-- **[Seed Data Template](./docs/SEED_DATA_TEMPLATE.md)** - Template para datos iniciales
+Copia `.env.example` a `.env.local` y completa los siguientes bloques:
 
----
+### Base de Datos
+```env
+DATABASE_URL="postgresql://usuario:password@localhost:5432/tickets_tsi"
+```
 
-## 🛠️ Scripts Disponibles
+### Better Auth & URL
+Genera un secret con `openssl rand -base64 32`.
+```env
+BETTER_AUTH_SECRET="tu-secret-generado"
+BETTER_AUTH_URL="http://localhost:3000" # Cambiar a tu dominio en producción
+NEXT_PUBLIC_APP_URL="http://localhost:3000"
+```
 
-```bash
-# Desarrollo
-pnpm dev          # Iniciar servidor desarrollo (con Turbopack)
-pnpm build        # Build para producción
-pnpm start        # Iniciar servidor producción
-pnpm lint         # Verificar código
+### Google OAuth
+1. Crea credenciales en [Google Cloud Console](https://console.cloud.google.com).
+2. Agrega `http://localhost:3000/api/auth/callback/google` a las URIs de redirección autorizadas.
+```env
+GOOGLE_CLIENT_ID="tu-id-de-cliente"
+GOOGLE_CLIENT_SECRET="tu-secret-de-cliente"
+```
 
-# Base de Datos
-pnpm db:generate  # Generar migración desde schema.ts
-pnpm db:migrate   # Aplicar migraciones
-pnpm db:push      # Push directo (solo desarrollo)
-pnpm db:studio    # Abrir Drizzle Studio
-pnpm db:seed      # Ejecutar seed data
-pnpm db:drop      # Eliminar todas las tablas (⚠️ cuidado!)
-pnpm db:reset     # Drop + migrate + seed (reset completo)
-
-# Setup Inicial
-pnpm setup        # Install + migrate + seed (primer deploy)
+### CRON & Email (Opcional)
+```env
+CRON_SECRET="secret-para-tareas-programadas"
+SMTP_HOST="smtp.gmail.com"
+SMTP_PORT="587"
+SMTP_USER="tu-email"
+SMTP_PASS="tu-password-de-aplicacion"
 ```
 
 ---
 
-## 🏗️ Stack Tecnológico
+## 🛠️ Comandos de Base de Datos
 
-### Frontend
-- **Next.js 15** - Framework React con App Router
-- **TypeScript** - Type safety
-- **Tailwind CSS v4** - Styling
-- **shadcn/ui** - Componentes UI
-- **TipTap** - Rich text editor
-- **React Hook Form** + **Zod** - Formularios y validación
+Utiliza los scripts preconfigurados en `package.json`:
 
-### Backend
-- **Next.js API Routes** - API REST
-- **Better Auth** - Autenticación con Google OAuth
-- **Drizzle ORM** - Type-safe database queries
-- **PostgreSQL** - Base de datos relacional
-
-### Utilidades
-- **date-fns** - Manejo de fechas
-- **Sonner** - Toast notifications
-- **Lucide React** - Iconos
+- `pnpm db:push`: Sincroniza el esquema con la base de datos (desarrollo).
+- `pnpm db:seed`: Carga los datos iniciales (categorías, campus, áreas).
+- `pnpm db:studio`: Abre una interfaz visual para explorar los datos.
+- `pnpm db:reset`: Borra todo, aplica el esquema y carga los datos de nuevo (⚠️ Destructivo).
+- `pnpm setup`: Instala dependencias y prepara la BD por primera vez.
 
 ---
 
-## 📁 Estructura del Proyecto
+## 🌍 Despliegue en Vercel
 
-```
-tickets-tsi/
-├── docs/                      # Documentación
-│   ├── SETUP.md
-│   ├── DATABASE.md
-│   ├── CRON_JOBS.md
-│   └── SEED_DATA_TEMPLATE.md
-├── drizzle/                   # Migraciones SQL
-├── public/                    # Archivos estáticos
-├── src/
-│   ├── app/                   # Next.js App Router
-│   │   ├── (auth)/           # Rutas de autenticación
-│   │   ├── dashboard/        # Rutas protegidas
-│   │   │   ├── tickets/      # Gestión de tickets
-│   │   │   └── admin/        # Panel admin
-│   │   ├── actions/          # Server actions
-│   │   └── api/              # API routes
-│   ├── components/           # Componentes React
-│   │   ├── ui/              # shadcn/ui components
-│   │   └── ...              # Componentes personalizados
-│   ├── db/                   # Base de datos
-│   │   └── schema.ts        # Schema Drizzle
-│   ├── lib/                  # Utilidades
-│   │   ├── auth.ts          # Configuración Better Auth
-│   │   ├── schemas/         # Zod schemas
-│   │   └── utils/           # Helpers
-│   └── scripts/             # Scripts de utilidad
-│       ├── migrate.ts
-│       ├── seed.ts
-│       └── drop-db.ts
-├── .env.example              # Template de variables
-├── components.json           # shadcn/ui config
-├── drizzle.config.ts        # Drizzle config
-├── middleware.ts            # Next.js middleware
-├── next.config.ts           # Next.js config
-├── package.json
-├── tailwind.config.ts
-└── tsconfig.json
-```
+### 1. Variables de Entorno
+Configura todas las variables de `.env.local` en el panel de Vercel. Asegúrate de actualizar `BETTER_AUTH_URL` y `NEXT_PUBLIC_APP_URL` con tu dominio real.
+
+### 2. CRON Job (Cierre Automático)
+El proyecto incluye un archivo `vercel.json` que configura el cierre automático de tickets cada hora.
+- Endpoint: `/api/cron/auto-close-tickets`
+- Requiere: `CRON_SECRET` configurado en Vercel.
+
+### 3. Base de Datos
+Si usas Neon (recomendado), usa el pooling URL en `DATABASE_URL`. Ejecuta `pnpm setup` localmente apuntando a la BD de producción o vía un script de deployment.
 
 ---
 
-## 🔐 Seguridad
+## 🔐 Roles y Seguridad
 
-- Autenticación OAuth con Google
-- Roles de usuario (Admin/User)
-- Middleware de protección de rutas
-- Validación de datos con Zod
-- SQL injection protection (Drizzle ORM)
-- CSRF protection incluido
+- **Admin**: Acceso total, gestión de categorías, roles y visualización global.
+- **User**: Creación y seguimiento de tickets propios.
+- **Seguridad**: Protección de rutas via Middleware, validación Zod y protección contra inyección SQL activa.
 
 ---
 
-## 🚀 Deployment
-
-### Vercel (Recomendado)
-
-[![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new)
-
-1. Conecta tu repositorio
-2. Configura variables de entorno
-3. Deploy automático
-
-Ver [Setup Guide](./docs/SETUP.md#11-deployment-a-producción) para más detalles.
-
-### Railway / Render
-
-1. Crear servicio PostgreSQL
-2. Crear servicio Web
-3. Configurar variables de entorno
-4. Ejecutar migraciones
-
----
-
-## 👥 Roles y Permisos
-
-### Usuario (user)
-- Ver y crear tickets propios
-- Comentar en tickets
-- Observar tickets
-- Ver estado de tickets
-
-### Administrador (admin)
-- Todo lo del usuario
-- Ver todos los tickets
-- Asignar tickets
-- Gestionar categorías, campus, áreas
-- Gestionar roles de usuarios
-- Configurar sistema
-
----
-
-## 🎯 Roadmap
-
-- [ ] Notificaciones por email
-- [ ] Dashboard con métricas
-- [ ] Exportar reportes (PDF/Excel)
-- [ ] Adjuntar archivos a tickets
-- [ ] API pública con tokens
-- [ ] Integración con Slack/Teams
-
----
-
-## 🐛 Troubleshooting
-
-Ver [Setup Guide - Troubleshooting](./docs/SETUP.md#troubleshooting)
-
----
-
-## 📝 Licencia
-
-Proyecto propietario para uso interno institucional.
-
----
-
-## 🤝 Contribuir
-
-Este es un proyecto interno. Para cambios mayores, contacta al equipo de desarrollo.
-
----
-
-## 📬 Soporte
-
-Para soporte técnico o preguntas:
-- Revisar la [documentación](./docs/)
-- Contactar al administrador del sistema
-
----
-
-**Hecho con ❤️ para mejorar la gestión de tickets institucional**
+**Hecho con ❤️ para la gestión institucional.**
