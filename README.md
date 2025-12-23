@@ -73,26 +73,76 @@ SMTP_PASS="tu-password-de-aplicacion"
 
 Utiliza los scripts preconfigurados en `package.json`:
 
+- `pnpm setup`: Instala dependencias y prepara la BD por primera vez.
 - `pnpm db:push`: Sincroniza el esquema con la base de datos (desarrollo).
 - `pnpm db:seed`: Carga los datos iniciales (categorías, campus, áreas).
-- `pnpm db:studio`: Abre una interfaz visual para explorar los datos.
+- `pnpm db:studio`: Abre Drizzle Studio, una interfaz visual para explorar los datos.
 - `pnpm db:reset`: Borra todo, aplica el esquema y carga los datos de nuevo (⚠️ Destructivo).
-- `pnpm setup`: Instala dependencias y prepara la BD por primera vez.
 
 ---
 
 ## 🌍 Despliegue en Vercel
 
-### 1. Variables de Entorno
-Configura todas las variables de `.env.local` en el panel de Vercel. Asegúrate de actualizar `BETTER_AUTH_URL` y `NEXT_PUBLIC_APP_URL` con tu dominio real.
+### Paso 1: Preparar Base de Datos en Neon
 
-### 2. CRON Job (Cierre Automático)
-El proyecto incluye un archivo `vercel.json` que configura el cierre automático de tickets cada hora.
-- Endpoint: `/api/cron/auto-close-tickets`
-- Requiere: `CRON_SECRET` configurado en Vercel.
+1. Crea una base de datos en [Neon](https://neon.tech)
+2. Obtén la connection string (usa la versión con **pooling**)
+3. Ejecuta las migraciones localmente apuntando a producción:
+   ```bash
+   DATABASE_URL="tu-connection-string-pooling" pnpm db:push
+   DATABASE_URL="tu-connection-string-pooling" pnpm db:seed
+   ```
 
-### 3. Base de Datos
-Si usas Neon (recomendado), usa el pooling URL en `DATABASE_URL`. Ejecuta `pnpm setup` localmente apuntando a la BD de producción o vía un script de deployment.
+### Paso 2: Configurar Variables de Entorno en Vercel
+
+En el panel de Vercel, configura las siguientes variables:
+
+**Base de Datos:**
+- `DATABASE_URL` - Connection string de Neon con pooling
+
+**Autenticación:**
+- `BETTER_AUTH_SECRET` - Generar con `openssl rand -base64 32`
+- `BETTER_AUTH_URL` - URL de producción (ej: `https://tu-app.vercel.app`)
+- `NEXT_PUBLIC_APP_URL` - Misma URL de producción
+
+**Google OAuth:**
+- `GOOGLE_CLIENT_ID` - ID de cliente de Google Cloud Console
+- `GOOGLE_CLIENT_SECRET` - Secret de cliente de Google
+
+**CRON Job:**
+- `CRON_SECRET` - Secret para proteger el endpoint de CRON
+
+**Email (Opcional):**
+- `SMTP_HOST` - Servidor SMTP (ej: `smtp.gmail.com`)
+- `SMTP_PORT` - Puerto SMTP (ej: `587`)
+- `SMTP_USER` - Usuario de email
+- `SMTP_PASS` - Contraseña de aplicación
+
+### Paso 3: Configurar Google OAuth
+
+En [Google Cloud Console](https://console.cloud.google.com):
+1. Agrega la URI de redirección autorizada:
+   ```
+   https://tu-app.vercel.app/api/auth/callback/google
+   ```
+
+### Paso 4: Desplegar
+
+1. Conecta tu repositorio en Vercel
+2. Vercel detectará automáticamente Next.js
+3. Despliega
+
+### Paso 5: Verificación Post-Despliegue
+
+1. Verifica que el login con Google funciona
+2. Promover el primer usuario a administrador:
+   ```sql
+   UPDATE "user" SET role = 'admin' WHERE email = 'tu-email@continental.edu.pe';
+   ```
+3. Verifica que el CRON job está activo en el panel de Vercel
+4. Prueba crear y gestionar tickets
+
+> **Nota sobre CRON Jobs**: El archivo `vercel.json` configura el cierre automático de tickets cada hora. El endpoint `/api/cron/auto-close-tickets` cierra automáticamente los tickets que llevan más de 48 horas en estado "Pendiente de Validación".
 
 ---
 
