@@ -5,7 +5,7 @@ import { headers } from "next/headers";
 import { redirect } from "next/navigation";
 import { eq } from "drizzle-orm";
 import { NewTicketForm } from "./form";
-import { getActiveCategories, getActiveCampuses, getActiveWorkAreas } from "@/app/actions/config/get-config";
+import { getActiveCategories, getActiveCampuses, getActiveWorkAreas, getActiveAttentionAreas } from "@/app/actions/config/get-config";
 
 async function getAppSetting(key: string): Promise<string | null> {
     try {
@@ -41,6 +41,7 @@ export default async function NewTicketPage() {
     const categories = await getActiveCategories();
     const campuses = await getActiveCampuses();
     const workAreas = await getActiveWorkAreas();
+    const attentionAreas = await getActiveAttentionAreas();
 
     // Fetch custom disabled message
     const disabledMessage = await getAppSetting("ticket_disabled_message");
@@ -52,6 +53,7 @@ export default async function NewTicketPage() {
             categories={categories}
             campuses={campuses}
             workAreas={workAreas}
+            attentionAreas={attentionAreas}
             disabledMessage={disabledMessage}
         />
     );

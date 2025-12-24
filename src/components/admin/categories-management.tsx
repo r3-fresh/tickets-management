@@ -24,6 +24,13 @@ import {
     DialogTitle,
     DialogTrigger,
 } from "@/components/ui/dialog";
+import {
+    Select,
+    SelectContent,
+    SelectItem,
+    SelectTrigger,
+    SelectValue,
+} from "@/components/ui/select";
 import { Plus, Pencil, Trash2, ArrowUp, ArrowDown } from "lucide-react";
 import { toast } from "sonner";
 import { DeleteConfirmDialog } from "@/components/shared/delete-confirm-dialog";
@@ -42,13 +49,20 @@ interface Category {
     description: string | null;
     isActive: boolean;
     displayOrder: number;
+    attentionAreaId?: number | null;
+}
+
+interface AttentionArea {
+    id: number;
+    name: string;
 }
 
 interface CategoriesManagementProps {
     initialCategories: Category[];
+    attentionAreas: AttentionArea[];
 }
 
-export function CategoriesManagement({ initialCategories }: CategoriesManagementProps) {
+export function CategoriesManagement({ initialCategories, attentionAreas }: CategoriesManagementProps) {
     const [isPending, startTransition] = useTransition();
     const [isDialogOpen, setIsDialogOpen] = useState(false);
     const [editingCategory, setEditingCategory] = useState<Category | null>(null);
@@ -59,10 +73,11 @@ export function CategoriesManagement({ initialCategories }: CategoriesManagement
         name: "",
         description: "",
         isActive: true,
+        attentionAreaId: undefined as number | undefined,
     });
 
     const resetForm = () => {
-        setFormData({ name: "", description: "", isActive: true });
+        setFormData({ name: "", description: "", isActive: true, attentionAreaId: undefined });
         setEditingCategory(null);
     };
 
@@ -72,6 +87,7 @@ export function CategoriesManagement({ initialCategories }: CategoriesManagement
             name: category.name,
             description: category.description || "",
             isActive: category.isActive,
+            attentionAreaId: category.attentionAreaId || undefined,
         });
         setIsDialogOpen(true);
     };
@@ -83,9 +99,11 @@ export function CategoriesManagement({ initialCategories }: CategoriesManagement
         }
 
         startTransition(async () => {
+            const areaId = formData.attentionAreaId ? Number(formData.attentionAreaId) : undefined;
+
             const result = editingCategory
-                ? await updateCategory(editingCategory.id, formData.name, formData.description, formData.isActive)
-                : await createCategory(formData.name, formData.description, formData.isActive);
+                ? await updateCategory(editingCategory.id, formData.name, formData.description, formData.isActive, areaId)
+                : await createCategory(formData.name, formData.description, formData.isActive, areaId);
 
             if (result.error) {
                 toast.error(result.error);
@@ -186,6 +204,27 @@ export function CategoriesManagement({ initialCategories }: CategoriesManagement
                                 />
                             </div>
                             <div className="space-y-2">
+                                <Label htmlFor="area">Área de Atención</Label>
+                                <Select
+                                    value={formData.attentionAreaId?.toString()}
+                                    onValueChange={(val) => setFormData({ ...formData, attentionAreaId: Number(val) })}
+                                >
+                                    <SelectTrigger>
+                                        <SelectValue placeholder="Selecciona un área..." />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        {attentionAreas.map((area) => (
+                                            <SelectItem key={area.id} value={area.id.toString()}>
+                                                {area.name}
+                                            </SelectItem>
+                                        ))}
+                                    </SelectContent>
+                                </Select>
+                                <p className="text-[0.8rem] text-muted-foreground">
+                                    Los tickets de esta categoría se asignarán a esta área.
+                                </p>
+                            </div>
+                            <div className="space-y-2">
                                 <Label htmlFor="description">Descripción</Label>
                                 <Textarea
                                     id="description"
@@ -222,6 +261,7 @@ export function CategoriesManagement({ initialCategories }: CategoriesManagement
                         <TableRow>
                             <TableHead className="w-[50px]">Orden</TableHead>
                             <TableHead>Nombre</TableHead>
+                            <TableHead>Área de Atención</TableHead>
                             <TableHead>Descripción</TableHead>
                             <TableHead className="w-[100px]">Estado</TableHead>
                             <TableHead className="w-[150px] text-right">Acciones</TableHead>
@@ -230,7 +270,7 @@ export function CategoriesManagement({ initialCategories }: CategoriesManagement
                     <TableBody>
                         {initialCategories.length === 0 ? (
                             <TableRow>
-                                <TableCell colSpan={5} className="text-center text-muted-foreground">
+                                <TableCell colSpan={6} className="text-center text-muted-foreground">
                                     No hay categorías creadas
                                 </TableCell>
                             </TableRow>
@@ -258,6 +298,11 @@ export function CategoriesManagement({ initialCategories }: CategoriesManagement
                                         </div>
                                     </TableCell>
                                     <TableCell className="font-medium">{category.name}</TableCell>
+                                    <TableCell>
+                                        {category.attentionAreaId
+                                            ? attentionAreas.find(a => a.id === category.attentionAreaId)?.name || "Desconocida"
+                                            : <span className="text-muted-foreground italic">Sin asignar</span>}
+                                    </TableCell>
                                     <TableCell className="text-sm text-muted-foreground">
                                         {category.description || "-"}
                                     </TableCell>
@@ -298,8 +343,8 @@ export function CategoriesManagement({ initialCategories }: CategoriesManagement
                 open={deleteId !== null}
                 onOpenChange={(open) => !open && setDeleteId(null)}
                 onConfirm={confirmDelete}
-                title="Eliminar Categor\u00eda"
-                description="\u00bfEst\u00e1s seguro de eliminar esta categor\u00eda? Esta acci\u00f3n no se puede deshacer y puede afectar tickets existentes."
+                title="Eliminar Categoría"
+                description="¿Estás seguro de eliminar esta categoría? Esta acción no se puede deshacer y puede afectar tickets existentes."
             />
         </div>
     );

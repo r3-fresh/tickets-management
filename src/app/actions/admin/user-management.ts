@@ -7,12 +7,26 @@ import { eq } from "drizzle-orm";
 import { revalidatePath } from "next/cache";
 import type { UserRole } from "@/types";
 
-export async function updateUserRole(userId: string, newRole: UserRole) {
-    await requireAdmin();
+export async function updateUserRole(userId: string, newRole: string, attentionAreaId?: number | null) {
+    const session = await requireAdmin();
 
     try {
+        // Validate role
+        if (!["user", "admin", "agent"].includes(newRole)) {
+            return { error: "Rol inválido" };
+        }
+
+        // Validate attentionAreaId if role is agent
+        if (newRole === "agent" && !attentionAreaId) {
+            return { error: "Se requiere un área de atención para el agente" };
+        }
+
         await db.update(users)
-            .set({ role: newRole, updatedAt: new Date() })
+            .set({
+                role: newRole as "user" | "admin" | "agent",
+                attentionAreaId: newRole === "agent" ? attentionAreaId : null,
+                updatedAt: new Date(),
+            })
             .where(eq(users.id, userId));
 
         revalidatePath("/dashboard/admin/roles");

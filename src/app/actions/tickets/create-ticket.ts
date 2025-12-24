@@ -1,13 +1,13 @@
 "use server";
 
 import { db } from "@/db";
-import { tickets, users } from "@/db/schema";
+import { tickets, users, attentionAreas } from "@/db/schema";
 import { createTicketSchema } from "@/lib/schemas";
 import { requireAuth } from "@/lib/utils/server-auth";
 import { redirect } from "next/navigation";
 import { TICKET_STATUS } from "@/lib/constants/tickets";
 import { sendTicketCreatedEmail } from "@/lib/email-templates";
-import { eq, inArray } from "drizzle-orm";
+import { eq, inArray, and } from "drizzle-orm";
 
 export async function createTicketAction(formData: FormData) {
     const session = await requireAuth();
@@ -20,6 +20,7 @@ export async function createTicketAction(formData: FormData) {
         subcategoryId: formData.get("subcategoryId"),
         campusId: formData.get("campusId"),
         areaId: formData.get("areaId"),
+        attentionAreaId: formData.get("attentionAreaId"),
     };
 
     const result = createTicketSchema.safeParse(rawData);
@@ -28,7 +29,22 @@ export async function createTicketAction(formData: FormData) {
         return { error: "Datos inválidos", details: result.error.flatten() };
     }
 
-    const { title, description, priority, categoryId, subcategoryId, campusId, areaId } = result.data;
+    const { title, description, priority, categoryId, subcategoryId, campusId, areaId, attentionAreaId } = result.data;
+
+    // Validate if Attention Area is accepting tickets
+    const targetArea = await db.query.attentionAreas.findFirst({
+        where: eq(attentionAreas.id, attentionAreaId),
+    });
+
+    if (!targetArea) {
+        return { error: "Área de atención inválida" };
+    }
+
+    if (!targetArea.isAcceptingTickets) {
+        return {
+            error: targetArea.closedMessage || "Esta área no está aceptando tickets en este momento.",
+        };
+    }
 
     // Parse watchers (user IDs)
     let watcherList: string[] = [];
@@ -57,6 +73,7 @@ export async function createTicketAction(formData: FormData) {
             subcategoryId,
             campusId: campusId || null,
             areaId: areaId || null,
+            attentionAreaId,
             watchers: watcherList,
         }).returning({ id: tickets.id });
 
@@ -77,7 +94,19 @@ export async function createTicketAction(formData: FormData) {
             const adminData = await db.select({ email: users.email })
                 .from(users)
                 .where(eq(users.role, 'admin'));
-            const adminEmails = adminData.map(a => a.email);
+
+            // Get Agent emails for this area
+            const agentData = await db.select({ email: users.email })
+                .from(users)
+                .where(and(
+                    eq(users.role, 'agent'),
+                    eq(users.attentionAreaId, attentionAreaId)
+                ));
+
+            const recipientEmails = [...new Set([
+                ...adminData.map(a => a.email),
+                ...agentData.map(a => a.email)
+            ])];
 
             await sendTicketCreatedEmail({
                 ticketCode,
@@ -88,7 +117,7 @@ export async function createTicketAction(formData: FormData) {
                 createdByEmail: session.user.email,
                 ticketId: newTicket.id,
                 watcherEmails,
-                adminEmails,
+                adminEmails: recipientEmails, // Send to Admins + Agents
             });
         } catch (emailError) {
             // Log error but don't fail ticket creation

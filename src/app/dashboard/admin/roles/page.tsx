@@ -19,11 +19,18 @@ export default async function AdminRolesPage() {
         .from(users)
         .orderBy(desc(users.createdAt));
 
+    const { getActiveAttentionAreas } = await import("@/app/actions/config/get-config");
+    const attentionAreas = await getActiveAttentionAreas();
+
     return (
         <div className="space-y-6">
             <h1 className="text-3xl font-bold tracking-tight">Gestión de Roles</h1>
             <p className="text-muted-foreground">Administra los roles de los usuarios del sistema.</p>
-            <RolesTable users={allUsers} currentUserId={session.user.id} />
+            <RolesTable
+                users={allUsers}
+                currentUserId={session.user.id}
+                attentionAreas={attentionAreas}
+            />
         </div>
     );
 }

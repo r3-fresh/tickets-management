@@ -19,6 +19,9 @@ export const users = pgTable("user", {
     isActive: boolean("is_active").notNull().default(true),
     deactivatedAt: timestamp("deactivated_at"),
     deactivatedBy: text("deactivated_by").references((): AnyPgColumn => users.id),
+
+    // Agent specific
+    attentionAreaId: integer("attention_area_id").references((): AnyPgColumn => attentionAreas.id),
 });
 
 export const sessions = pgTable("session", {
@@ -73,6 +76,7 @@ export const ticketCategories = pgTable("ticket_category", {
     description: text("description"),
     isActive: boolean("is_active").notNull().default(true),
     displayOrder: integer("display_order").notNull().default(0),
+    attentionAreaId: integer("attention_area_id").references((): AnyPgColumn => attentionAreas.id),
     createdAt: timestamp("created_at").defaultNow().notNull(),
     updatedAt: timestamp("updated_at").defaultNow().notNull(),
 });
@@ -125,7 +129,10 @@ export const tickets = pgTable("ticket", {
     categoryId: integer("category_id").references(() => ticketCategories.id),
     subcategoryId: integer("subcategory_id").references(() => ticketSubcategories.id),
     campusId: integer("campus_id").references(() => campusLocations.id),
-    areaId: integer("area_id").references(() => workAreas.id),
+    areaId: integer("area_id").references(() => workAreas.id), // Requester Area
+
+    // NEW: Target Attention Area
+    attentionAreaId: integer("attention_area_id").references(() => attentionAreas.id),
 
     watchers: text("watchers").array(), // User IDs que monitorean el ticket
 
@@ -178,6 +185,10 @@ export const ticketsRelations = relations(tickets, ({ one, many }) => ({
         fields: [tickets.categoryId],
         references: [ticketCategories.id],
     }),
+    attentionArea: one(attentionAreas, {
+        fields: [tickets.attentionAreaId],
+        references: [attentionAreas.id],
+    }),
     subcategory: one(ticketSubcategories, {
         fields: [tickets.subcategoryId],
         references: [ticketSubcategories.id],
@@ -204,16 +215,24 @@ export const commentsRelations = relations(comments, ({ one }) => ({
     }),
 }));
 
-export const usersRelations = relations(users, ({ many }) => ({
+export const usersRelations = relations(users, ({ many, one }) => ({
     createdTickets: many(tickets, { relationName: "createdTickets" }),
     assignedTickets: many(tickets, { relationName: "assignedTickets" }),
     comments: many(comments),
+    attentionArea: one(attentionAreas, {
+        fields: [users.attentionAreaId],
+        references: [attentionAreas.id],
+    }),
 }));
 
 // Configuration tables relations
-export const ticketCategoriesRelations = relations(ticketCategories, ({ many }) => ({
+export const ticketCategoriesRelations = relations(ticketCategories, ({ many, one }) => ({
     subcategories: many(ticketSubcategories),
     tickets: many(tickets),
+    attentionArea: one(attentionAreas, {
+        fields: [ticketCategories.attentionAreaId],
+        references: [attentionAreas.id],
+    }),
 }));
 
 export const ticketSubcategoriesRelations = relations(ticketSubcategories, ({ one, many }) => ({
@@ -228,6 +247,29 @@ export const campusLocationsRelations = relations(campusLocations, ({ many }) =>
     tickets: many(tickets),
 }));
 
+
 export const workAreasRelations = relations(workAreas, ({ many }) => ({
     tickets: many(tickets),
 }));
+
+export const attentionAreas = pgTable("attention_area", {
+    id: serial("id").primaryKey(),
+    name: text("name").notNull(),
+    slug: text("slug").notNull().unique(), // 'tsi', 'fondo-editorial', 'difusion'
+    isActive: boolean("is_active").notNull().default(true),
+
+    // Availability
+    isAcceptingTickets: boolean("is_accepting_tickets").notNull().default(true),
+    closedMessage: text("closed_message"),
+    closedUntil: timestamp("closed_until"),
+
+    createdAt: timestamp("created_at").defaultNow().notNull(),
+    updatedAt: timestamp("updated_at").defaultNow().notNull(),
+});
+
+export const attentionAreasRelations = relations(attentionAreas, ({ many }) => ({
+    users: many(users),
+    tickets: many(tickets),
+    categories: many(ticketCategories),
+}));
+

@@ -1,0 +1,176 @@
+"use client";
+
+import { createAttentionArea, updateAttentionArea } from "@/app/actions/admin/attention-areas";
+import { Button } from "@/components/ui/button";
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Switch } from "@/components/ui/switch";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { Loader2, Pencil, Plus } from "lucide-react";
+import { useState, useTransition } from "react";
+import { toast } from "sonner";
+
+interface AttentionArea {
+    id: number;
+    name: string;
+    slug: string;
+    isAcceptingTickets: boolean;
+}
+
+interface AttentionAreasListProps {
+    areas: AttentionArea[];
+}
+
+export function AttentionAreasList({ areas }: AttentionAreasListProps) {
+    const [isDialogOpen, setIsDialogOpen] = useState(false);
+    const [editingArea, setEditingArea] = useState<AttentionArea | null>(null);
+
+    return (
+        <div className="space-y-4">
+            <div className="flex justify-end">
+                <Button onClick={() => { setEditingArea(null); setIsDialogOpen(true); }}>
+                    <Plus className="mr-2 h-4 w-4" />
+                    Nueva Área
+                </Button>
+            </div>
+
+            <div className="rounded-md border bg-card shadow-sm">
+                <Table>
+                    <TableHeader>
+                        <TableRow>
+                            <TableHead>Nombre</TableHead>
+                            <TableHead>Slug</TableHead>
+                            <TableHead>Estado</TableHead>
+                            <TableHead className="text-right">Acciones</TableHead>
+                        </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                        {areas.length === 0 ? (
+                            <TableRow>
+                                <TableCell colSpan={4} className="h-24 text-center text-muted-foreground">
+                                    No hay áreas de atención registradas.
+                                </TableCell>
+                            </TableRow>
+                        ) : (
+                            areas.map((area) => (
+                                <TableRow key={area.id}>
+                                    <TableCell className="font-medium">{area.name}</TableCell>
+                                    <TableCell className="text-muted-foreground">{area.slug}</TableCell>
+                                    <TableCell>
+                                        <div className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${area.isAcceptingTickets ? "bg-green-100 text-green-800" : "bg-red-100 text-red-800"
+                                            }`}>
+                                            {area.isAcceptingTickets ? "Activo" : "Cerrado"}
+                                        </div>
+                                    </TableCell>
+                                    <TableCell className="text-right">
+                                        <Button
+                                            variant="ghost"
+                                            size="icon"
+                                            onClick={() => {
+                                                setEditingArea(area);
+                                                setIsDialogOpen(true);
+                                            }}
+                                        >
+                                            <Pencil className="h-4 w-4" />
+                                        </Button>
+                                    </TableCell>
+                                </TableRow>
+                            ))
+                        )}
+                    </TableBody>
+                </Table>
+            </div>
+
+            <AreaDialog
+                open={isDialogOpen}
+                onOpenChange={setIsDialogOpen}
+                area={editingArea}
+            />
+        </div>
+    );
+}
+
+function AreaDialog({
+    open,
+    onOpenChange,
+    area
+}: {
+    open: boolean;
+    onOpenChange: (open: boolean) => void;
+    area: AttentionArea | null;
+}) {
+    const [isPending, startTransition] = useTransition();
+
+    async function handleSubmit(formData: FormData) {
+        startTransition(async () => {
+            const formDataClone = new FormData();
+            formDataClone.append("name", formData.get("name") as string);
+            formDataClone.append("slug", formData.get("slug") as string);
+            formDataClone.append("isAcceptingTickets", formData.get("isAcceptingTickets") === "on" ? "true" : "false");
+
+            const result = area
+                ? await updateAttentionArea(area.id, formDataClone)
+                : await createAttentionArea(formDataClone);
+
+            if (result?.error) {
+                toast.error(result.error);
+            } else {
+                toast.success(area ? "Área actualizada" : "Área creada");
+                onOpenChange(false);
+            }
+        });
+    }
+
+    return (
+        <Dialog open={open} onOpenChange={onOpenChange}>
+            <DialogContent>
+                <DialogHeader>
+                    <DialogTitle>{area ? "Editar Área" : "Nueva Área"}</DialogTitle>
+                    <DialogDescription>
+                        {area ? "Modifica los datos del área de atención." : "Crea una nueva área de atención."}
+                    </DialogDescription>
+                </DialogHeader>
+                <form action={handleSubmit} className="space-y-4">
+                    <div className="grid gap-2">
+                        <Label htmlFor="name">Nombre</Label>
+                        <Input
+                            id="name"
+                            name="name"
+                            defaultValue={area?.name}
+                            required
+                            placeholder="Ej: Tecnologías y Sistemas"
+                        />
+                    </div>
+                    <div className="grid gap-2">
+                        <Label htmlFor="slug">Slug</Label>
+                        <Input
+                            id="slug"
+                            name="slug"
+                            defaultValue={area?.slug}
+                            required
+                            placeholder="Ej: tsi"
+                        />
+                    </div>
+                    <div className="flex items-center space-x-2">
+                        <Switch
+                            id="isAcceptingTickets"
+                            name="isAcceptingTickets"
+                            defaultChecked={area?.isAcceptingTickets ?? true}
+                        />
+                        <Label htmlFor="isAcceptingTickets">Aceptar Tickets</Label>
+                    </div>
+                    <DialogFooter>
+                        <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
+                            Cancelar
+                        </Button>
+                        <Button type="submit" disabled={isPending}>
+                            {isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                            Guardar
+                        </Button>
+                    </DialogFooter>
+                </form>
+            </DialogContent>
+        </Dialog>
+    );
+}

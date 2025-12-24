@@ -5,8 +5,13 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Input } from "@/components/ui/input";
-import { RoleToggleButton } from "@/components/admin/role-toggle-button";
+import { UserRoleManager } from "@/components/admin/user-role-manager";
 import { UserActiveToggle } from "@/components/admin/user-active-toggle";
+
+interface AttentionArea {
+    id: number;
+    name: string;
+}
 
 interface User {
     id: string;
@@ -15,14 +20,16 @@ interface User {
     role: string;
     isActive: boolean;
     image: string | null;
+    attentionAreaId?: number | null;
 }
 
 interface RolesTableProps {
     users: User[];
     currentUserId: string;
+    attentionAreas: AttentionArea[];
 }
 
-export function RolesTable({ users, currentUserId }: RolesTableProps) {
+export function RolesTable({ users, currentUserId, attentionAreas }: RolesTableProps) {
     const [searchQuery, setSearchQuery] = useState("");
 
     const filteredUsers = useMemo(() => {
@@ -84,15 +91,25 @@ export function RolesTable({ users, currentUserId }: RolesTableProps) {
                                         </Badge>
                                     </TableCell>
                                     <TableCell>
-                                        <Badge variant={user.role === "admin" ? "default" : "secondary"}>
-                                            {user.role === "admin" ? "Administrador" : "Usuario"}
-                                        </Badge>
+                                        <div className="flex flex-col gap-1">
+                                            <Badge variant={user.role === "admin" ? "default" : user.role === "agent" ? "outline" : "secondary"}>
+                                                {user.role === "admin" ? "Administrador" : user.role === "agent" ? "Agente" : "Usuario"}
+                                            </Badge>
+                                            {user.role === "agent" && user.attentionAreaId && (
+                                                <span className="text-xs text-muted-foreground">
+                                                    {attentionAreas.find(a => a.id === user.attentionAreaId)?.name}
+                                                </span>
+                                            )}
+                                        </div>
                                     </TableCell>
                                     <TableCell className="text-right">
                                         <div className="flex justify-end gap-2">
-                                            <RoleToggleButton
+                                            <UserRoleManager
                                                 userId={user.id}
+                                                userName={user.name}
                                                 currentRole={user.role}
+                                                currentAttentionAreaId={user.attentionAreaId}
+                                                attentionAreas={attentionAreas}
                                                 disabled={user.id === currentUserId}
                                             />
                                             <UserActiveToggle

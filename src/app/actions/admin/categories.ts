@@ -6,7 +6,12 @@ import { requireAdmin } from "@/lib/utils/server-auth";
 import { eq, sql, gt, lt } from "drizzle-orm";
 import { revalidatePath } from "next/cache";
 
-export async function createCategory(name: string, description: string, isActive: boolean) {
+export async function createCategory(
+    name: string,
+    description: string,
+    isActive: boolean,
+    attentionAreaId?: number
+) {
     await requireAdmin();
 
     try {
@@ -21,6 +26,7 @@ export async function createCategory(name: string, description: string, isActive
             name,
             description: description || null,
             isActive,
+            attentionAreaId: attentionAreaId || null,
             displayOrder: newOrder,
         });
 
@@ -37,7 +43,8 @@ export async function updateCategory(
     id: number,
     name: string,
     description: string,
-    isActive: boolean
+    isActive: boolean,
+    attentionAreaId?: number
 ) {
     await requireAdmin();
 
@@ -48,6 +55,7 @@ export async function updateCategory(
                 name,
                 description: description || null,
                 isActive,
+                attentionAreaId: attentionAreaId || null,
                 updatedAt: new Date(),
             })
             .where(eq(ticketCategories.id, id));

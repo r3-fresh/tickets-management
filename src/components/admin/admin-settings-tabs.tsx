@@ -7,7 +7,7 @@ import { CategoriesManagement } from "@/components/admin/categories-management";
 import { SubcategoriesManagement } from "@/components/admin/subcategories-management";
 import { CampusManagement } from "@/components/admin/campus-management";
 import { WorkAreasManagement } from "@/components/admin/work-areas-management";
-import { Tag, Grid3x3, MapPin, Briefcase } from "lucide-react";
+import { Tag, Grid3x3, MapPin, Briefcase, Settings } from "lucide-react";
 
 interface Category {
     id: number;
@@ -44,6 +44,15 @@ interface WorkArea {
     isActive: boolean;
 }
 
+import { AttentionAreasList } from "@/components/admin/attention-areas-list";
+
+interface AttentionArea {
+    id: number;
+    name: string;
+    slug: string;
+    isAcceptingTickets: boolean;
+}
+
 interface AdminSettingsTabsProps {
     initialAllowNewTickets: boolean;
     initialDisabledMessage?: string;
@@ -51,6 +60,7 @@ interface AdminSettingsTabsProps {
     initialSubcategories: Subcategory[];
     initialCampus: Campus[];
     initialAreas: WorkArea[];
+    initialAttentionAreas: AttentionArea[];
 }
 
 export function AdminSettingsTabs({
@@ -59,11 +69,12 @@ export function AdminSettingsTabs({
     initialCategories,
     initialSubcategories,
     initialCampus,
-    initialAreas
+    initialAreas,
+    initialAttentionAreas
 }: AdminSettingsTabsProps) {
     return (
         <Tabs defaultValue="general" className="space-y-4">
-            <TabsList className="grid w-full grid-cols-5">
+            <TabsList className="grid w-full grid-cols-6">
                 <TabsTrigger value="general">General</TabsTrigger>
                 <TabsTrigger value="categories">
                     <Tag className="h-4 w-4 mr-2" />
@@ -77,9 +88,13 @@ export function AdminSettingsTabs({
                     <MapPin className="h-4 w-4 mr-2" />
                     Campus
                 </TabsTrigger>
-                <TabsTrigger value="areas">
+                <TabsTrigger value="work-areas">
                     <Briefcase className="h-4 w-4 mr-2" />
-                    Áreas
+                    Áreas Trabajo
+                </TabsTrigger>
+                <TabsTrigger value="attention-areas">
+                    <Settings className="h-4 w-4 mr-2" />
+                    Áreas Atención
                 </TabsTrigger>
             </TabsList>
 
@@ -109,7 +124,10 @@ export function AdminSettingsTabs({
                         </CardDescription>
                     </CardHeader>
                     <CardContent>
-                        <CategoriesManagement initialCategories={initialCategories} />
+                        <CategoriesManagement
+                            initialCategories={initialCategories}
+                            attentionAreas={initialAttentionAreas}
+                        />
                     </CardContent>
                 </Card>
             </TabsContent>
@@ -145,16 +163,30 @@ export function AdminSettingsTabs({
                 </Card>
             </TabsContent>
 
-            <TabsContent value="areas" className="space-y-4">
+            <TabsContent value="work-areas" className="space-y-4">
                 <Card>
                     <CardHeader>
                         <CardTitle>Áreas de Trabajo</CardTitle>
                         <CardDescription>
-                            Gestiona las áreas de trabajo disponibles
+                            Gestiona las áreas de trabajo (ubicaciones físicas/departamentos del usuario)
                         </CardDescription>
                     </CardHeader>
                     <CardContent>
                         <WorkAreasManagement initialAreas={initialAreas} />
+                    </CardContent>
+                </Card>
+            </TabsContent>
+
+            <TabsContent value="attention-areas" className="space-y-4">
+                <Card>
+                    <CardHeader>
+                        <CardTitle>Áreas de Atención</CardTitle>
+                        <CardDescription>
+                            Gestiona las áreas responsables de resolver tickets (TSI, Fondo Editorial, etc.)
+                        </CardDescription>
+                    </CardHeader>
+                    <CardContent>
+                        <AttentionAreasList areas={initialAttentionAreas} />
                     </CardContent>
                 </Card>
             </TabsContent>

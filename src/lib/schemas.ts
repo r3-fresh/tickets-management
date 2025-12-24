@@ -8,7 +8,8 @@ export const createTicketSchema = z.object({
     categoryId: z.coerce.number().min(1, "Selecciona una categoría"),
     subcategoryId: z.coerce.number().min(1, "Selecciona una subcategoría"),
     campusId: z.coerce.number().optional(),
-    areaId: z.coerce.number().optional(),
+    areaId: z.coerce.number().optional(), // Requester Area
+    attentionAreaId: z.coerce.number().min(1, "Selecciona un área de atención"), // Target Area
 });
 
 export type CreateTicketSchema = z.infer<typeof createTicketSchema>;

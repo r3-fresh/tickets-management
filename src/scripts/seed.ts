@@ -1,5 +1,5 @@
 import { db } from "@/db";
-import { ticketCategories, ticketSubcategories, campusLocations, workAreas, appSettings } from "@/db/schema";
+import { ticketCategories, ticketSubcategories, campusLocations, workAreas, appSettings, attentionAreas } from "@/db/schema";
 
 async function seed() {
     console.log("🌱 Seeding database with UC Continental data...");
@@ -146,11 +146,32 @@ async function seed() {
 
         console.log("✅ App settings configured");
 
+        // 6. Seed Attention Areas
+        console.log("🎯 Seeding attention areas...");
+        await db.insert(attentionAreas).values([
+            {
+                name: "Tecnologías y Sistemas de Información",
+                slug: "tsi",
+                isAcceptingTickets: true
+            },
+            {
+                name: "Fondo Editorial",
+                slug: "fondo-editorial",
+                isAcceptingTickets: true
+            },
+            {
+                name: "Difusión",
+                slug: "difusion",
+                isAcceptingTickets: true
+            }
+        ]).onConflictDoNothing();
+        console.log("✅ Attention areas seeded");
+
         console.log("\n🎉 Database seeded successfully!");
         console.log("\n📝 Next steps:");
         console.log("   1. Login with Google using: fromeror@continental.edu.pe");
         console.log("   2. Promote to admin if needed:");
-        console.log("      UPDATE \"user\" SET role = 'admin' WHERE email = 'fromeror@continental.edu.pe';");
+        console.log("      UPDATE \"user\" SET role = 'admin' WHERE email = 'cendoc@continental.edu.pe';");
 
     } catch (error) {
         console.error("❌ Error seeding database:", error);

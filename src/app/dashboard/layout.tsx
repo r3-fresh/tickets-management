@@ -15,7 +15,8 @@ import {
     User,
     Shield,
     Eye,
-    Settings
+    Settings,
+    Target
 } from "lucide-react";
 import { authClient } from "@/lib/auth-client";
 import { useRouter } from "next/navigation";
@@ -53,16 +54,30 @@ export default function DashboardLayout({
     // Admin-only items
     const adminItems = [
         { href: "/dashboard/admin", label: "Dashboard", icon: LayoutDashboard },
-        { href: "/dashboard/admin/tickets", label: "Bandeja de Tickets", icon: Ticket },
+        { href: "/dashboard/admin/tickets", label: "Explorador de Tickets", icon: Ticket }, // Renamed from "Bandeja de Tickets"
+        // { href: "/dashboard/tickets", label: "Mis Solicitudes", icon: User }, // Added own tickets view
         { href: "/dashboard/admin/roles", label: "Gestión de Roles", icon: Shield },
         { href: "/dashboard/admin/settings", label: "Configuración", icon: Settings },
     ];
 
+    // Agent items
+    const agentItems = [
+        { href: "/dashboard/agent", label: "Bandeja de Atención", icon: LayoutDashboard }, // Renamed from "Dashboard"
+        { href: "/dashboard/tickets", label: "Mis Solicitudes", icon: User }, // Added own tickets view
+        { href: "/dashboard/tickets/watching", label: "Tickets Observados", icon: Eye },
+        { href: "/dashboard/agent/settings", label: "Configuración", icon: Settings },
+        // { href: "/dashboard/tickets/new", label: "Nuevo Ticket", icon: PlusCircle },
+    ];
+
     // Type assertion for better-auth session with role
     const userRole = (session?.user as { role?: string })?.role;
-    const allNavItems = userRole === "admin"
-        ? adminItems
-        : navItems;
+
+    let allNavItems = navItems;
+    if (userRole === "admin") {
+        allNavItems = adminItems;
+    } else if (userRole === "agent") {
+        allNavItems = agentItems;
+    }
 
     return (
         <div className="flex h-screen bg-gray-100 dark:bg-background">

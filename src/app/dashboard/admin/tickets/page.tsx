@@ -73,7 +73,7 @@ export default async function AdminTicketsPage() {
 
     return (
         <div className="space-y-4">
-            <h1 className="text-3xl font-bold tracking-tight">Bandeja de Tickets</h1>
+            <h1 className="text-3xl font-bold tracking-tight">Explorador de Tickets</h1>
             <AdminTicketsTable tickets={mergedTickets} />
         </div>
     );

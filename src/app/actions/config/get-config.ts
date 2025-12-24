@@ -1,7 +1,7 @@
 "use server";
 
 import { db } from "@/db";
-import { ticketCategories, ticketSubcategories, campusLocations, workAreas } from "@/db/schema";
+import { ticketCategories, ticketSubcategories, campusLocations, workAreas, attentionAreas } from "@/db/schema";
 
 export async function getActiveCategories() {
     try {
@@ -47,6 +47,24 @@ export async function getActiveWorkAreas() {
         return areas;
     } catch (error) {
         console.error("Error fetching work areas:", error);
+        return [];
+    }
+}
+
+export async function getActiveAttentionAreas() {
+    try {
+        const areas = await db.query.attentionAreas.findMany({
+            where: (areas, { eq }) => eq(areas.isActive, true),
+            columns: {
+                id: true,
+                name: true,
+                isAcceptingTickets: true,
+                closedMessage: true,
+            }
+        });
+        return areas;
+    } catch (error) {
+        console.error("Error fetching attention areas:", error);
         return [];
     }
 }

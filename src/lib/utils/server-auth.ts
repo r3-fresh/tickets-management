@@ -57,3 +57,25 @@ export async function isAdmin(): Promise<boolean> {
     const session = await getSession();
     return session?.user?.role === "admin";
 }
+
+/**
+ * Requires agent or admin role. Redirects if unauthorized.
+ * @returns Session object
+ */
+export async function requireAgent(): Promise<AppSession> {
+    const session = await requireAuth();
+
+    if (session.user.role !== "agent" && session.user.role !== "admin") {
+        redirect("/dashboard?error=forbidden");
+    }
+
+    return session;
+}
+
+/**
+ * Checks if key user is an agent
+ */
+export async function isAgent(): Promise<boolean> {
+    const session = await getSession();
+    return session?.user?.role === "agent";
+}

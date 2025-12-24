@@ -45,9 +45,10 @@ interface TicketsListProps {
     tickets: Ticket[];
     isAdmin: boolean;
     isWatchedView?: boolean;
+    isAgent?: boolean;
 }
 
-export function TicketsList({ tickets, isAdmin, isWatchedView = false }: TicketsListProps) {
+export function TicketsList({ tickets, isAdmin, isWatchedView = false, isAgent = false }: TicketsListProps) {
     const [filters, setFilters] = useState<{
         status?: string;
         assignedTo?: string;
@@ -139,8 +140,9 @@ export function TicketsList({ tickets, isAdmin, isWatchedView = false }: Tickets
         <div className="space-y-4">
             <div className="flex items-center justify-between">
                 <h1 className="text-3xl font-bold tracking-tight">
-                    {isWatchedView ? "Tickets Observados" : "Mis Tickets"}
+                    {isWatchedView ? "Tickets Observados" : (isAgent ? "Bandeja de atención" : "Mis Tickets")}
                 </h1>
+
                 <Button asChild>
                     <Link href="/dashboard/tickets/new">
                         <Plus className="mr-2 h-4 w-4" />

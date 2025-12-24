@@ -27,14 +27,19 @@ export const auth = betterAuth({
                 type: "string",
                 required: false,
                 defaultValue: "user",
-                input: false, // Don't allow user to set their role
+                input: false,
             },
             isActive: {
                 type: "boolean",
                 required: false,
                 defaultValue: true,
-                input: false, // Don't allow user to set their active status
+                input: false,
             },
+            attentionAreaId: {
+                type: "number",
+                required: false,
+                input: false,
+            }
         },
     },
 });

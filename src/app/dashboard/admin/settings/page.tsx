@@ -1,5 +1,5 @@
 import { db } from "@/db";
-import { appSettings, ticketCategories, campusLocations, workAreas, ticketSubcategories } from "@/db/schema";
+import { appSettings, ticketCategories, campusLocations, workAreas, ticketSubcategories, attentionAreas } from "@/db/schema";
 import { eq, asc } from "drizzle-orm";
 import { requireAdmin } from "@/lib/utils/server-auth";
 import { redirect } from "next/navigation";
@@ -46,6 +46,11 @@ export default async function AdminSettingsPage() {
         orderBy: [asc(workAreas.name)],
     });
 
+    // Fetch attention areas
+    const attentionAreasList = await db.query.attentionAreas.findMany({
+        orderBy: [asc(attentionAreas.name)],
+    });
+
     return (
         <div className="space-y-6">
             <div className="flex items-center gap-3">
@@ -63,6 +68,7 @@ export default async function AdminSettingsPage() {
                 initialSubcategories={subcategories}
                 initialCampus={campusData}
                 initialAreas={areas}
+                initialAttentionAreas={attentionAreasList}
             />
         </div>
     );

@@ -26,6 +26,7 @@ interface User {
 interface Category {
     id: number;
     name: string;
+    attentionAreaId?: number | null;
     subcategories: Array<{
         id: number;
         name: string;
@@ -42,12 +43,20 @@ interface WorkArea {
     name: string;
 }
 
+interface AttentionArea {
+    id: number;
+    name: string;
+    isAcceptingTickets: boolean;
+    closedMessage?: string | null;
+}
+
 interface NewTicketFormProps {
     availableUsers: User[];
     allowNewTickets?: boolean;
     categories: Category[];
     campuses: Campus[];
     workAreas: WorkArea[];
+    attentionAreas: AttentionArea[];
     disabledMessage?: string | null;
 }
 
@@ -57,10 +66,12 @@ export function NewTicketForm({
     categories,
     campuses,
     workAreas,
+    attentionAreas,
     disabledMessage
 }: NewTicketFormProps) {
     const [isPending, startTransition] = useTransition();
     const [selectedCategory, setSelectedCategory] = useState<number | null>(null);
+    const [selectedAttentionArea, setSelectedAttentionArea] = useState<number | null>(null);
     const [selectedWatchers, setSelectedWatchers] = useState<string[]>([]);
 
     if (!allowNewTickets) {
@@ -113,6 +124,11 @@ export function NewTicketForm({
         });
     };
 
+    // Filter categories based on attention Area
+    const filteredCategories = selectedAttentionArea
+        ? categories.filter(c => c.attentionAreaId === selectedAttentionArea)
+        : [];
+
     const currentSubcategories = categories.find(c => c.id === selectedCategory)?.subcategories || [];
 
     return (
@@ -142,6 +158,53 @@ export function NewTicketForm({
                                 )}
                             />
 
+                            {/* Attention Area Selector */}
+                            <FormField
+                                control={form.control}
+                                name="attentionAreaId"
+                                render={({ field }) => (
+                                    <FormItem>
+                                        <FormLabel>Área de Atención <span className="text-red-500">*</span></FormLabel>
+                                        <Select
+                                            onValueChange={(val) => {
+                                                const areaId = Number(val);
+                                                field.onChange(areaId);
+                                                setSelectedAttentionArea(areaId);
+                                                // Reset category/subcategory if area changes
+                                                form.setValue("categoryId", undefined as any);
+                                                form.setValue("subcategoryId", undefined as any);
+                                                setSelectedCategory(null);
+                                            }}
+                                            value={field.value?.toString()}
+                                        >
+                                            <FormControl>
+                                                <SelectTrigger>
+                                                    <SelectValue placeholder="Selecciona el área al que va dirigido..." />
+                                                </SelectTrigger>
+                                            </FormControl>
+                                            <SelectContent>
+                                                {attentionAreas.map((area) => (
+                                                    <SelectItem
+                                                        key={area.id}
+                                                        value={area.id.toString()}
+                                                        disabled={!area.isAcceptingTickets}
+                                                    >
+                                                        {area.name} {!area.isAcceptingTickets && "(Cerrado)"}
+                                                    </SelectItem>
+                                                ))}
+                                            </SelectContent>
+                                        </Select>
+                                        {!field.value && <FormDescription>Selecciona primero el área para ver las categorías disponibles.</FormDescription>}
+                                        {selectedAttentionArea && attentionAreas.find(a => a.id === selectedAttentionArea)?.closedMessage && (
+                                            <div className="text-amber-600 text-sm mt-1 bg-amber-50 p-2 rounded">
+                                                {attentionAreas.find(a => a.id === selectedAttentionArea)?.closedMessage}
+                                            </div>
+                                        )}
+                                        <FormMessage />
+                                    </FormItem>
+                                )}
+                            />
+
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                 <FormField
                                     control={form.control}
@@ -156,6 +219,7 @@ export function NewTicketForm({
                                                     form.setValue("subcategoryId", undefined as any);
                                                 }}
                                                 value={field.value?.toString()}
+                                                disabled={!selectedAttentionArea || filteredCategories.length === 0}
                                             >
                                                 <FormControl>
                                                     <SelectTrigger>
@@ -163,7 +227,7 @@ export function NewTicketForm({
                                                     </SelectTrigger>
                                                 </FormControl>
                                                 <SelectContent>
-                                                    {categories.map((cat) => (
+                                                    {filteredCategories.map((cat) => (
                                                         <SelectItem key={cat.id} value={cat.id.toString()}>
                                                             {cat.name}
                                                         </SelectItem>

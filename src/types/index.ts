@@ -4,7 +4,7 @@ import type { Session as BetterAuthSession, User as BetterAuthUser } from "bette
 // User & Auth Types
 // ============================================
 
-export type UserRole = 'user' | 'admin';
+export type UserRole = 'user' | 'admin' | 'agent';
 
 // AppUser extends the BetterAuth User and adds our custom role field
 // BetterAuthUser already includes id, name, email, etc.
@@ -14,6 +14,7 @@ export interface AppUser extends BetterAuthUser {
     email: string; // Explicitly include email
     role: UserRole;
     isActive: boolean; // User activation status
+    attentionAreaId?: number; // Optional: Only for agents
 }
 
 export interface AppSession extends BetterAuthSession {
