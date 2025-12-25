@@ -52,12 +52,16 @@ export default async function TicketDetailPage({ params }: { params: Promise<{ i
 
     if (!ticket) notFound();
 
-    // Access control: Only creator, watchers, or admins can view
+    // Access control: Only creator, watchers, admins, or agents of the area can view
     const isCreator = ticket.createdById === session.user.id;
     const isWatcher = ticket.watchers?.includes(session.user.id) || false;
     const isAdmin = session.user.role === "admin";
 
-    if (!isCreator && !isWatcher && !isAdmin) {
+    // Check if user is an agent for this specific area
+    const isAgentForArea = session.user.role === "agent" &&
+        session.user.attentionAreaId === ticket.attentionAreaId;
+
+    if (!isCreator && !isWatcher && !isAdmin && !isAgentForArea) {
         redirect("/dashboard/tickets");
     }
 
@@ -223,8 +227,8 @@ export default async function TicketDetailPage({ params }: { params: Promise<{ i
                         </CardContent>
                     </Card>
 
-                    {/* Admin Controls */}
-                    {session.user.role === "admin" && (
+                    {/* Admin/Agent Controls */}
+                    {(session.user.role === "admin" || isAgentForArea) && (
                         <Card>
                             <CardHeader>
                                 <CardTitle className="text-sm font-medium">Controles de Administrador</CardTitle>

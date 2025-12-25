@@ -22,6 +22,7 @@ import { authClient } from "@/lib/auth-client";
 import { useRouter } from "next/navigation";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { ModeToggle } from "@/components/shared/mode-toggle";
+import { SidebarUserInfo } from "@/components/dashboard/sidebar-user-info";
 
 export default function DashboardLayout({
     children,
@@ -130,6 +131,9 @@ export default function DashboardLayout({
                                 <p className="text-xs text-gray-500">
                                     {session?.user?.email}
                                 </p>
+                                <div className="pt-1">
+                                    <SidebarUserInfo role={userRole || "user"} />
+                                </div>
                             </div>
                             <button
                                 onClick={handleSignOut}
@@ -189,6 +193,9 @@ export default function DashboardLayout({
                         <div className="ml-3">
                             <p className="text-sm font-medium text-gray-700">{session?.user?.name || "Cargando..."}</p>
                             <p className="text-xs text-gray-500 truncate w-40">{session?.user?.email}</p>
+                            <div className="pt-1">
+                                <SidebarUserInfo role={userRole || "user"} />
+                            </div>
                         </div>
                     </div>
                     <Button

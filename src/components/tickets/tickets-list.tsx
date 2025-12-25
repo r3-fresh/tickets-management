@@ -142,13 +142,14 @@ export function TicketsList({ tickets, isAdmin, isWatchedView = false, isAgent =
                 <h1 className="text-3xl font-bold tracking-tight">
                     {isWatchedView ? "Tickets Observados" : (isAgent ? "Bandeja de atención" : "Mis Tickets")}
                 </h1>
-
-                <Button asChild>
-                    <Link href="/dashboard/tickets/new">
-                        <Plus className="mr-2 h-4 w-4" />
-                        Nuevo Ticket
-                    </Link>
-                </Button>
+                {!isAdmin && !isWatchedView && !isAgent && (
+                    <Button asChild>
+                        <Link href="/dashboard/tickets/new">
+                            <Plus className="mr-2 h-4 w-4" />
+                            Nuevo Ticket
+                        </Link>
+                    </Button>
+                )}
             </div>
 
             <div className="mb-4">

@@ -2,14 +2,14 @@
 
 import { db } from "@/db";
 import { tickets } from "@/db/schema";
-import { requireAdmin } from "@/lib/utils/server-auth";
+import { requireAgent } from "@/lib/utils/server-auth";
 import { eq } from "drizzle-orm";
 import { revalidatePath } from "next/cache";
 import { TICKET_STATUS } from "@/lib/constants/tickets";
 import type { TicketStatus } from "@/types";
 
 export async function assignTicketToSelf(ticketId: number) {
-    const session = await requireAdmin();
+    const session = await requireAgent();
 
     try {
         await db.update(tickets)
@@ -22,6 +22,7 @@ export async function assignTicketToSelf(ticketId: number) {
 
         revalidatePath(`/dashboard/tickets/${ticketId}`);
         revalidatePath("/dashboard/admin/tickets");
+        revalidatePath("/dashboard/agent");
         return { success: true };
     } catch (error) {
         console.error("Error assigning ticket:", error);
@@ -30,7 +31,7 @@ export async function assignTicketToSelf(ticketId: number) {
 }
 
 export async function unassignTicket(ticketId: number) {
-    await requireAdmin();
+    const session = await requireAgent();
 
     try {
         await db.update(tickets)
@@ -42,6 +43,7 @@ export async function unassignTicket(ticketId: number) {
 
         revalidatePath(`/dashboard/tickets/${ticketId}`);
         revalidatePath("/dashboard/admin/tickets");
+        revalidatePath("/dashboard/agent");
         return { success: true };
     } catch (error) {
         console.error("Error unassigning ticket:", error);
@@ -50,7 +52,7 @@ export async function unassignTicket(ticketId: number) {
 }
 
 export async function updateTicketStatus(ticketId: number, newStatus: TicketStatus) {
-    await requireAdmin();
+    const session = await requireAgent();
 
     try {
         await db.update(tickets)
@@ -62,6 +64,7 @@ export async function updateTicketStatus(ticketId: number, newStatus: TicketStat
 
         revalidatePath(`/dashboard/tickets/${ticketId}`);
         revalidatePath("/dashboard/admin/tickets");
+        revalidatePath("/dashboard/agent");
         return { success: true };
     } catch (error) {
         console.error("Error updating ticket status:", error);

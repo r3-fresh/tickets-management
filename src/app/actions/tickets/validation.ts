@@ -2,7 +2,7 @@
 
 import { db } from "@/db";
 import { tickets } from "@/db/schema";
-import { requireAuth } from "@/lib/utils/server-auth";
+import { requireAuth, requireAgent } from "@/lib/utils/server-auth";
 import { eq, inArray } from "drizzle-orm";
 import { revalidatePath } from "next/cache";
 import { TICKET_STATUS, CLOSURE_TYPE } from "@/lib/constants/tickets";
@@ -99,12 +99,9 @@ export async function rejectTicketValidation(ticketId: number) {
  * Admin/Agent requests validation from user - moves from in_progress to pending_validation
  */
 export async function requestValidation(ticketId: number) {
-    const session = await requireAuth();
+    const session = await requireAgent();
 
-    // Only admins can request validation
-    if (session.user.role !== "admin") {
-        return { error: "Se requieren permisos de administrador" };
-    }
+    // Only admins/agents can request validation (handled by requireAgent)
 
     try {
         const ticket = await db.query.tickets.findFirst({
