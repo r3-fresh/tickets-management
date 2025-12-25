@@ -1,6 +1,5 @@
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
-import { auth } from "@/lib/auth";
 
 export async function middleware(request: NextRequest) {
     const { pathname } = request.nextUrl;
@@ -16,19 +15,39 @@ export async function middleware(request: NextRequest) {
             return NextResponse.redirect(loginUrl);
         }
 
-        // Check admin routes
+        // Check admin/agent routes
         if (pathname.startsWith("/dashboard/admin") || pathname.startsWith("/dashboard/agent")) {
             try {
-                const session = await auth.api.getSession({
-                    headers: request.headers,
+                // Fetch session from API (Node.js runtime) to avoid import issues in Edge Middleware
+                const response = await fetch(`${request.nextUrl.origin}/api/auth/get-session`, {
+                    headers: {
+                        cookie: request.headers.get("cookie") || "",
+                    },
                 });
+                const session = await response.json();
 
-                if (!session?.user || session.user.role !== "admin") {
+                if (!session?.user) {
+                    return NextResponse.redirect(new URL("/login", request.url));
+                }
+
+                const role = session.user.role;
+
+                // Protect Admin Routes
+                if (pathname.startsWith("/dashboard/admin") && role !== "admin") {
                     const dashboardUrl = new URL("/dashboard", request.url);
                     return NextResponse.redirect(dashboardUrl);
                 }
+
+                // Protect Agent Routes (Managers/Admins allowed)
+                if (pathname.startsWith("/dashboard/agent") && role !== "agent" && role !== "admin") {
+                    const dashboardUrl = new URL("/dashboard", request.url);
+                    return NextResponse.redirect(dashboardUrl);
+                }
+
             } catch (error) {
                 console.error("Middleware auth error:", error);
+                // On error, maybe allow to proceed or redirect to safe page?
+                // Let's allow proceed to avoid locking out if API fails, page guard will handle it.
             }
         }
     }
