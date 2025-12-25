@@ -11,8 +11,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Separator } from "@/components/ui/separator";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import { formatDate, translateStatus, translatePriority } from "@/lib/utils/format";
-import { ArrowLeft } from "lucide-react";
-import Link from "next/link";
+import { BackButton } from "@/components/shared/back-button";
 import { AdminTicketControls } from "./admin-ticket-controls";
 import { MarkAsViewed } from "./mark-as-viewed";
 import { WatchersManager } from "./watchers-manager";
@@ -80,12 +79,9 @@ export default async function TicketDetailPage({ params }: { params: Promise<{ i
     const canComment = !isTicketClosed;
 
     return (
-        <div className="space-y-6 max-w-4xl mx-auto">
+        <div className="space-y-4 max-w-4xl mx-auto">
             <MarkAsViewed ticketId={ticketId} />
-            <Link href={`/dashboard/${session.user.role == "admin" ? "agent" : "tickets"}`} className="inline-flex items-center text-sm text-muted-foreground hover:text-foreground">
-                <ArrowLeft className="mr-2 h-4 w-4" />
-                Volver al listado de tickets
-            </Link>
+            <BackButton />
 
             {/* User Validation Controls - Only show for creators when pending validation */}
             {ticket.status === 'pending_validation' && ticket.createdById === session.user.id && (
@@ -142,7 +138,7 @@ export default async function TicketDetailPage({ params }: { params: Promise<{ i
 
                                             <div>
                                                 <span className="block text-muted-foreground text-xs mb-1">Área de Atención (Destino)</span>
-                                                <Badge variant="outline" className="font-medium">{ticket.attentionArea?.name || "—"}</Badge>
+                                                <span className="font-medium">{ticket.attentionArea?.name || "—"}</span>
                                             </div>
                                             <div>
                                                 <span className="block text-muted-foreground text-xs mb-1">Área de Procedencia (Origen)</span>
@@ -157,11 +153,12 @@ export default async function TicketDetailPage({ params }: { params: Promise<{ i
                                 </AccordionItem>
                             </Accordion>
 
-                            <CardDescription className="pt-2 text-xs flex justify-between items-center text-muted-foreground/60">
+                            <CardDescription className="text-xs flex justify-between items-center text-muted-foreground/60">
                                 <span>Creado el {formatDate(ticket.createdAt)}</span>
                             </CardDescription>
                         </CardHeader>
                         <CardContent>
+                            <h3 className="text-lg font-semibold">Descripción detallada</h3>
                             <div className="prose max-w-none text-gray-700 dark:text-gray-300">
                                 <RichTextEditor value={ticket.description} disabled={true} />
                             </div>
@@ -169,7 +166,7 @@ export default async function TicketDetailPage({ params }: { params: Promise<{ i
                     </Card>
 
                     <div className="space-y-4">
-                        <h3 className="text-lg font-semibold">Actividad</h3>
+                        <h3 className="text-lg font-semibold">Comentarios</h3>
 
                         {/* New Comment Form */}
                         {canComment ? (

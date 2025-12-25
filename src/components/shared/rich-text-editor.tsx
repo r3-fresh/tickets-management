@@ -44,7 +44,7 @@ export function RichTextEditor({ value, onChange, placeholder, disabled }: RichT
         },
         editorProps: {
             attributes: {
-                class: "prose prose-sm dark:prose-invert max-w-none p-3 min-h-[100px] outline-none break-words [&_a]:break-all [&_p]:my-1",
+                class: "prose prose-sm dark:prose-invert max-w-none p-3 min-h-[60px] outline-none break-words [&_a]:break-all [&_p]:my-1",
             },
         },
     });
@@ -145,7 +145,7 @@ export function RichTextEditor({ value, onChange, placeholder, disabled }: RichT
                     </Popover>
                 </div>
             )}
-            <EditorContent editor={editor} className={disabled ? "" : "min-h-[100px]"} />
+            <EditorContent editor={editor} className={disabled ? "" : "min-h-[60px]"} />
         </div>
     );
 }
