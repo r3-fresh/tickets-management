@@ -76,7 +76,7 @@ export function WatchersManager({ ticketId, currentWatchers, allUsers, currentUs
             <DialogTrigger asChild>
                 <Button variant="outline" size="sm" className="w-full justify-start mt-2">
                     <Plus className="mr-2 h-4 w-4" />
-                    Gestionar Watchers
+                    Gestionar Observadores
                 </Button>
             </DialogTrigger>
             <DialogContent className="sm:max-w-[425px]">

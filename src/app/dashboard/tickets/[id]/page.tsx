@@ -9,6 +9,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/com
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Separator } from "@/components/ui/separator";
+import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import { formatDate, translateStatus, translatePriority } from "@/lib/utils/format";
 import { ArrowLeft } from "lucide-react";
 import Link from "next/link";
@@ -41,6 +42,8 @@ export default async function TicketDetailPage({ params }: { params: Promise<{ i
             subcategory: true,
             campus: true,
             area: true,
+            attentionArea: true,
+            assignedTo: true,
             comments: {
                 with: {
                     author: true
@@ -94,10 +97,7 @@ export default async function TicketDetailPage({ params }: { params: Promise<{ i
                 <div className="md:col-span-2 space-y-6">
                     <Card>
                         <CardHeader className="pb-4">
-                            <div className="flex justify-between items-start mb-2">
-                                <Badge variant="secondary" className="px-2 py-0.5 text-xs font-semibold uppercase tracking-wider bg-blue-50 text-blue-700 hover:bg-blue-100 border-none">
-                                    {ticket.category?.name || "Sin categoría"}
-                                </Badge>
+                            <div className="flex justify-end items-start mb-2">
                                 <Badge className={
                                     ticket.status === 'open' ? 'bg-green-100 text-green-800 hover:bg-green-100/80' :
                                         ticket.status === 'in_progress' ? 'bg-blue-100 text-blue-800 hover:bg-blue-100/80' :
@@ -108,18 +108,57 @@ export default async function TicketDetailPage({ params }: { params: Promise<{ i
                                 </Badge>
                             </div>
 
-                            <div className="flex justify-between items-center">
-                                <div className="flex items-center gap-3">
-                                    <span className="text-muted-foreground font-mono text-lg">{ticket.ticketCode}</span>
+                            <div className="flex flex-col gap-1 mb-4">
+                                <span className="text-sm font-mono text-muted-foreground">{ticket.ticketCode}</span>
+                                <div className="flex justify-between items-start gap-4">
                                     <h2 className="text-2xl font-bold tracking-tight">{ticket.title}</h2>
+                                    {isCreator && !isTicketClosed && (
+                                        <CancelTicketButton ticketId={ticketId} />
+                                    )}
                                 </div>
-                                {isCreator && !isTicketClosed && (
-                                    <CancelTicketButton ticketId={ticketId} />
-                                )}
                             </div>
 
-                            <CardDescription className="pt-2 text-xs">
-                                Creado el {formatDate(ticket.createdAt)}
+                            <Accordion type="single" collapsible className="w-full my-2">
+                                <AccordionItem value="details" className="border-b-0">
+                                    <AccordionTrigger className="py-2 text-sm font-medium text-muted-foreground hover:text-foreground hover:no-underline">
+                                        Ver detalles completos
+                                    </AccordionTrigger>
+                                    <AccordionContent>
+                                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-y-4 gap-x-8 py-2 text-sm">
+                                            <div>
+                                                <span className="block text-muted-foreground text-xs mb-1">Categoría</span>
+                                                <span className="font-medium">{ticket.category?.name || "—"}</span>
+                                            </div>
+                                            <div>
+                                                <span className="block text-muted-foreground text-xs mb-1">Subcategoría</span>
+                                                <span className="font-medium">{ticket.subcategory?.name || "—"}</span>
+                                            </div>
+                                            <div>
+                                                <span className="block text-muted-foreground text-xs mb-1">Prioridad</span>
+                                                <span className="font-medium capitalize">{translatePriority(ticket.priority)}</span>
+                                            </div>
+
+                                            <Separator className="md:col-span-2 lg:col-span-3 my-1 opacity-50" />
+
+                                            <div>
+                                                <span className="block text-muted-foreground text-xs mb-1">Área de Atención (Destino)</span>
+                                                <Badge variant="outline" className="font-medium">{ticket.attentionArea?.name || "—"}</Badge>
+                                            </div>
+                                            <div>
+                                                <span className="block text-muted-foreground text-xs mb-1">Área de Procedencia (Origen)</span>
+                                                <span className="font-medium">{ticket.area?.name || "—"}</span>
+                                            </div>
+                                            <div>
+                                                <span className="block text-muted-foreground text-xs mb-1">Campus</span>
+                                                <span className="font-medium">{ticket.campus?.name || "—"}</span>
+                                            </div>
+                                        </div>
+                                    </AccordionContent>
+                                </AccordionItem>
+                            </Accordion>
+
+                            <CardDescription className="pt-2 text-xs flex justify-between items-center text-muted-foreground/60">
+                                <span>Creado el {formatDate(ticket.createdAt)}</span>
                             </CardDescription>
                         </CardHeader>
                         <CardContent>
@@ -142,23 +181,23 @@ export default async function TicketDetailPage({ params }: { params: Promise<{ i
                         )}
 
                         {/* Comment List */}
-                        <div className="space-y-4">
+                        <div className="space-y-3">
                             {ticket.comments.map((comment) => (
                                 <Card key={comment.id} className="bg-muted/30">
-                                    <CardContent className="p-4">
-                                        <div className="flex items-start space-x-4">
-                                            <Avatar className="h-8 w-8">
+                                    <CardContent className="p-3">
+                                        <div className="flex items-start space-x-3">
+                                            <Avatar className="h-8 w-8 mt-1">
                                                 <AvatarImage src={comment.author.image || undefined} />
                                                 <AvatarFallback className="bg-cyan-600 text-white font-bold">{comment.author.name.charAt(0)}</AvatarFallback>
                                             </Avatar>
                                             <div className="flex-1">
-                                                <div className="flex items-center justify-between">
+                                                <div className="flex items-center justify-between mb-1">
                                                     <p className="text-sm font-medium">{comment.author.name}</p>
                                                     <span className="text-xs text-muted-foreground">
                                                         {formatDate(comment.createdAt)}
                                                     </span>
                                                 </div>
-                                                <div className="mt-1 text-sm text-foreground">
+                                                <div className="text-sm text-foreground [&_p]:my-1 [&_ul]:my-1 [&_ol]:my-1">
                                                     <RichTextEditor value={comment.content} disabled={true} />
                                                 </div>
                                             </div>
@@ -189,7 +228,24 @@ export default async function TicketDetailPage({ params }: { params: Promise<{ i
                             </div>
                             <Separator />
                             <div>
-                                <span className="block text-muted-foreground mb-2">Watchers</span>
+                                <span className="block text-muted-foreground">Asignado a</span>
+                                {ticket.assignedTo ? (
+                                    <div className="flex items-center mt-1">
+                                        <Avatar className="h-6 w-6 mr-2">
+                                            <AvatarImage src={ticket.assignedTo.image || undefined} />
+                                            <AvatarFallback className="bg-indigo-600 text-white text-[10px] font-bold">
+                                                {ticket.assignedTo.name.charAt(0)}
+                                            </AvatarFallback>
+                                        </Avatar>
+                                        <span className="text-sm font-medium">{ticket.assignedTo.name}</span>
+                                    </div>
+                                ) : (
+                                    <span className="text-sm text-muted-foreground italic">Sin asignar</span>
+                                )}
+                            </div>
+                            <Separator />
+                            <div>
+                                <span className="block text-muted-foreground mb-2">Observadores</span>
                                 {watchersList.length > 0 ? (
                                     <div className="space-y-2">
                                         {watchersList.map(watcher => (
@@ -203,7 +259,7 @@ export default async function TicketDetailPage({ params }: { params: Promise<{ i
                                         ))}
                                     </div>
                                 ) : (
-                                    <span className="text-muted-foreground italic text-sm">No hay watchers asignados</span>
+                                    <span className="text-muted-foreground italic text-sm">No hay observadores asignados</span>
                                 )}
                                 {!isTicketClosed && (
                                     <WatchersManager
