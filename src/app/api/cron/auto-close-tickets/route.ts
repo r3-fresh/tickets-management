@@ -4,6 +4,8 @@ import { lt, and, eq, sql } from "drizzle-orm";
 import { NextResponse } from "next/server";
 import { TICKET_STATUS, CLOSURE_TYPE, VALIDATION_TIMEOUT_HOURS } from "@/lib/constants/tickets";
 
+export const dynamic = 'force-dynamic';
+
 /**
  * Auto-close tickets that have been pending validation for more than 48 hours
  * This endpoint should be called by a cron job periodically (e.g., every hour)
