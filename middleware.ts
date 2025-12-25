@@ -6,8 +6,9 @@ export async function middleware(request: NextRequest) {
 
     // Check if the user is trying to access the dashboard
     if (pathname.startsWith("/dashboard")) {
-        // Better-auth uses this cookie name by default
-        const sessionToken = request.cookies.get("better-auth.session_token");
+        // Check for session token (support both standard and secure prefixes)
+        const sessionToken = request.cookies.get("better-auth.session_token") ||
+            request.cookies.get("__Secure-better-auth.session_token");
 
         if (!sessionToken) {
             // Redirect to login if no session token found
