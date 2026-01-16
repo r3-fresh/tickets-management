@@ -3,7 +3,7 @@
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { SettingsForm } from "@/components/admin/settings-form";
-import { CategoriesManagement } from "@/components/admin/categories-management";
+import { AdminCategoriesManagement as CategoriesManagement } from "@/components/admin/categories-management";
 import { SubcategoriesManagement } from "@/components/admin/subcategories-management";
 import { CampusManagement } from "@/components/admin/campus-management";
 import { WorkAreasManagement } from "@/components/admin/work-areas-management";

@@ -1,11 +1,11 @@
 import { db } from "@/db";
 import { users } from "@/db/schema";
-import { auth } from "@/lib/auth";
+import { auth } from "@/lib/auth/server";
 import { headers } from "next/headers";
 import { redirect } from "next/navigation";
 import { eq } from "drizzle-orm";
 import { NewTicketForm } from "./form";
-import { getActiveCategories, getActiveCampuses, getActiveWorkAreas, getActiveAttentionAreas } from "@/app/actions/config/get-config";
+import { getActiveCategories, getActiveCampuses, getActiveWorkAreas, getActiveAttentionAreas } from "@/actions/config/get-config";
 
 async function getAppSetting(key: string): Promise<string | null> {
     try {

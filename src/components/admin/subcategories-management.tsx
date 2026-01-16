@@ -20,7 +20,7 @@ import {
     toggleSubcategoryActive,
     moveSubcategoryUp,
     moveSubcategoryDown,
-} from "@/app/actions/admin/subcategories";
+} from "@/actions/admin/subcategories";
 
 interface Category {
     id: number;

@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { getAgentAreaName } from "@/app/actions/agent/get-area-name";
+import { getAgentAreaName } from "@/actions/agent/get-area-name";
 import { Badge } from "@/components/ui/badge";
 
 interface SidebarUserInfoProps {

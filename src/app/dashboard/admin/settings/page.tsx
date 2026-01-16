@@ -1,8 +1,7 @@
 import { db } from "@/db";
 import { appSettings, ticketCategories, campusLocations, workAreas, ticketSubcategories, attentionAreas } from "@/db/schema";
 import { eq, asc } from "drizzle-orm";
-import { requireAdmin } from "@/lib/utils/server-auth";
-import { redirect } from "next/navigation";
+import { requireAdmin } from "@/lib/auth/helpers";
 import { Settings } from "lucide-react";
 import { AdminSettingsTabs } from "@/components/admin/admin-settings-tabs";
 
@@ -22,9 +21,12 @@ export default async function AdminSettingsPage() {
     });
     const disabledMessage = disabledMessageSetting?.value || "";
 
-    // Fetch all categories
+    // Fetch all categories with subcategories
     const categories = await db.query.ticketCategories.findMany({
         orderBy: [asc(ticketCategories.displayOrder)],
+        with: {
+            subcategories: true,
+        },
     });
 
 

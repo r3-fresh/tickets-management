@@ -1,6 +1,6 @@
 "use client";
 
-import { createAttentionArea, updateAttentionArea } from "@/app/actions/admin/attention-areas";
+import { createAttentionArea, updateAttentionArea } from "@/actions/admin/attention-areas";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";

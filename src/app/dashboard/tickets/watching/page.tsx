@@ -1,7 +1,6 @@
 import { db } from "@/db";
 import { tickets, comments, ticketViews, ticketCategories } from "@/db/schema";
-import { requireAuth } from "@/lib/utils/server-auth";
-import { redirect } from "next/navigation";
+import { requireAuth } from "@/lib/auth/helpers";
 import { desc, sql, and, not, eq } from "drizzle-orm";
 import { TicketsList } from "@/components/tickets/tickets-list";
 

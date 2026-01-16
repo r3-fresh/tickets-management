@@ -1,9 +1,8 @@
 import { db } from "@/db";
 import { tickets, comments, ticketViews, ticketCategories, users, attentionAreas } from "@/db/schema";
-import { requireAgent } from "@/lib/utils/server-auth";
+import { requireAgent } from "@/lib/auth/helpers";
 import { eq, desc, sql, and, or, count } from "drizzle-orm";
 import { TicketsList } from "@/components/tickets/tickets-list";
-import { redirect } from "next/navigation";
 import {
     Card,
     CardContent,

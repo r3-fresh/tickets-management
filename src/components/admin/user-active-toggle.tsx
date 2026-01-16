@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
-import { toggleUserActive } from "@/app/actions/admin";
+import { toggleUserActive } from "@/actions/admin";
 import { toast } from "sonner";
 import { Shield, ShieldAlert } from "lucide-react";
 import {

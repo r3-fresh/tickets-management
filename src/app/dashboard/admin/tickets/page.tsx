@@ -1,7 +1,6 @@
 import { db } from "@/db";
 import { tickets, comments, ticketViews, ticketCategories } from "@/db/schema";
-import { requireAdmin } from "@/lib/utils/server-auth";
-import { redirect } from "next/navigation";
+import { requireAdmin } from "@/lib/auth/helpers";
 import { desc, sql, eq, and } from "drizzle-orm";
 import { AdminTicketsTable } from "@/components/admin/admin-tickets-table";
 

@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect } from "react";
-import { markTicketAsViewed } from "@/app/actions/tickets";
+import { markTicketAsViewed } from "@/actions/tickets";
 
 export function MarkAsViewed({ ticketId }: { ticketId: number }) {
     useEffect(() => {

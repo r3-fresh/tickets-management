@@ -2,7 +2,7 @@
 
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { approveTicketValidation, rejectTicketValidation } from "@/app/actions/tickets";
+import { approveTicketValidation, rejectTicketValidation } from "@/actions/tickets";
 import { toast } from "sonner";
 import { useTransition } from "react";
 import { CheckCircle2, XCircle, AlertCircle } from "lucide-react";

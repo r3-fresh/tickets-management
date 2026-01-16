@@ -1,6 +1,6 @@
 import { db } from "@/db";
 import { users } from "@/db/schema";
-import { auth } from "@/lib/auth";
+import { auth } from "@/lib/auth/server";
 import { headers } from "next/headers";
 import { redirect } from "next/navigation";
 import { desc } from "drizzle-orm";
@@ -19,7 +19,7 @@ export default async function AdminRolesPage() {
         .from(users)
         .orderBy(desc(users.createdAt));
 
-    const { getActiveAttentionAreas } = await import("@/app/actions/config/get-config");
+    const { getActiveAttentionAreas } = await import("@/actions/config/get-config");
     const attentionAreas = await getActiveAttentionAreas();
 
     return (

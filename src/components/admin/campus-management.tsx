@@ -11,7 +11,7 @@ import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, D
 import { Plus, Pencil, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 import { DeleteConfirmDialog } from "@/components/shared/delete-confirm-dialog";
-import { createCampus, updateCampus, deleteCampus, toggleCampusActive } from "@/app/actions/admin/campus";
+import { createCampus, updateCampus, deleteCampus, toggleCampusActive } from "@/actions/admin/campus";
 
 interface Campus {
     id: number;

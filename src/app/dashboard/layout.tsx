@@ -18,7 +18,7 @@ import {
     Settings,
     Target
 } from "lucide-react";
-import { authClient } from "@/lib/auth-client";
+import { authClient } from "@/lib/auth/client";
 import { useRouter } from "next/navigation";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { ModeToggle } from "@/components/shared/mode-toggle";
@@ -49,14 +49,13 @@ export default function DashboardLayout({
     const navItems = [
         { href: "/dashboard/tickets", label: "Mis Tickets", icon: Ticket },
         { href: "/dashboard/tickets/watching", label: "Tickets Observados", icon: Eye },
-        { href: "/dashboard/tickets/new", label: "Nuevo Ticket", icon: PlusCircle },
+        // { href: "/dashboard/tickets/new", label: "Nuevo Ticket", icon: PlusCircle },
     ];
 
     // Admin-only items
     const adminItems = [
         { href: "/dashboard/admin", label: "Dashboard", icon: LayoutDashboard },
         { href: "/dashboard/admin/tickets", label: "Explorador de Tickets", icon: Ticket }, // Renamed from "Bandeja de Tickets"
-        // { href: "/dashboard/tickets", label: "Mis Solicitudes", icon: User }, // Added own tickets view
         { href: "/dashboard/admin/roles", label: "Gestión de Roles", icon: Shield },
         { href: "/dashboard/admin/settings", label: "Configuración", icon: Settings },
     ];
@@ -67,7 +66,6 @@ export default function DashboardLayout({
         { href: "/dashboard/tickets", label: "Mis Solicitudes", icon: User }, // Added own tickets view
         { href: "/dashboard/tickets/watching", label: "Tickets Observados", icon: Eye },
         { href: "/dashboard/agent/settings", label: "Configuración", icon: Settings },
-        // { href: "/dashboard/tickets/new", label: "Nuevo Ticket", icon: PlusCircle },
     ];
 
     // Type assertion for better-auth session with role
@@ -84,8 +82,8 @@ export default function DashboardLayout({
         <div className="flex h-screen bg-gray-100 dark:bg-background">
             {/* Sidebar */}
             <div className="hidden md:flex md:w-64 md:flex-col">
-                <div className="flex flex-col flex-grow bg-white dark:bg-card border-r border-gray-200 dark:border-border pt-5 pb-4 overflow-y-auto">
-                    <div className="flex items-center flex-shrink-0 px-4">
+                <div className="flex flex-col grow bg-white dark:bg-card border-r border-gray-200 dark:border-border pt-5 pb-4 overflow-y-auto">
+                    <div className="flex items-center shrink-0 px-4">
                         <h1 className="text-xl font-bold">Gestión de Tickets</h1>
                     </div>
 
@@ -103,7 +101,7 @@ export default function DashboardLayout({
                                         }`}
                                 >
                                     <Icon
-                                        className={`mr-3 flex-shrink-0 h-5 w-5 ${isActive ? "text-gray-900 dark:text-accent-foreground" : "text-muted-foreground group-hover:text-foreground"
+                                        className={`mr-3 shrink-0 h-5 w-5 ${isActive ? "text-gray-900 dark:text-accent-foreground" : "text-muted-foreground group-hover:text-foreground"
                                             }`}
                                     />
                                     {item.label}
@@ -113,7 +111,7 @@ export default function DashboardLayout({
                     </nav>
 
                     {/* User section at bottom */}
-                    <div className="flex-shrink-0 border-t border-gray-200 dark:border-border p-4">
+                    <div className="shrink-0 border-t border-gray-200 dark:border-border p-4">
                         <div className="flex flex-col items-center text-center space-y-3">
                             <div className="w-full flex justify-end px-2">
                                 <ModeToggle />
@@ -175,7 +173,7 @@ export default function DashboardLayout({
                                     }`}
                             >
                                 <Icon
-                                    className={`mr-3 h-5 w-5 flex-shrink-0 ${isActive ? "text-blue-700 dark:text-blue-400" : "text-muted-foreground group-hover:text-foreground"
+                                    className={`mr-3 h-5 w-5 shrink-0 ${isActive ? "text-blue-700 dark:text-blue-400" : "text-muted-foreground group-hover:text-foreground"
                                         }`}
                                 />
                                 {item.label}

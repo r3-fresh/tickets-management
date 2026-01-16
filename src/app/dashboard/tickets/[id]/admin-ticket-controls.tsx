@@ -2,7 +2,7 @@
 
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { assignTicketToSelf, updateTicketStatus, unassignTicket, requestValidation } from "@/app/actions/admin";
+import { assignTicketToSelf, updateTicketStatus, unassignTicket, requestValidation } from "@/actions/admin";
 import { toast } from "sonner";
 import { useTransition } from "react";
 import { UserPlus, UserMinus, CheckCircle } from "lucide-react";

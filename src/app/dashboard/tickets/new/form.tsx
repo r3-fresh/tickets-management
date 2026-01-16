@@ -2,14 +2,14 @@
 
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { createTicketSchema, CreateTicketSchema } from "@/lib/schemas";
+import { createTicketSchema, CreateTicketSchema } from "@/lib/validation/schemas";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { toast } from "sonner";
-import { createTicketAction } from "@/app/actions/tickets";
+import { createTicketAction } from "@/actions/tickets";
 import { useState, useTransition } from "react";
 import { Loader2, ArrowLeft } from "lucide-react";
 import { UserSelector } from "@/components/ui/user-selector";
@@ -47,7 +47,6 @@ interface AttentionArea {
     id: number;
     name: string;
     isAcceptingTickets: boolean;
-    closedMessage?: string | null;
 }
 
 interface NewTicketFormProps {
@@ -195,11 +194,6 @@ export function NewTicketForm({
                                             </SelectContent>
                                         </Select>
                                         {!field.value && <FormDescription>Selecciona primero el área para ver las categorías disponibles.</FormDescription>}
-                                        {selectedAttentionArea && attentionAreas.find(a => a.id === selectedAttentionArea)?.closedMessage && (
-                                            <div className="text-amber-600 text-sm mt-1 bg-amber-50 p-2 rounded">
-                                                {attentionAreas.find(a => a.id === selectedAttentionArea)?.closedMessage}
-                                            </div>
-                                        )}
                                         <FormMessage />
                                     </FormItem>
                                 )}

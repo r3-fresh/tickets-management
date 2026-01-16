@@ -4,7 +4,7 @@ import { useState, useTransition } from "react";
 import { RichTextEditor } from "@/components/shared/rich-text-editor";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { addCommentAction } from "@/app/actions/comments";
+import { addCommentAction } from "@/actions/comments";
 import { Loader2 } from "lucide-react";
 import { toast } from "sonner";
 

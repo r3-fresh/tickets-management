@@ -1,8 +1,8 @@
 import { db } from "@/db";
-import { attentionAreas } from "@/db/schema";
-import { requireAgent } from "@/lib/utils/server-auth";
-import { eq } from "drizzle-orm";
-import { SettingsForm } from "./form";
+import { attentionAreas, ticketCategories, ticketSubcategories } from "@/db/schema";
+import { requireAgent } from "@/lib/auth/helpers";
+import { eq, asc } from "drizzle-orm";
+import { SettingsTabs } from "./settings-tabs";
 
 export default async function SettingsPage() {
     const session = await requireAgent();
@@ -19,6 +19,27 @@ export default async function SettingsPage() {
         return <div>Error: No se encontró la configuración del área.</div>;
     }
 
+    // Fetch categories for this area
+    const categories = await db.query.ticketCategories.findMany({
+        where: eq(ticketCategories.attentionAreaId, session.user.attentionAreaId),
+        with: {
+            subcategories: {
+                orderBy: [asc(ticketSubcategories.displayOrder)],
+            },
+        },
+        orderBy: [asc(ticketCategories.displayOrder)],
+    });
+
+    // Fetch all subcategories for this area (flatten from categories)
+    const subcategories = await db.query.ticketSubcategories.findMany({
+        where: (subcategories, { inArray }) =>
+            inArray(subcategories.categoryId, categories.map(c => c.id)),
+        with: {
+            category: true,
+        },
+        orderBy: [asc(ticketSubcategories.categoryId), asc(ticketSubcategories.displayOrder)],
+    });
+
     return (
         <div className="space-y-6">
             <div>
@@ -28,7 +49,12 @@ export default async function SettingsPage() {
                 </p>
             </div>
 
-            <SettingsForm initialData={areaConfig} />
+            <SettingsTabs
+                initialData={areaConfig}
+                categories={categories}
+                subcategories={subcategories}
+                areaId={session.user.attentionAreaId}
+            />
         </div>
     );
 }

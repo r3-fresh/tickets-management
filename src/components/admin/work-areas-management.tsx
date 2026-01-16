@@ -12,7 +12,7 @@ import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, D
 import { Plus, Pencil, Trash2 } from "lucide-react";
 import { DeleteConfirmDialog } from "@/components/shared/delete-confirm-dialog";
 import { toast } from "sonner";
-import { createWorkArea, updateWorkArea, deleteWorkArea, toggleWorkAreaActive } from "@/app/actions/admin/work-areas";
+import { createWorkArea, updateWorkArea, deleteWorkArea, toggleWorkAreaActive } from "@/actions/admin/work-areas";
 
 interface WorkArea {
     id: number;

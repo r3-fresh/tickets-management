@@ -139,6 +139,10 @@ export const tickets = pgTable("ticket", {
     // Validation tracking
     validationRequestedAt: timestamp("validation_requested_at"), // When validation was requested
 
+    // Email threading
+    emailThreadId: text("email_thread_id"), // Gmail Thread ID (for sender API)
+    initialMessageId: text("initial_message_id"), // RFC Message-ID of the first email (for grouping)
+
     // Closure tracking
     closedBy: text("closed_by"), // 'user' | 'admin' | 'system'
     closedAt: timestamp("closed_at"), // When ticket was closed
@@ -260,8 +264,6 @@ export const attentionAreas = pgTable("attention_area", {
 
     // Availability
     isAcceptingTickets: boolean("is_accepting_tickets").notNull().default(true),
-    closedMessage: text("closed_message"),
-    closedUntil: timestamp("closed_until"),
 
     createdAt: timestamp("created_at").defaultNow().notNull(),
     updatedAt: timestamp("updated_at").defaultNow().notNull(),

@@ -1,7 +1,7 @@
 
 import { db } from "@/db";
 import { tickets, comments, users } from "@/db/schema";
-import { auth } from "@/lib/auth";
+import { auth } from "@/lib/auth/server";
 import { headers } from "next/headers";
 import { notFound, redirect } from "next/navigation";
 import { eq, desc, inArray } from "drizzle-orm";
