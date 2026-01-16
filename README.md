@@ -1,6 +1,6 @@
-# Sistema de Gestión de Tickets TSI
+# Sistema de Gestión de Tickets
 
-Sistema institucional de gestión de tickets construido con **Next.js 15**, **TypeScript**, **PostgreSQL** y **Better Auth**.
+Sistema institucional de gestión de tickets construido con **Next.js 16**, **TypeScript**, **PostgreSQL** y **Better Auth**.
 
 ---
 
@@ -154,4 +154,4 @@ En [Google Cloud Console](https://console.cloud.google.com):
 
 ---
 
-**Hecho con ❤️ para la gestión institucional.**
+**Hecho con ❤️.**
