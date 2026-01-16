@@ -34,6 +34,9 @@ export function getBaseTemplate(content: string, attentionAreaName: string = 'Hu
             
             <!-- Footer -->
             <div style="border-top: 20px solid #000000; background-color: #ffffff; padding: 0;">&nbsp;</div>
+            <div style="display:none;font-size:0px;color:transparent;line-height:0;max-height:0;mso-hide:all;">
+                ${new Date().getTime()}
+            </div>
         </div>
     </div>
 </body>

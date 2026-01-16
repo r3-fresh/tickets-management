@@ -27,7 +27,7 @@ export function UserValidationControls({ ticketId }: { ticketId: number }) {
             if (result?.error) {
                 toast.error(result.error);
             } else {
-                toast.success("✅ Ticket validado y cerrado correctamente");
+                toast.success("Ticket validado y cerrado correctamente");
             }
         });
     };

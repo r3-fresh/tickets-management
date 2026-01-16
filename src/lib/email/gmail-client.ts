@@ -116,9 +116,11 @@ function quotedPrintableEncode(str: string): string {
  * Fetch thread details to get references for threading
  * Includes retry logic to handle API consistency delays
  */
+/**
+ * Fetch thread details to get references for threading
+ * Includes retry logic to handle API consistency delays
+ */
 export async function getThreadMessageIds(threadId: string): Promise<{ inReplyTo?: string, references?: string }> {
-    console.log(`🔍 [Threading] Fetching details for Thread ID: ${threadId}`);
-
     let attempt = 0;
     const maxAttempts = 3;
 
@@ -128,13 +130,13 @@ export async function getThreadMessageIds(threadId: string): Promise<{ inReplyTo
                 userId: 'me',
                 id: threadId,
                 format: 'metadata',
-                metadataHeaders: ['Message-ID', 'Message-Id', 'message-id'], // Request variations just in case
+                metadataHeaders: ['Message-ID', 'Message-Id', 'message-id'],
             });
 
             if (!thread.data.messages || thread.data.messages.length === 0) {
                 console.warn(`⚠️ [Threading] Thread ${threadId} found but has no messages. Attempt ${attempt + 1}/${maxAttempts}`);
                 attempt++;
-                if (attempt < maxAttempts) await new Promise(r => setTimeout(r, 1000)); // Wait 1s
+                if (attempt < maxAttempts) await new Promise(r => setTimeout(r, 1000));
                 continue;
             }
 
@@ -142,30 +144,21 @@ export async function getThreadMessageIds(threadId: string): Promise<{ inReplyTo
             const messageIds: string[] = [];
 
             messages.forEach(msg => {
-                // Case-insensitive header lookup
                 const header = msg.payload?.headers?.find(h => h.name && h.name.toLowerCase() === 'message-id');
                 if (header?.value) {
                     messageIds.push(header.value);
                 }
             });
 
-            console.log(`🔍 [Threading] Found ${messageIds.length} Message-IDs in thread ${threadId}:`, messageIds);
-
             if (messageIds.length === 0) {
-                // Thread exists but no IDs found? Weird.
                 console.warn(`⚠️ [Threading] Messages found but no Message-ID header. Attempt ${attempt + 1}/${maxAttempts}`);
                 attempt++;
                 if (attempt < maxAttempts) await new Promise(r => setTimeout(r, 1000));
                 continue;
             }
 
-            // In-Reply-To should be the Message-ID of the last email in the thread
             const inReplyTo = messageIds[messageIds.length - 1];
-
-            // References should include all previous Message-IDs
             const references = messageIds.join(' ');
-
-            console.log(`✅ [Threading] Calculated Headers for ${threadId}:`, { inReplyTo, references });
 
             return { inReplyTo, references };
 
@@ -204,18 +197,9 @@ export async function sendGmailEmail(params: SendEmailParams) {
             raw: encodedMessage,
         };
 
-        // KEY FIX: Pass threadId to API effectively grouping the email in Gmail
         if (params.threadId) {
             requestBody.threadId = params.threadId;
         }
-
-        console.log('📤 Sending email...', {
-            to: params.to.map(r => r.email),
-            subject: params.subject,
-            threadId: params.threadId,
-            inReplyTo: params.inReplyTo,
-            references: params.references ? 'CHECKED' : 'MISSING'
-        });
 
         const result = await gmail.users.messages.send({
             userId: 'me',
@@ -223,7 +207,6 @@ export async function sendGmailEmail(params: SendEmailParams) {
         });
 
         // Fetch the ACTUAL Message-ID assigned by Gmail/Google
-        // This is critical because Gmail may ignore our custom Message-ID header
         let rfcMessageId: string | undefined;
 
         try {
@@ -244,14 +227,6 @@ export async function sendGmailEmail(params: SendEmailParams) {
         } catch (fetchError) {
             console.warn('⚠️ Could not fetch sent message details to get Message-ID:', fetchError);
         }
-
-        console.log('✅ Email sent via Gmail API:', {
-            to: params.to.map(r => r.email),
-            subject: params.subject,
-            messageId: result.data.id,
-            rfcMessageId: rfcMessageId, // The true ID
-            threadId: result.data.threadId
-        });
 
         return { success: true, data: { ...result.data, rfcMessageId } };
     } catch (error) {
