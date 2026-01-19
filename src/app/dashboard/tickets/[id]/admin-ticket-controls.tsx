@@ -6,6 +6,10 @@ import { assignTicketToSelf, updateTicketStatus, unassignTicket, requestValidati
 import { toast } from "sonner";
 import { useTransition } from "react";
 import { UserPlus, UserMinus, CheckCircle } from "lucide-react";
+import { useState } from "react";
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { RichTextEditor } from "@/components/shared/rich-text-editor";
+import { Label } from "@/components/ui/label";
 
 const STATUS_OPTIONS = [
     { value: "open", label: "Abierto" },
@@ -25,6 +29,8 @@ export function AdminTicketControls({
     isAssigned: boolean;
 }) {
     const [isPending, startTransition] = useTransition();
+    const [isValidationDialogOpen, setIsValidationDialogOpen] = useState(false);
+    const [validationMessage, setValidationMessage] = useState("");
 
     const handleStatusChange = (newStatus: string) => {
         startTransition(async () => {
@@ -60,12 +66,18 @@ export function AdminTicketControls({
     };
 
     const handleRequestValidation = () => {
+        setIsValidationDialogOpen(true);
+    };
+
+    const submitValidationRequest = () => {
         startTransition(async () => {
-            const result = await requestValidation(ticketId);
+            const result = await requestValidation(ticketId, validationMessage);
             if (result?.error) {
                 toast.error(result.error);
             } else {
                 toast.success("Validación solicitada al usuario");
+                setIsValidationDialogOpen(false);
+                setValidationMessage("");
             }
         });
     };
@@ -128,6 +140,43 @@ export function AdminTicketControls({
                     )}
                 </>
             )}
+
+            <Dialog open={isValidationDialogOpen} onOpenChange={setIsValidationDialogOpen}>
+                <DialogContent className="sm:max-w-[600px]">
+                    <DialogHeader>
+                        <DialogTitle>Solicitar Validación</DialogTitle>
+                        <DialogDescription>
+                            El usuario recibirá un correo notificando que el ticket ha sido resuelto y requiere su validación.
+                            Puedes añadir un mensaje personalizado.
+                        </DialogDescription>
+                    </DialogHeader>
+                    <div className="grid gap-4 py-4">
+                        <div className="grid gap-2">
+                            <Label htmlFor="message">Mensaje para el usuario</Label>
+                            <RichTextEditor
+                                value={validationMessage}
+                                onChange={setValidationMessage}
+                                placeholder="Escribe un mensaje explicando la solución..."
+                            />
+                        </div>
+                    </div>
+                    <DialogFooter>
+                        <Button
+                            variant="outline"
+                            onClick={() => setIsValidationDialogOpen(false)}
+                            disabled={isPending}
+                        >
+                            Cancelar
+                        </Button>
+                        <Button
+                            onClick={submitValidationRequest}
+                            disabled={isPending}
+                        >
+                            {isPending ? "Enviando..." : "Enviar Solicitud"}
+                        </Button>
+                    </DialogFooter>
+                </DialogContent>
+            </Dialog>
         </div>
     );
 }

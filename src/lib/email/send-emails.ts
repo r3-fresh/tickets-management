@@ -161,6 +161,7 @@ export async function sendUserCommentEmail(params: SendUserCommentEmailParams) {
 export interface SendValidationRequestEmailParams extends TicketContext {
     categoryName: string;
     subcategoryName: string;
+    message?: string;
 }
 
 export async function sendValidationRequestEmail(params: SendValidationRequestEmailParams) {
@@ -174,6 +175,7 @@ export async function sendValidationRequestEmail(params: SendValidationRequestEm
         subcategory: params.subcategoryName,
         ticketUrl,
         attentionAreaName: params.attentionAreaName,
+        message: params.message,
     });
 
     const { to, cc } = getUnifiedRecipients(params);

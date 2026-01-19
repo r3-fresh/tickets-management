@@ -1,7 +1,7 @@
 "use server";
 
 import { db } from "@/db";
-import { tickets, users, attentionAreas } from "@/db/schema";
+import { tickets, users, attentionAreas, comments } from "@/db/schema";
 import { requireAuth, requireAgent } from "@/lib/auth/helpers";
 import { eq, inArray, and } from "drizzle-orm";
 import { revalidatePath } from "next/cache";
@@ -189,7 +189,7 @@ export async function rejectTicketValidation(ticketId: number) {
 /**
  * Admin/Agent requests validation from user - moves from in_progress to pending_validation
  */
-export async function requestValidation(ticketId: number) {
+export async function requestValidation(ticketId: number, message?: string) {
     const session = await requireAgent();
 
     // Only admins/agents can request validation (handled by requireAgent)
@@ -221,6 +221,15 @@ export async function requestValidation(ticketId: number) {
                 updatedAt: new Date()
             })
             .where(eq(tickets.id, ticketId));
+
+        if (message) {
+            await db.insert(comments).values({
+                content: message,
+                ticketId: ticketId,
+                userId: session.user.id,
+                isInternal: false,
+            });
+        }
 
         // Send email notification
         try {
@@ -267,6 +276,7 @@ export async function requestValidation(ticketId: number) {
                     attentionAreaName: ticketWithDetails?.attentionArea?.name || 'Hub de Información',
                     emailThreadId: ticket.emailThreadId,
                     initialMessageId: ticket.initialMessageId,
+                    message,
                 });
             }
         } catch (emailError) {

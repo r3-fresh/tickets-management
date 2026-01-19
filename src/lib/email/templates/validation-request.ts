@@ -8,6 +8,7 @@ export interface ValidationRequestTemplateParams {
     subcategory: string;
     ticketUrl: string;
     attentionAreaName?: string;
+    message?: string;
 }
 
 export function getValidationRequestTemplate(params: ValidationRequestTemplateParams): string {
@@ -27,8 +28,16 @@ export function getValidationRequestTemplate(params: ValidationRequestTemplatePa
                 <li style="margin: 8px 0;"><strong>Categoría:</strong> ${params.category}</li>
                 <li style="margin: 8px 0;"><strong>Subcategoría:</strong> ${params.subcategory}</li>
             </ul>
+            </ul>
         </div>
         
+        ${params.message ? `
+        <div style="margin: 20px 0; padding: 15px; background-color: #f3f4f6; border-radius: 4px; border: 1px solid #e5e7eb;">
+            <strong style="display: block; margin-bottom: 10px; color: #374151;">Mensaje del agente:</strong>
+            <div style="color: #4b5563;">${params.message}</div>
+        </div>
+        ` : ''}
+
         <div style="background-color: #FEF3C7; border-left: 4px solid #F59E0B; padding: 15px; margin: 20px 0; border-radius: 4px;">
             <strong>⚠️ Acción Requerida:</strong> Debes revisar el ticket y validar si la 
             atención fue satisfactoria.
