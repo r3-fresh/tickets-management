@@ -109,17 +109,17 @@ export default function DashboardLayout({
             >
                 {/* 1. TOP: User Profile */}
                 <div className={cn(
-                    "relative flex items-center py-6 mx-4 border-b border-sidebar-border transition-all duration-300",
-                    isCollapsed ? "flex-col justify-center px-0 gap-2" : "flex-row gap-3 px-2"
+                    "relative flex items-center py-8 mx-4 border-b border-sidebar-border transition-all duration-300",
+                    isCollapsed ? "flex-col justify-center px-0 gap-4" : "flex-row gap-4 px-2"
                 )}>
                     {/* Theme Toggle - Absolute Top Right (visible only expanded) */}
                     {!isCollapsed && (
-                        <div className="absolute top-0 right-0 -mr-2">
+                        <div className="absolute top-2 right-0 -mr-2">
                             <ModeToggle />
                         </div>
                     )}
 
-                    <Avatar className={cn("transition-all duration-300 ring-2 ring-sidebar-ring shrink-0", isCollapsed ? "h-10 w-10 fit-content" : "h-10 w-10")}>
+                    <Avatar className={cn("transition-all duration-300 ring-2 ring-sidebar-ring shrink-0", isCollapsed ? "h-10 w-10 fit-content" : "h-12 w-12")}>
                         <AvatarImage src={session?.user?.image || undefined} referrerPolicy="no-referrer" />
                         <AvatarFallback className="bg-primary text-primary-foreground font-bold">
                             {session?.user?.name?.charAt(0) || "U"}
@@ -127,14 +127,16 @@ export default function DashboardLayout({
                     </Avatar>
 
                     {!isCollapsed && (
-                        <div className="flex flex-col items-start overflow-hidden min-w-0">
+                        <div className="flex flex-col items-start overflow-hidden min-w-0 space-y-1 pr-12">
                             <h2 className="font-semibold text-sm truncate w-full" title={session?.user?.name || ""}>
                                 {session?.user?.name || "Usuario"}
                             </h2>
                             <p className="text-xs text-muted-foreground truncate w-full" title={session?.user?.email || ""}>
                                 {session?.user?.email || ""}
                             </p>
-                            <SidebarUserInfo role={userRole || "user"} />
+                            <div className="pt-1">
+                                <SidebarUserInfo role={userRole || "user"} />
+                            </div>
                         </div>
                     )}
                 </div>
@@ -209,28 +211,32 @@ export default function DashboardLayout({
 
                 {/* 3. BOTTOM: Controls & Logout */}
                 <div className="p-4 border-t border-sidebar-border bg-sidebar mt-auto">
-                    <div className={cn("flex items-center gap-2", isCollapsed ? "flex-col-reverse" : "flex-row")}>
+                    <div className={cn("flex items-center", isCollapsed ? "flex-col gap-6 justify-center" : "gap-2 flex-row")}>
+                        {/* Collapse Button */}
+                        <Button
+                            variant="ghost"
+                            size="icon"
+                            onClick={() => setIsCollapsed(!isCollapsed)}
+                            className={cn(
+                                "text-muted-foreground hover:text-foreground hover:bg-sidebar-accent h-9 w-9 border border-sidebar-border transition-all",
+                                isCollapsed ? "order-2" : "order-2"
+                            )}
+                            title={isCollapsed ? "Expandir" : "Colapsar"}
+                        >
+                            {isCollapsed ? <ChevronRight className="h-4 w-4" /> : <ChevronLeft className="h-4 w-4" />}
+                        </Button>
+
                         <button
                             onClick={handleSignOut}
                             className={cn(
-                                "flex items-center flex-1 text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground rounded-md transition-colors cursor-pointer",
-                                isCollapsed ? "justify-center p-2" : "px-3 py-2"
+                                "flex items-center text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground rounded-md transition-colors cursor-pointer",
+                                isCollapsed ? "justify-center p-3 text-red-500 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-950/20 order-1" : "flex-1 px-3 py-2 text-red-500 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-950/20 order-1"
                             )}
                             title="Cerrar sesión"
                         >
                             <LogOut className={cn("h-5 w-5", !isCollapsed && "mr-3")} />
                             {!isCollapsed && <span className="text-sm font-medium">Cerrar sesión</span>}
                         </button>
-
-                        <Button
-                            variant="ghost"
-                            size="icon"
-                            onClick={() => setIsCollapsed(!isCollapsed)}
-                            className="text-muted-foreground hover:text-foreground hover:bg-sidebar-accent h-9 w-9 border border-sidebar-border"
-                            title={isCollapsed ? "Expandir" : "Colapsar"}
-                        >
-                            {isCollapsed ? <ChevronRight className="h-4 w-4" /> : <ChevronLeft className="h-4 w-4" />}
-                        </Button>
                     </div>
                 </div>
             </div>
