@@ -3,11 +3,16 @@
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { authClient } from "@/lib/auth/client";
-import { Loader2 } from "lucide-react";
+import { Lock, CheckCircle, AlertCircle, Loader2 } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
+import { cn } from "@/lib/utils/cn";
 
-export function LoginForm() {
+interface LoginFormProps {
+    isSystemOperational: boolean;
+}
+
+export function LoginForm({ isSystemOperational }: LoginFormProps) {
     const [isLoading, setIsLoading] = useState(false);
 
     const handleLogin = async () => {
@@ -26,10 +31,19 @@ export function LoginForm() {
 
     return (
         <div className="flex min-h-screen items-center justify-center p-4">
-            <Card className="w-full max-w-md shadow-lg">
-                <CardHeader className="text-center">
-                    <CardTitle className="text-2xl font-bold">Gestión de Tickets TSI</CardTitle>
-                    <CardDescription>Inicia sesión con tu cuenta corporativa para continuar</CardDescription>
+            <Card className="w-full max-w-md shadow-lg border-t-4 border-t-primary">
+                <CardHeader className="text-center space-y-4">
+                    <div className="flex justify-center">
+                        <div className="p-3 bg-primary/10 rounded-full">
+                            <Lock className="h-6 w-6 text-primary" />
+                        </div>
+                    </div>
+                    <div className="space-y-8">
+                        <CardTitle className="text-2xl font-bold">Gestión de requerimientos</CardTitle>
+                        <CardDescription>
+                            Por favor autentícate con tu correo corporativo.
+                        </CardDescription>
+                    </div>
                 </CardHeader>
                 <CardContent>
                     <Button
@@ -60,10 +74,47 @@ export function LoginForm() {
                                 />
                             </svg>
                         )}
-                        {isLoading ? "Redirigiendo..." : "Continuar con Google"}
+                        {isLoading ? "Redirigiendo..." : "Iniciar sesión con Google"}
                     </Button>
+
+                    <div className="mt-8 space-y-4">
+                        <div className="relative">
+                            <div className="absolute inset-0 flex items-center">
+                                <span className="w-full border-t" />
+                            </div>
+                            <div className="relative flex justify-center text-xs ">
+                                <span className="bg-background px-2 text-muted-foreground">
+                                    Estado del sistema
+                                </span>
+                            </div>
+                        </div>
+
+                        <div className={cn(
+                            "flex items-center justify-center p-2 rounded-md text-sm font-medium border",
+                            isSystemOperational
+                                ? "bg-green-500/10 text-green-600 border-green-200 dark:border-green-900"
+                                : "bg-yellow-500/10 text-yellow-600 border-yellow-200 dark:border-yellow-900"
+                        )}>
+                            {isSystemOperational ? (
+                                <>
+                                    <CheckCircle className="mr-2 h-4 w-4" />
+                                    Tickets habilitados correctamente
+                                </>
+                            ) : (
+                                <>
+                                    <AlertCircle className="mr-2 h-4 w-4" />
+                                    Tickets deshabilitados temporalmente
+                                </>
+                            )}
+                        </div>
+
+                        <div className="text-center text-xs text-muted-foreground pt-4">
+                            <p className="font-semibold mb-1">Acceso Restringido</p>
+                            <p>Solo personal autorizado.</p>
+                        </div>
+                    </div>
                 </CardContent>
             </Card>
-        </div>
+        </div >
     );
 }
