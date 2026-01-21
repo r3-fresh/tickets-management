@@ -109,17 +109,17 @@ export default function DashboardLayout({
             >
                 {/* 1. TOP: User Profile */}
                 <div className={cn(
-                    "relative flex items-center py-8 mx-4 border-b border-sidebar-border transition-all duration-300",
-                    isCollapsed ? "flex-col justify-center px-0 gap-4" : "flex-row gap-4 px-2"
+                    "relative flex border-b border-sidebar-border transition-all duration-300",
+                    isCollapsed ? "flex-col items-center justify-center py-4 px-2 gap-4" : "flex-col items-start py-6 px-6 gap-3"
                 )}>
                     {/* Theme Toggle - Absolute Top Right (visible only expanded) */}
                     {!isCollapsed && (
-                        <div className="absolute top-2 right-0 -mr-2">
+                        <div className="absolute top-4 right-4 z-20">
                             <ModeToggle />
                         </div>
                     )}
 
-                    <Avatar className={cn("transition-all duration-300 ring-2 ring-sidebar-ring shrink-0", isCollapsed ? "h-10 w-10 fit-content" : "h-12 w-12")}>
+                    <Avatar className={cn("transition-all duration-300 ring-2 ring-sidebar-ring shrink-0", isCollapsed ? "h-8 w-8" : "h-12 w-12")}>
                         <AvatarImage src={session?.user?.image || undefined} referrerPolicy="no-referrer" />
                         <AvatarFallback className="bg-primary text-primary-foreground font-bold">
                             {session?.user?.name?.charAt(0) || "U"}
@@ -127,14 +127,14 @@ export default function DashboardLayout({
                     </Avatar>
 
                     {!isCollapsed && (
-                        <div className="flex flex-col items-start overflow-hidden min-w-0 space-y-1 pr-12">
-                            <h2 className="font-semibold text-sm truncate w-full" title={session?.user?.name || ""}>
+                        <div className="flex flex-col items-start w-full min-w-0 space-y-1">
+                            <h2 className="font-semibold text-sm w-full wrap-break-word leading-tight" title={session?.user?.name || ""}>
                                 {session?.user?.name || "Usuario"}
                             </h2>
-                            <p className="text-xs text-muted-foreground truncate w-full" title={session?.user?.email || ""}>
+                            <p className="text-xs text-muted-foreground w-full break-all" title={session?.user?.email || ""}>
                                 {session?.user?.email || ""}
                             </p>
-                            <div className="pt-1">
+                            <div className="pt-2">
                                 <SidebarUserInfo role={userRole || "user"} />
                             </div>
                         </div>
