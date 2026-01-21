@@ -72,11 +72,13 @@ export default function DashboardLayout({
     const adminNavItems = [
         { href: "/dashboard/admin", label: "Dashboard", icon: LayoutDashboard },
         { href: "/dashboard/admin/tickets", label: "Explorador de tickets", icon: Ticket },
-        { href: "/dashboard/admin/roles", label: "Gestión de roles", icon: Shield },
     ];
 
     // Type assertion for better-auth session with role
     const userRole = (session?.user as { role?: string })?.role;
+
+    // Roles item (Admin)
+    const rolesItem = { href: "/dashboard/admin/roles", label: "Gestión de roles", icon: Shield, external: false };
 
     // Settings items (Agent/Admin)
     const settingsItem = {
@@ -91,6 +93,7 @@ export default function DashboardLayout({
 
     if (userRole === "admin") {
         navigationSection = adminNavItems;
+        resourcesSection.push(rolesItem); // Add Roles to resources
         resourcesSection.push(settingsItem);
     } else if (userRole === "agent") {
         navigationSection = agentNavItems;
@@ -142,7 +145,7 @@ export default function DashboardLayout({
                 </div>
 
                 {/* 2. MIDDLE: Navigation */}
-                <div className="flex-1 overflow-y-auto py-6 space-y-8">
+                <div className="flex-1 overflow-y-auto py-6 space-y-6">
                     {/* Navigation Section */}
                     <div className="px-3">
                         {!isCollapsed && (
@@ -174,6 +177,9 @@ export default function DashboardLayout({
                             })}
                         </nav>
                     </div>
+
+                    {/* Separator */}
+                    <div className="mx-4 border-t border-sidebar-border" />
 
                     {/* Resources Section */}
                     <div className="px-3">
