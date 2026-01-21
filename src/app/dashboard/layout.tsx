@@ -1,4 +1,3 @@
-
 "use client";
 
 import { useState } from "react";
@@ -7,7 +6,6 @@ import { usePathname } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import {
     LayoutDashboard,
-    PlusCircle,
     Ticket,
     LogOut,
     Menu,
@@ -16,20 +14,24 @@ import {
     Shield,
     Eye,
     Settings,
-    Target
+    ChevronLeft,
+    ChevronRight,
+    BookOpen
 } from "lucide-react";
 import { authClient } from "@/lib/auth/client";
 import { useRouter } from "next/navigation";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { ModeToggle } from "@/components/shared/mode-toggle";
 import { SidebarUserInfo } from "@/components/dashboard/sidebar-user-info";
+import { cn } from "@/lib/utils/cn";
 
 export default function DashboardLayout({
     children,
 }: {
     children: React.ReactNode;
 }) {
-    const [isSidebarOpen, setIsSidebarOpen] = useState(true);
+    const [isSidebarOpen, setIsSidebarOpen] = useState(false); // Mobile toggle
+    const [isCollapsed, setIsCollapsed] = useState(false); // Desktop collapse
     const pathname = usePathname();
     const router = useRouter();
 
@@ -46,178 +48,295 @@ export default function DashboardLayout({
         });
     };
 
-    const navItems = [
-        { href: "/dashboard/tickets", label: "Mis Tickets", icon: Ticket },
-        { href: "/dashboard/tickets/watching", label: "Tickets Observados", icon: Eye },
-        // { href: "/dashboard/tickets/new", label: "Nuevo Ticket", icon: PlusCircle },
+    // --- NAVIGATION ITEMS CONFIGURATION ---
+
+    // Common items
+    const knowledgeBaseItem = {
+        href: "https://docs.google.com/spreadsheets/d/19GNP48F9WSTx_BvHt9vmCC0_mKpplbpREVKymMKxIUg/edit?gid=0#gid=0",
+        label: "Base de conocimiento",
+        icon: BookOpen,
+        external: true
+    };
+
+    const userNavItems = [
+        { href: "/dashboard/tickets", label: "Mis tickets", icon: Ticket },
+        { href: "/dashboard/tickets/watching", label: "En seguimiento", icon: Eye },
     ];
 
-    // Admin-only items
-    const adminItems = [
+    const agentNavItems = [
+        { href: "/dashboard/agent", label: "Bandeja de atención", icon: LayoutDashboard },
+        { href: "/dashboard/tickets", label: "Mis solicitudes", icon: User },
+        { href: "/dashboard/tickets/watching", label: "En seguimiento", icon: Eye },
+    ];
+
+    const adminNavItems = [
         { href: "/dashboard/admin", label: "Dashboard", icon: LayoutDashboard },
-        { href: "/dashboard/admin/tickets", label: "Explorador de Tickets", icon: Ticket }, // Renamed from "Bandeja de Tickets"
-        { href: "/dashboard/admin/roles", label: "Gestión de Roles", icon: Shield },
-        { href: "/dashboard/admin/settings", label: "Configuración", icon: Settings },
-    ];
-
-    // Agent items
-    const agentItems = [
-        { href: "/dashboard/agent", label: "Bandeja de Atención", icon: LayoutDashboard }, // Renamed from "Dashboard"
-        { href: "/dashboard/tickets", label: "Mis Solicitudes", icon: User }, // Added own tickets view
-        { href: "/dashboard/tickets/watching", label: "Tickets Observados", icon: Eye },
-        { href: "/dashboard/agent/settings", label: "Configuración", icon: Settings },
+        { href: "/dashboard/admin/tickets", label: "Explorador de tickets", icon: Ticket },
+        { href: "/dashboard/admin/roles", label: "Gestión de roles", icon: Shield },
     ];
 
     // Type assertion for better-auth session with role
     const userRole = (session?.user as { role?: string })?.role;
 
-    let allNavItems = navItems;
+    // Settings items (Agent/Admin)
+    const settingsItem = {
+        href: userRole === "admin" ? "/dashboard/admin/settings" : "/dashboard/agent/settings",
+        label: "Configuración",
+        icon: Settings,
+        external: false
+    };
+
+    let navigationSection = userNavItems;
+    let resourcesSection = [knowledgeBaseItem];
+
     if (userRole === "admin") {
-        allNavItems = adminItems;
+        navigationSection = adminNavItems;
+        resourcesSection.push(settingsItem);
     } else if (userRole === "agent") {
-        allNavItems = agentItems;
+        navigationSection = agentNavItems;
+        resourcesSection.push(settingsItem);
     }
 
     return (
         <div className="flex h-screen bg-gray-100 dark:bg-background">
-            {/* Sidebar */}
-            <div className="hidden md:flex md:w-64 md:flex-col">
-                <div className="flex flex-col grow bg-white dark:bg-card border-r border-gray-200 dark:border-border pt-5 pb-4 overflow-y-auto">
-                    <div className="flex items-center shrink-0 px-4">
-                        <h1 className="text-xl font-bold">Gestión de Tickets</h1>
+            {/* --- DESKTOP SIDEBAR --- */}
+            <div
+                className={cn(
+                    "hidden md:flex flex-col transition-all duration-300 ease-in-out z-20 border-r border-sidebar-border",
+                    "bg-sidebar text-sidebar-foreground",
+                    isCollapsed ? "w-20" : "w-72"
+                )}
+            >
+                {/* 1. TOP: User Profile */}
+                <div className={cn(
+                    "relative flex items-center py-6 mx-4 border-b border-sidebar-border transition-all duration-300",
+                    isCollapsed ? "flex-col justify-center px-0 gap-2" : "flex-row gap-3 px-2"
+                )}>
+                    {/* Theme Toggle - Absolute Top Right (visible only expanded) */}
+                    {!isCollapsed && (
+                        <div className="absolute top-0 right-0 -mr-2">
+                            <ModeToggle />
+                        </div>
+                    )}
+
+                    <Avatar className={cn("transition-all duration-300 ring-2 ring-sidebar-ring shrink-0", isCollapsed ? "h-10 w-10 fit-content" : "h-10 w-10")}>
+                        <AvatarImage src={session?.user?.image || undefined} referrerPolicy="no-referrer" />
+                        <AvatarFallback className="bg-primary text-primary-foreground font-bold">
+                            {session?.user?.name?.charAt(0) || "U"}
+                        </AvatarFallback>
+                    </Avatar>
+
+                    {!isCollapsed && (
+                        <div className="flex flex-col items-start overflow-hidden min-w-0">
+                            <h2 className="font-semibold text-sm truncate w-full" title={session?.user?.name || ""}>
+                                {session?.user?.name || "Usuario"}
+                            </h2>
+                            <p className="text-xs text-muted-foreground truncate w-full" title={session?.user?.email || ""}>
+                                {session?.user?.email || ""}
+                            </p>
+                            <SidebarUserInfo role={userRole || "user"} />
+                        </div>
+                    )}
+                </div>
+
+                {/* 2. MIDDLE: Navigation */}
+                <div className="flex-1 overflow-y-auto py-6 space-y-8">
+                    {/* Navigation Section */}
+                    <div className="px-3">
+                        {!isCollapsed && (
+                            <h3 className="px-3 mb-2 text-xs font-semibold text-muted-foreground uppercase tracking-wider animate-in fade-in duration-300">
+                                Navegación
+                            </h3>
+                        )}
+                        <nav className="space-y-1">
+                            {navigationSection.map((item) => {
+                                const Icon = item.icon;
+                                const isActive = pathname === item.href;
+                                return (
+                                    <Link
+                                        key={item.href}
+                                        href={item.href}
+                                        className={cn(
+                                            "group flex items-center px-3 py-2 text-sm font-medium rounded-md transition-colors",
+                                            isCollapsed ? "justify-center" : "",
+                                            isActive
+                                                ? "bg-sidebar-accent text-sidebar-accent-foreground"
+                                                : "text-muted-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"
+                                        )}
+                                        title={isCollapsed ? item.label : undefined}
+                                    >
+                                        <Icon className={cn("h-5 w-5 shrink-0", !isCollapsed && "mr-3", isActive && "text-primary")} />
+                                        {!isCollapsed && <span>{item.label}</span>}
+                                    </Link>
+                                );
+                            })}
+                        </nav>
                     </div>
 
-                    <nav className="mt-6 flex-1 space-y-1 px-2">
-                        {allNavItems.map((item) => {
-                            const Icon = item.icon;
-                            const isActive = pathname === item.href;
-                            return (
-                                <Link
-                                    key={item.href}
-                                    href={item.href}
-                                    className={`group flex items-center px-2 py-2 text-sm font-medium rounded-md ${isActive
-                                        ? "bg-gray-100 dark:bg-accent text-gray-900 dark:text-accent-foreground"
-                                        : "text-muted-foreground hover:bg-muted hover:text-foreground"
-                                        }`}
-                                >
-                                    <Icon
-                                        className={`mr-3 shrink-0 h-5 w-5 ${isActive ? "text-gray-900 dark:text-accent-foreground" : "text-muted-foreground group-hover:text-foreground"
-                                            }`}
-                                    />
-                                    {item.label}
-                                </Link>
-                            );
-                        })}
-                    </nav>
+                    {/* Resources Section */}
+                    <div className="px-3">
+                        {!isCollapsed && (
+                            <h3 className="px-3 mb-2 text-xs font-semibold text-muted-foreground uppercase tracking-wider animate-in fade-in duration-300">
+                                Recursos
+                            </h3>
+                        )}
+                        <nav className="space-y-1">
+                            {resourcesSection.map((item) => {
+                                const Icon = item.icon;
+                                const isActive = pathname === item.href;
+                                return (
+                                    <Link
+                                        key={item.href}
+                                        href={item.href}
+                                        target={item.external ? "_blank" : undefined}
+                                        className={cn(
+                                            "group flex items-center px-3 py-2 text-sm font-medium rounded-md transition-colors",
+                                            isCollapsed ? "justify-center" : "",
+                                            isActive
+                                                ? "bg-sidebar-accent text-sidebar-accent-foreground"
+                                                : "text-muted-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"
+                                        )}
+                                        title={isCollapsed ? item.label : undefined}
+                                    >
+                                        <Icon className={cn("h-5 w-5 shrink-0", !isCollapsed && "mr-3")} />
+                                        {!isCollapsed && <span>{item.label}</span>}
+                                    </Link>
+                                );
+                            })}
+                        </nav>
+                    </div>
+                </div>
 
-                    {/* User section at bottom */}
-                    <div className="shrink-0 border-t border-gray-200 dark:border-border p-4">
-                        <div className="flex flex-col items-center text-center space-y-3">
-                            <div className="w-full flex justify-end px-2">
-                                <ModeToggle />
-                            </div>
-                            <Avatar className="h-12 w-12">
-                                <AvatarImage src={session?.user?.image || undefined} referrerPolicy="no-referrer" />
-                                <AvatarFallback className="bg-teal-500 text-white text-lg">
-                                    {session?.user?.name?.charAt(0) || "U"}
-                                </AvatarFallback>
-                            </Avatar>
-                            <div>
-                                <p className="text-sm font-medium">
-                                    {session?.user?.name}
-                                </p>
-                                <p className="text-xs text-gray-500">
-                                    {session?.user?.email}
-                                </p>
-                                <div className="pt-1">
-                                    <SidebarUserInfo role={userRole || "user"} />
-                                </div>
-                            </div>
-                            <button
-                                onClick={handleSignOut}
-                                className="flex items-center space-x-2 text-sm text-red-600 hover:text-red-700"
-                            >
-                                <LogOut className="h-4 w-4" />
-                                <span>Cerrar sesión</span>
-                            </button>
-                        </div>
+                {/* 3. BOTTOM: Controls & Logout */}
+                <div className="p-4 border-t border-sidebar-border bg-sidebar mt-auto">
+                    <div className={cn("flex items-center gap-2", isCollapsed ? "flex-col-reverse" : "flex-row")}>
+                        <button
+                            onClick={handleSignOut}
+                            className={cn(
+                                "flex items-center flex-1 text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground rounded-md transition-colors cursor-pointer",
+                                isCollapsed ? "justify-center p-2" : "px-3 py-2"
+                            )}
+                            title="Cerrar sesión"
+                        >
+                            <LogOut className={cn("h-5 w-5", !isCollapsed && "mr-3")} />
+                            {!isCollapsed && <span className="text-sm font-medium">Cerrar sesión</span>}
+                        </button>
+
+                        <Button
+                            variant="ghost"
+                            size="icon"
+                            onClick={() => setIsCollapsed(!isCollapsed)}
+                            className="text-muted-foreground hover:text-foreground hover:bg-sidebar-accent h-9 w-9 border border-sidebar-border"
+                            title={isCollapsed ? "Expandir" : "Colapsar"}
+                        >
+                            {isCollapsed ? <ChevronRight className="h-4 w-4" /> : <ChevronLeft className="h-4 w-4" />}
+                        </Button>
                     </div>
                 </div>
             </div>
-            {/* Mobile Sidebar (original structure, but adapted for mobile) */}
+
+
+            {/* --- MOBILE SIDEBAR --- */}
             <aside
-                className={`fixed inset-y-0 left-0 z-50 w-64 transform bg-white dark:bg-card shadow-lg transition-transform duration-300 ease-in-out ${isSidebarOpen ? "translate-x-0" : "-translate-x-full"
-                    } md:hidden`} // Only show on mobile, hidden on md and up
+                className={cn(
+                    "fixed inset-y-0 left-0 z-50 w-72 transform bg-sidebar text-sidebar-foreground shadow-2xl transition-transform duration-300 ease-in-out md:hidden",
+                    isSidebarOpen ? "translate-x-0" : "-translate-x-full"
+                )}
             >
-                <div className="flex h-16 items-center justify-between px-4 border-b border-border">
-                    <span className="text-xl font-bold text-blue-600">Gestión de Tickets</span>
-                    <button
-                        onClick={() => setIsSidebarOpen(false)}
-                        className="md:hidden"
-                    >
+                <div className="flex h-16 items-center justify-between px-6 border-b border-sidebar-border">
+                    <span className="text-lg font-bold">Menu</span>
+                    <button onClick={() => setIsSidebarOpen(false)} className="text-muted-foreground hover:text-foreground">
                         <X className="h-6 w-6" />
                     </button>
                 </div>
 
-                <nav className="mt-6 flex-1 space-y-1 px-2">
-                    {allNavItems.map((item) => {
-                        const Icon = item.icon;
-                        const isActive = pathname === item.href;
-                        return (
-                            <Link
-                                key={item.href}
-                                href={item.href}
-                                className={`group flex items-center rounded-md px-2 py-2 text-sm font-medium ${isActive
-                                    ? "bg-blue-50 dark:bg-blue-900/20 text-blue-700 dark:text-blue-400"
-                                    : "text-muted-foreground hover:bg-muted hover:text-foreground"
-                                    }`}
-                            >
-                                <Icon
-                                    className={`mr-3 h-5 w-5 shrink-0 ${isActive ? "text-blue-700 dark:text-blue-400" : "text-muted-foreground group-hover:text-foreground"
-                                        }`}
-                                />
-                                {item.label}
-                            </Link>
-                        );
-                    })}
-                </nav>
-
-                <div className="border-t p-4">
-                    <div className="flex items-center mb-4">
-                        <Avatar className="h-9 w-9">
+                <div className="flex flex-col h-full overflow-y-auto pb-20">
+                    {/* Mobile Profile */}
+                    <div className="p-6 border-b border-sidebar-border flex flex-col items-center relative">
+                        <div className="absolute top-4 right-4">
+                            <ModeToggle />
+                        </div>
+                        <Avatar className="h-16 w-16 mb-3 ring-2 ring-sidebar-ring">
                             <AvatarImage src={session?.user?.image || undefined} referrerPolicy="no-referrer" />
-                            <AvatarFallback>{session?.user?.name?.charAt(0) || "U"}</AvatarFallback>
+                            <AvatarFallback className="bg-primary text-primary-foreground font-bold">
+                                {session?.user?.name?.charAt(0) || "U"}
+                            </AvatarFallback>
                         </Avatar>
-                        <div className="ml-3">
-                            <p className="text-sm font-medium text-gray-700">{session?.user?.name || "Cargando..."}</p>
-                            <p className="text-xs text-gray-500 truncate w-40">{session?.user?.email}</p>
-                            <div className="pt-1">
-                                <SidebarUserInfo role={userRole || "user"} />
+                        <h2 className="font-semibold text-lg">{session?.user?.name || "Usuario"}</h2>
+                        <p className="text-sm text-muted-foreground mb-2">{session?.user?.email || ""}</p>
+                        <SidebarUserInfo role={userRole || "user"} />
+                    </div>
+
+                    {/* Mobile Navigation */}
+                    <nav className="flex-1 px-4 py-6 space-y-6">
+                        <div>
+                            <h3 className="px-2 mb-2 text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+                                Navegación
+                            </h3>
+                            <div className="space-y-1">
+                                {navigationSection.map((item) => (
+                                    <Link
+                                        key={item.href}
+                                        href={item.href}
+                                        onClick={() => setIsSidebarOpen(false)}
+                                        className={cn(
+                                            "group flex items-center px-3 py-3 text-base font-medium rounded-lg",
+                                            pathname === item.href
+                                                ? "bg-sidebar-accent text-sidebar-accent-foreground"
+                                                : "text-muted-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"
+                                        )}
+                                    >
+                                        <item.icon className="mr-4 h-6 w-6 shrink-0" />
+                                        {item.label}
+                                    </Link>
+                                ))}
                             </div>
                         </div>
+
+                        <div>
+                            <h3 className="px-2 mb-2 text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+                                Recursos
+                            </h3>
+                            <div className="space-y-1">
+                                {resourcesSection.map((item) => (
+                                    <Link
+                                        key={item.href}
+                                        href={item.href}
+                                        target={item.external ? "_blank" : undefined}
+                                        onClick={() => setIsSidebarOpen(false)}
+                                        className="group flex items-center px-3 py-3 text-base font-medium rounded-lg text-muted-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"
+                                    >
+                                        <item.icon className="mr-4 h-6 w-6 shrink-0" />
+                                        {item.label}
+                                    </Link>
+                                ))}
+                            </div>
+                        </div>
+                    </nav>
+
+                    <div className="p-4 border-t border-sidebar-border">
+                        <button
+                            onClick={handleSignOut}
+                            className="flex w-full items-center justify-center px-4 py-3 text-red-500 bg-red-50 dark:bg-red-950/20 rounded-lg hover:bg-red-100 dark:hover:bg-red-900/30 transition-colors"
+                        >
+                            <LogOut className="mr-2 h-5 w-5" />
+                            Cerrar sesión
+                        </button>
                     </div>
-                    <Button
-                        variant="ghost"
-                        className="w-full justify-start text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 hover:text-red-700 dark:hover:text-red-400"
-                        onClick={handleSignOut}
-                    >
-                        <LogOut className="mr-3 h-5 w-5" />
-                        Cerrar Sesión
-                    </Button>
                 </div>
             </aside>
 
-            {/* Main Content */}
+            {/* --- MAIN HEADER (Mobile Only) & CONTENT --- */}
             <div className="flex flex-1 flex-col overflow-hidden">
                 <header className="flex h-16 items-center justify-between border-b border-border bg-white dark:bg-card px-4 shadow-sm md:hidden">
                     <button
                         onClick={() => setIsSidebarOpen(true)}
-                        className="text-gray-500 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-blue-500"
+                        className="text-muted-foreground focus:outline-none"
                     >
                         <Menu className="h-6 w-6" />
                     </button>
                     <span className="text-lg font-bold">Gestión de Tickets</span>
-                    <div className="w-6" /> {/* Placeholder for balance */}
+                    <div className="w-6" />
                 </header>
 
                 <main className="flex-1 overflow-y-auto p-4 lg:p-8">
