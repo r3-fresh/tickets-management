@@ -20,12 +20,12 @@ export function SidebarUserInfo({ role }: SidebarUserInfoProps) {
     const roleLabel = role === "admin" ? "Administrador" : role === "agent" ? "Agente" : "Usuario";
 
     return (
-        <div className="flex flex-col items-center gap-1">
+        <div className="flex flex-row items-center gap-1">
             <Badge variant="outline" className="text-xs font-normal border-muted-foreground/30">
                 {roleLabel}
             </Badge>
             {role === "agent" && areaName && (
-                <span className="text-[10px] text-muted-foreground font-medium text-center leading-tight">
+                <span className="text-[9.5px] text-muted-foreground font-normal leading-tight">
                     {areaName}
                 </span>
             )}
