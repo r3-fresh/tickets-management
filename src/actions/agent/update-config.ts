@@ -24,7 +24,7 @@ export async function updateAreaConfigAction(formData: FormData) {
             })
             .where(eq(attentionAreas.id, session.user.attentionAreaId));
 
-        revalidatePath("/dashboard/agent/settings");
+        revalidatePath("/dashboard/agente/configuracion");
         revalidatePath("/dashboard/tickets/new");
 
         return { success: true };

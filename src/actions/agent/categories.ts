@@ -38,7 +38,7 @@ export async function createAgentCategory(formData: FormData) {
             displayOrder: (maxOrder?.displayOrder ?? -1) + 1,
         });
 
-        revalidatePath("/dashboard/agent/settings");
+        revalidatePath("/dashboard/agente/configuracion");
         return { success: true };
     } catch (error) {
         console.error("Error creating category:", error);
@@ -85,7 +85,7 @@ export async function updateAgentCategory(formData: FormData) {
             })
             .where(eq(ticketCategories.id, id));
 
-        revalidatePath("/dashboard/agent/settings");
+        revalidatePath("/dashboard/agente/configuracion");
         return { success: true };
     } catch (error) {
         console.error("Error updating category:", error);
@@ -116,7 +116,7 @@ export async function deleteAgentCategory(id: number) {
 
         await db.delete(ticketCategories).where(eq(ticketCategories.id, id));
 
-        revalidatePath("/dashboard/agent/settings");
+        revalidatePath("/dashboard/agente/configuracion");
         return { success: true };
     } catch (error) {
         console.error("Error deleting category:", error);
@@ -149,7 +149,7 @@ export async function toggleAgentCategoryActive(id: number, newState: boolean) {
             .set({ isActive: newState, updatedAt: new Date() })
             .where(eq(ticketCategories.id, id));
 
-        revalidatePath("/dashboard/agent/settings");
+        revalidatePath("/dashboard/agente/configuracion");
         return { success: true };
     } catch (error) {
         console.error("Error toggling category:", error);

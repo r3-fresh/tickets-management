@@ -12,5 +12,9 @@ export default async function DashboardPage() {
         redirect("/dashboard/admin");
     }
 
+    if (session.user.role === "agent") {
+        redirect("/dashboard/agente");
+    }
+
     redirect("/dashboard/tickets");
 }

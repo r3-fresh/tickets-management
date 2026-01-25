@@ -64,9 +64,10 @@ export default function DashboardLayout({
     ];
 
     const agentNavItems = [
-        { href: "/dashboard/agent", label: "Bandeja de atención", icon: LayoutDashboard },
-        { href: "/dashboard/tickets", label: "Mis solicitudes", icon: User },
-        { href: "/dashboard/tickets/watching", label: "En seguimiento", icon: Eye },
+        { href: "/dashboard/agente", label: "Mi panel", icon: LayoutDashboard },
+        { href: "/dashboard/agente/tickets-area", label: "Tickets del área", icon: Ticket },
+        { href: "/dashboard/agente/mis-tickets", label: "Mis tickets", icon: User },
+        { href: "/dashboard/agente/seguimiento", label: "En seguimiento", icon: Eye },
     ];
 
     const adminNavItems = [
@@ -82,7 +83,7 @@ export default function DashboardLayout({
 
     // Settings items (Agent/Admin)
     const settingsItem = {
-        href: userRole === "admin" ? "/dashboard/admin/configuracion" : "/dashboard/agent/settings",
+        href: userRole === "admin" ? "/dashboard/admin/configuracion" : "/dashboard/agente/configuracion",
         label: userRole === "admin" ? "Configuración del sistema" : "Configuración del área",
         icon: Settings,
         external: false

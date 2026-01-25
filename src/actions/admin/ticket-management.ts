@@ -74,7 +74,7 @@ export async function assignTicketToSelf(ticketId: number) {
 
         revalidatePath(`/dashboard/tickets/${ticketId}`);
         revalidatePath("/dashboard/admin/tickets");
-        revalidatePath("/dashboard/agent");
+        revalidatePath("/dashboard/agente");
         return { success: true };
     } catch (error) {
         console.error("Error assigning ticket:", error);
@@ -95,7 +95,7 @@ export async function unassignTicket(ticketId: number) {
 
         revalidatePath(`/dashboard/tickets/${ticketId}`);
         revalidatePath("/dashboard/admin/tickets");
-        revalidatePath("/dashboard/agent");
+        revalidatePath("/dashboard/agente");
         return { success: true };
     } catch (error) {
         console.error("Error unassigning ticket:", error);
@@ -116,7 +116,7 @@ export async function updateTicketStatus(ticketId: number, newStatus: TicketStat
 
         revalidatePath(`/dashboard/tickets/${ticketId}`);
         revalidatePath("/dashboard/admin/tickets");
-        revalidatePath("/dashboard/agent");
+        revalidatePath("/dashboard/agente");
         return { success: true };
     } catch (error) {
         console.error("Error updating ticket status:", error);
