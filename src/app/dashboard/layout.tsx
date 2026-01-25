@@ -52,7 +52,7 @@ export default function DashboardLayout({
 
     // Common items
     const knowledgeBaseItem = {
-        href: "https://docs.google.com/spreadsheets/d/19GNP48F9WSTx_BvHt9vmCC0_mKpplbpREVKymMKxIUg/edit?gid=0#gid=0",
+        href: "https://docs.google.com/spreadsheets/d/1F23_z7fQJbfGCmvavge3Igw-FcyG4Xd_A-MR3s5WURc/",
         label: "Base de conocimiento",
         icon: BookOpen,
         external: true
