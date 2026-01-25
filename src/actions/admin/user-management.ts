@@ -29,7 +29,7 @@ export async function updateUserRole(userId: string, newRole: string, attentionA
             })
             .where(eq(users.id, userId));
 
-        revalidatePath("/dashboard/admin/roles");
+        revalidatePath("/dashboard/admin/gestion-usuarios");
         return { success: true };
     } catch (error) {
         console.error("Error updating role:", error);
@@ -68,7 +68,7 @@ export async function toggleUserActive(userId: string, isActive: boolean) {
             .set(updateData)
             .where(eq(users.id, userId));
 
-        revalidatePath("/dashboard/admin/roles");
+        revalidatePath("/dashboard/admin/gestion-usuarios");
         return { success: true };
     } catch (error) {
         console.error("Error toggling user active status:", error);

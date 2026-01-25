@@ -19,7 +19,7 @@ export async function updateAppSetting(key: string, value: string) {
             });
 
         revalidatePath("/dashboard/tickets/new");
-        revalidatePath("/dashboard/admin/settings");
+        revalidatePath("/dashboard/admin/configuracion");
         revalidatePath("/dashboard/admin/config");
         return { success: true };
     } catch (error) {

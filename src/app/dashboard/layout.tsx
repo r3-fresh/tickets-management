@@ -70,7 +70,7 @@ export default function DashboardLayout({
     ];
 
     const adminNavItems = [
-        { href: "/dashboard/admin", label: "Dashboard", icon: LayoutDashboard },
+        { href: "/dashboard/admin", label: "Panel de control", icon: LayoutDashboard },
         { href: "/dashboard/admin/tickets", label: "Explorador de tickets", icon: Ticket },
     ];
 
@@ -78,12 +78,12 @@ export default function DashboardLayout({
     const userRole = (session?.user as { role?: string })?.role;
 
     // Roles item (Admin)
-    const rolesItem = { href: "/dashboard/admin/roles", label: "Gestión de roles", icon: Shield, external: false };
+    const rolesItem = { href: "/dashboard/admin/gestion-usuarios", label: "Gestión de usuarios", icon: Shield, external: false };
 
     // Settings items (Agent/Admin)
     const settingsItem = {
-        href: userRole === "admin" ? "/dashboard/admin/settings" : "/dashboard/agent/settings",
-        label: "Configuración",
+        href: userRole === "admin" ? "/dashboard/admin/configuracion" : "/dashboard/agent/settings",
+        label: userRole === "admin" ? "Configuración del sistema" : "Configuración del área",
         icon: Settings,
         external: false
     };

@@ -16,7 +16,7 @@ export async function createCampus(name: string, code: string, isActive: boolean
             isActive,
         });
 
-        revalidatePath("/dashboard/admin/settings");
+        revalidatePath("/dashboard/admin/configuracion");
         revalidatePath("/dashboard/tickets/new");
         return { success: true };
     } catch (error) {
@@ -39,7 +39,7 @@ export async function updateCampus(id: number, name: string, code: string, isAct
             })
             .where(eq(campusLocations.id, id));
 
-        revalidatePath("/dashboard/admin/settings");
+        revalidatePath("/dashboard/admin/configuracion");
         revalidatePath("/dashboard/tickets/new");
         return { success: true };
     } catch (error) {
@@ -54,7 +54,7 @@ export async function deleteCampus(id: number) {
     try {
         await db.delete(campusLocations).where(eq(campusLocations.id, id));
 
-        revalidatePath("/dashboard/admin/settings");
+        revalidatePath("/dashboard/admin/configuracion");
         revalidatePath("/dashboard/tickets/new");
         return { success: true };
     } catch (error) {
@@ -83,7 +83,7 @@ export async function toggleCampusActive(id: number) {
             })
             .where(eq(campusLocations.id, id));
 
-        revalidatePath("/dashboard/admin/settings");
+        revalidatePath("/dashboard/admin/configuracion");
         revalidatePath("/dashboard/tickets/new");
         return { success: true };
     } catch (error) {

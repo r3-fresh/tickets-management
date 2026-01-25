@@ -30,7 +30,7 @@ export async function createCategory(
             displayOrder: newOrder,
         });
 
-        revalidatePath("/dashboard/admin/settings");
+        revalidatePath("/dashboard/admin/configuracion");
         revalidatePath("/dashboard/tickets/new");
         return { success: true };
     } catch (error) {
@@ -60,7 +60,7 @@ export async function updateCategory(
             })
             .where(eq(ticketCategories.id, id));
 
-        revalidatePath("/dashboard/admin/settings");
+        revalidatePath("/dashboard/admin/configuracion");
         revalidatePath("/dashboard/tickets/new");
         return { success: true };
     } catch (error) {
@@ -75,7 +75,7 @@ export async function deleteCategory(id: number) {
     try {
         await db.delete(ticketCategories).where(eq(ticketCategories.id, id));
 
-        revalidatePath("/dashboard/admin/settings");
+        revalidatePath("/dashboard/admin/configuracion");
         revalidatePath("/dashboard/tickets/new");
         return { success: true };
     } catch (error) {
@@ -104,7 +104,7 @@ export async function toggleCategoryActive(id: number) {
             })
             .where(eq(ticketCategories.id, id));
 
-        revalidatePath("/dashboard/admin/settings");
+        revalidatePath("/dashboard/admin/configuracion");
         revalidatePath("/dashboard/tickets/new");
         return { success: true };
     } catch (error) {
@@ -138,7 +138,7 @@ export async function moveCategoryUp(id: number, currentOrder: number) {
             .set({ displayOrder: currentOrder })
             .where(eq(ticketCategories.id, prevCategory.id));
 
-        revalidatePath("/dashboard/admin/settings");
+        revalidatePath("/dashboard/admin/configuracion");
         return { success: true };
     } catch (error) {
         console.error("Error moving category:", error);
@@ -171,7 +171,7 @@ export async function moveCategoryDown(id: number, currentOrder: number) {
             .set({ displayOrder: currentOrder })
             .where(eq(ticketCategories.id, nextCategory.id));
 
-        revalidatePath("/dashboard/admin/settings");
+        revalidatePath("/dashboard/admin/configuracion");
         return { success: true };
     } catch (error) {
         console.error("Error moving category:", error);

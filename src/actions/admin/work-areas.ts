@@ -16,7 +16,7 @@ export async function createWorkArea(name: string, description: string, isActive
             isActive,
         });
 
-        revalidatePath("/dashboard/admin/settings");
+        revalidatePath("/dashboard/admin/configuracion");
         revalidatePath("/dashboard/tickets/new");
         return { success: true };
     } catch (error) {
@@ -39,7 +39,7 @@ export async function updateWorkArea(id: number, name: string, description: stri
             })
             .where(eq(workAreas.id, id));
 
-        revalidatePath("/dashboard/admin/settings");
+        revalidatePath("/dashboard/admin/configuracion");
         revalidatePath("/dashboard/tickets/new");
         return { success: true };
     } catch (error) {
@@ -54,7 +54,7 @@ export async function deleteWorkArea(id: number) {
     try {
         await db.delete(workAreas).where(eq(workAreas.id, id));
 
-        revalidatePath("/dashboard/admin/settings");
+        revalidatePath("/dashboard/admin/configuracion");
         revalidatePath("/dashboard/tickets/new");
         return { success: true };
     } catch (error) {
@@ -83,7 +83,7 @@ export async function toggleWorkAreaActive(id: number) {
             })
             .where(eq(workAreas.id, id));
 
-        revalidatePath("/dashboard/admin/settings");
+        revalidatePath("/dashboard/admin/configuracion");
         revalidatePath("/dashboard/tickets/new");
         return { success: true };
     } catch (error) {

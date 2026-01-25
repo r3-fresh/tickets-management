@@ -31,7 +31,7 @@ export async function createSubcategory(
             displayOrder: newOrder,
         });
 
-        revalidatePath("/dashboard/admin/settings");
+        revalidatePath("/dashboard/admin/configuracion");
         revalidatePath("/dashboard/tickets/new");
         return { success: true };
     } catch (error) {
@@ -61,7 +61,7 @@ export async function updateSubcategory(
             })
             .where(eq(ticketSubcategories.id, id));
 
-        revalidatePath("/dashboard/admin/settings");
+        revalidatePath("/dashboard/admin/configuracion");
         revalidatePath("/dashboard/tickets/new");
         return { success: true };
     } catch (error) {
@@ -76,7 +76,7 @@ export async function deleteSubcategory(id: number) {
     try {
         await db.delete(ticketSubcategories).where(eq(ticketSubcategories.id, id));
 
-        revalidatePath("/dashboard/admin/settings");
+        revalidatePath("/dashboard/admin/configuracion");
         revalidatePath("/dashboard/tickets/new");
         return { success: true };
     } catch (error) {
@@ -105,7 +105,7 @@ export async function toggleSubcategoryActive(id: number) {
             })
             .where(eq(ticketSubcategories.id, id));
 
-        revalidatePath("/dashboard/admin/settings");
+        revalidatePath("/dashboard/admin/configuracion");
         revalidatePath("/dashboard/tickets/new");
         return { success: true };
     } catch (error) {
@@ -141,7 +141,7 @@ export async function moveSubcategoryUp(id: number, categoryId: number, currentO
             .set({ displayOrder: currentOrder })
             .where(eq(ticketSubcategories.id, prevSubcategory.id));
 
-        revalidatePath("/dashboard/admin/settings");
+        revalidatePath("/dashboard/admin/configuracion");
         return { success: true };
     } catch (error) {
         console.error("Error moving subcategory:", error);
@@ -176,7 +176,7 @@ export async function moveSubcategoryDown(id: number, categoryId: number, curren
             .set({ displayOrder: currentOrder })
             .where(eq(ticketSubcategories.id, nextSubcategory.id));
 
-        revalidatePath("/dashboard/admin/settings");
+        revalidatePath("/dashboard/admin/configuracion");
         return { success: true };
     } catch (error) {
         console.error("Error moving subcategory:", error);
