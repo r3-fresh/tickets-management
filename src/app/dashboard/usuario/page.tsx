@@ -219,7 +219,7 @@ export default async function UserDashboardPage() {
                     </p>
                 </div>
                 <Button asChild>
-                    <Link href="/dashboard/tickets/new" className="flex items-center gap-2">
+                    <Link href="/dashboard/tickets/nuevo" className="flex items-center gap-2">
                         <Plus className="h-4 w-4" />
                         Crear nuevo ticket
                     </Link>

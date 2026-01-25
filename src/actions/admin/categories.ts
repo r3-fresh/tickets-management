@@ -31,7 +31,7 @@ export async function createCategory(
         });
 
         revalidatePath("/dashboard/admin/configuracion");
-        revalidatePath("/dashboard/tickets/new");
+        revalidatePath("/dashboard/tickets/nuevo");
         return { success: true };
     } catch (error) {
         console.error("Error creating category:", error);
@@ -61,7 +61,7 @@ export async function updateCategory(
             .where(eq(ticketCategories.id, id));
 
         revalidatePath("/dashboard/admin/configuracion");
-        revalidatePath("/dashboard/tickets/new");
+        revalidatePath("/dashboard/tickets/nuevo");
         return { success: true };
     } catch (error) {
         console.error("Error updating category:", error);
@@ -76,7 +76,7 @@ export async function deleteCategory(id: number) {
         await db.delete(ticketCategories).where(eq(ticketCategories.id, id));
 
         revalidatePath("/dashboard/admin/configuracion");
-        revalidatePath("/dashboard/tickets/new");
+        revalidatePath("/dashboard/tickets/nuevo");
         return { success: true };
     } catch (error) {
         console.error("Error deleting category:", error);
@@ -105,7 +105,7 @@ export async function toggleCategoryActive(id: number) {
             .where(eq(ticketCategories.id, id));
 
         revalidatePath("/dashboard/admin/configuracion");
-        revalidatePath("/dashboard/tickets/new");
+        revalidatePath("/dashboard/tickets/nuevo");
         return { success: true };
     } catch (error) {
         console.error("Error toggling category:", error);

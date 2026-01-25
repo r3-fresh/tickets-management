@@ -17,7 +17,7 @@ export async function createCampus(name: string, code: string, isActive: boolean
         });
 
         revalidatePath("/dashboard/admin/configuracion");
-        revalidatePath("/dashboard/tickets/new");
+        revalidatePath("/dashboard/tickets/nuevo");
         return { success: true };
     } catch (error) {
         console.error("Error creating campus:", error);
@@ -40,7 +40,7 @@ export async function updateCampus(id: number, name: string, code: string, isAct
             .where(eq(campusLocations.id, id));
 
         revalidatePath("/dashboard/admin/configuracion");
-        revalidatePath("/dashboard/tickets/new");
+        revalidatePath("/dashboard/tickets/nuevo");
         return { success: true };
     } catch (error) {
         console.error("Error updating campus:", error);
@@ -55,7 +55,7 @@ export async function deleteCampus(id: number) {
         await db.delete(campusLocations).where(eq(campusLocations.id, id));
 
         revalidatePath("/dashboard/admin/configuracion");
-        revalidatePath("/dashboard/tickets/new");
+        revalidatePath("/dashboard/tickets/nuevo");
         return { success: true };
     } catch (error) {
         console.error("Error deleting campus:", error);
@@ -84,7 +84,7 @@ export async function toggleCampusActive(id: number) {
             .where(eq(campusLocations.id, id));
 
         revalidatePath("/dashboard/admin/configuracion");
-        revalidatePath("/dashboard/tickets/new");
+        revalidatePath("/dashboard/tickets/nuevo");
         return { success: true };
     } catch (error) {
         console.error("Error toggling campus:", error);

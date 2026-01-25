@@ -18,7 +18,7 @@ export async function updateAppSetting(key: string, value: string) {
                 set: { value, updatedAt: new Date() },
             });
 
-        revalidatePath("/dashboard/tickets/new");
+        revalidatePath("/dashboard/tickets/nuevo");
         revalidatePath("/dashboard/admin/configuracion");
         revalidatePath("/dashboard/admin/config");
         return { success: true };

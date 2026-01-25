@@ -17,7 +17,7 @@ export async function createWorkArea(name: string, description: string, isActive
         });
 
         revalidatePath("/dashboard/admin/configuracion");
-        revalidatePath("/dashboard/tickets/new");
+        revalidatePath("/dashboard/tickets/nuevo");
         return { success: true };
     } catch (error) {
         console.error("Error creating work area:", error);
@@ -40,7 +40,7 @@ export async function updateWorkArea(id: number, name: string, description: stri
             .where(eq(workAreas.id, id));
 
         revalidatePath("/dashboard/admin/configuracion");
-        revalidatePath("/dashboard/tickets/new");
+        revalidatePath("/dashboard/tickets/nuevo");
         return { success: true };
     } catch (error) {
         console.error("Error updating work area:", error);
@@ -55,7 +55,7 @@ export async function deleteWorkArea(id: number) {
         await db.delete(workAreas).where(eq(workAreas.id, id));
 
         revalidatePath("/dashboard/admin/configuracion");
-        revalidatePath("/dashboard/tickets/new");
+        revalidatePath("/dashboard/tickets/nuevo");
         return { success: true };
     } catch (error) {
         console.error("Error deleting work area:", error);
@@ -84,7 +84,7 @@ export async function toggleWorkAreaActive(id: number) {
             .where(eq(workAreas.id, id));
 
         revalidatePath("/dashboard/admin/configuracion");
-        revalidatePath("/dashboard/tickets/new");
+        revalidatePath("/dashboard/tickets/nuevo");
         return { success: true };
     } catch (error) {
         console.error("Error toggling work area:", error);

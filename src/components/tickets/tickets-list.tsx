@@ -144,7 +144,7 @@ export function TicketsList({ tickets, isAdmin, isWatchedView = false, isAgent =
                 </h1>
                 {!isAdmin && !isWatchedView && !isAgent && (
                     <Button asChild>
-                        <Link href="/dashboard/tickets/new">
+                        <Link href="/dashboard/tickets/nuevo">
                             <Plus className="mr-2 h-4 w-4" />
                             Nuevo Ticket
                         </Link>

@@ -32,7 +32,7 @@ export async function createSubcategory(
         });
 
         revalidatePath("/dashboard/admin/configuracion");
-        revalidatePath("/dashboard/tickets/new");
+        revalidatePath("/dashboard/tickets/nuevo");
         return { success: true };
     } catch (error) {
         console.error("Error creating subcategory:", error);
@@ -62,7 +62,7 @@ export async function updateSubcategory(
             .where(eq(ticketSubcategories.id, id));
 
         revalidatePath("/dashboard/admin/configuracion");
-        revalidatePath("/dashboard/tickets/new");
+        revalidatePath("/dashboard/tickets/nuevo");
         return { success: true };
     } catch (error) {
         console.error("Error updating subcategory:", error);
@@ -77,7 +77,7 @@ export async function deleteSubcategory(id: number) {
         await db.delete(ticketSubcategories).where(eq(ticketSubcategories.id, id));
 
         revalidatePath("/dashboard/admin/configuracion");
-        revalidatePath("/dashboard/tickets/new");
+        revalidatePath("/dashboard/tickets/nuevo");
         return { success: true };
     } catch (error) {
         console.error("Error deleting subcategory:", error);
@@ -106,7 +106,7 @@ export async function toggleSubcategoryActive(id: number) {
             .where(eq(ticketSubcategories.id, id));
 
         revalidatePath("/dashboard/admin/configuracion");
-        revalidatePath("/dashboard/tickets/new");
+        revalidatePath("/dashboard/tickets/nuevo");
         return { success: true };
     } catch (error) {
         console.error("Error toggling subcategory:", error);
