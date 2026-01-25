@@ -59,8 +59,9 @@ export default function DashboardLayout({
     };
 
     const userNavItems = [
-        { href: "/dashboard/tickets", label: "Mis tickets", icon: Ticket },
-        { href: "/dashboard/tickets/watching", label: "En seguimiento", icon: Eye },
+        { href: "/dashboard/usuario", label: "Mi panel", icon: LayoutDashboard },
+        { href: "/dashboard/usuario/mis-tickets", label: "Mis tickets", icon: Ticket },
+        { href: "/dashboard/usuario/seguimiento", label: "En seguimiento", icon: Eye },
     ];
 
     const agentNavItems = [

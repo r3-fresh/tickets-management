@@ -16,5 +16,6 @@ export default async function DashboardPage() {
         redirect("/dashboard/agente");
     }
 
-    redirect("/dashboard/tickets");
+    // Regular users go to their dashboard
+    redirect("/dashboard/usuario");
 }
