@@ -46,9 +46,11 @@ interface TicketsListProps {
     isAdmin: boolean;
     isWatchedView?: boolean;
     isAgent?: boolean;
+    hideFilters?: boolean;
+    hideHeader?: boolean;
 }
 
-export function TicketsList({ tickets, isAdmin, isWatchedView = false, isAgent = false }: TicketsListProps) {
+export function TicketsList({ tickets, isAdmin, isWatchedView = false, isAgent = false, hideFilters = false, hideHeader = false }: TicketsListProps) {
     const [filters, setFilters] = useState<{
         status?: string;
         assignedTo?: string;
@@ -138,30 +140,36 @@ export function TicketsList({ tickets, isAdmin, isWatchedView = false, isAgent =
 
     return (
         <div className="space-y-4">
-            <div className="flex items-center justify-between">
-                <h1 className="text-3xl font-bold tracking-tight">
-                    {isWatchedView ? "Tickets Observados" : (isAgent ? "Bandeja de atención" : "Mis Tickets")}
-                </h1>
-                {!isAdmin && !isWatchedView && !isAgent && (
-                    <Button asChild>
-                        <Link href="/dashboard/tickets/nuevo">
-                            <Plus className="mr-2 h-4 w-4" />
-                            Nuevo Ticket
-                        </Link>
-                    </Button>
-                )}
-            </div>
+            {!hideHeader && (
+                <div className="flex items-center justify-between">
+                    <h1 className="text-3xl font-bold tracking-tight">
+                        {isWatchedView ? "Tickets Observados" : (isAgent ? "Bandeja de atención" : "Mis Tickets")}
+                    </h1>
+                    {!isAdmin && !isWatchedView && !isAgent && (
+                        <Button asChild>
+                            <Link href="/dashboard/tickets/nuevo">
+                                <Plus className="mr-2 h-4 w-4" />
+                                Nuevo Ticket
+                            </Link>
+                        </Button>
+                    )}
+                </div>
+            )}
 
-            <div className="mb-4">
-                <Input
-                    placeholder="Buscar por código o título..."
-                    value={searchQuery}
-                    onChange={(e) => setSearchQuery(e.target.value)}
-                    className="max-w-sm"
-                />
-            </div>
+            {!hideFilters && (
+                <>
+                    <div className="mb-4">
+                        <Input
+                            placeholder="Buscar por código o título..."
+                            value={searchQuery}
+                            onChange={(e) => setSearchQuery(e.target.value)}
+                            className="max-w-sm"
+                        />
+                    </div>
 
-            <TicketFilters onFilterChange={setFilters} assignedUsers={assignedUsers} categories={categories} />
+                    <TicketFilters onFilterChange={setFilters} assignedUsers={assignedUsers} categories={categories} />
+                </>
+            )}
 
             <div className="rounded-md border bg-card shadow-sm">
                 <Table>
