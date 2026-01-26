@@ -1,20 +1,11 @@
 "use client";
 
 import { updateAreaConfigAction } from "@/actions/agent/update-config";
-import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel } from "@/components/ui/form";
 import { Switch } from "@/components/ui/switch";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { Loader2 } from "lucide-react";
+import { Label } from "@/components/ui/label";
 import { useTransition } from "react";
-import { useForm } from "react-hook-form";
 import { toast } from "sonner";
-import { z } from "zod";
-
-const formSchema = z.object({
-    isAcceptingTickets: z.boolean(),
-});
 
 interface SettingsFormProps {
     initialData: {
@@ -25,16 +16,9 @@ interface SettingsFormProps {
 export function SettingsForm({ initialData }: SettingsFormProps) {
     const [isPending, startTransition] = useTransition();
 
-    const form = useForm<z.infer<typeof formSchema>>({
-        resolver: zodResolver(formSchema),
-        defaultValues: {
-            isAcceptingTickets: initialData.isAcceptingTickets,
-        },
-    });
-
-    function onSubmit(values: z.infer<typeof formSchema>) {
+    function handleToggleChange(checked: boolean) {
         const formData = new FormData();
-        formData.append("isAcceptingTickets", String(values.isAcceptingTickets));
+        formData.append("isAcceptingTickets", String(checked));
 
         startTransition(async () => {
             const result = await updateAreaConfigAction(formData);
@@ -49,41 +33,25 @@ export function SettingsForm({ initialData }: SettingsFormProps) {
     return (
         <Card>
             <CardHeader>
-                <CardTitle>Configuración de Recepción de Tickets</CardTitle>
+                <CardTitle>Recepción de tickets</CardTitle>
                 <CardDescription>
-                    Controla si tu área está aceptando nuevos tickets y configura mensajes automáticos.
+                    Controla si tu área está aceptando nuevos tickets.
                 </CardDescription>
             </CardHeader>
             <CardContent>
-                <Form {...form}>
-                    <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-                        <FormField
-                            control={form.control}
-                            name="isAcceptingTickets"
-                            render={({ field }) => (
-                                <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4 shadow-sm">
-                                    <div className="space-y-0.5">
-                                        <FormLabel className="text-base">Aceptar Tickets</FormLabel>
-                                        <FormDescription>
-                                            Desactiva esto para bloquear temporalmente la creación de nuevos tickets para tu área.
-                                        </FormDescription>
-                                    </div>
-                                    <FormControl>
-                                        <Switch
-                                            checked={field.value}
-                                            onCheckedChange={field.onChange}
-                                        />
-                                    </FormControl>
-                                </FormItem>
-                            )}
-                        />
-
-                        <Button type="submit" disabled={isPending}>
-                            {isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                            Guardar Cambios
-                        </Button>
-                    </form>
-                </Form>
+                <div className="flex flex-row items-center justify-between rounded-lg border p-4 shadow-sm">
+                    <div className="space-y-0.5">
+                        <Label className="text-base">Aceptar tickets</Label>
+                        <p className="text-sm text-muted-foreground">
+                            Desactiva esto para bloquear temporalmente la creación de nuevos tickets para tu área.
+                        </p>
+                    </div>
+                    <Switch
+                        checked={initialData.isAcceptingTickets}
+                        onCheckedChange={handleToggleChange}
+                        disabled={isPending}
+                    />
+                </div>
             </CardContent>
         </Card>
     );

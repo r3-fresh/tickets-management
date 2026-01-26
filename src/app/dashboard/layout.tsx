@@ -66,9 +66,9 @@ export default function DashboardLayout({
 
     const agentNavItems = [
         { href: "/dashboard/agente", label: "Mi panel", icon: LayoutDashboard },
-        { href: "/dashboard/agente/tickets-area", label: "Tickets del área", icon: Ticket },
         { href: "/dashboard/agente/mis-tickets", label: "Mis tickets", icon: User },
         { href: "/dashboard/agente/seguimiento", label: "En seguimiento", icon: Eye },
+        { href: "/dashboard/agente/tickets-area", label: "Tickets del área", icon: Ticket },
     ];
 
     const adminNavItems = [

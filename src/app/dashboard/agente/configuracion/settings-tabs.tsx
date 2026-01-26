@@ -18,9 +18,9 @@ export function SettingsTabs({ initialData, categories, subcategories }: Setting
     return (
         <Tabs defaultValue="reception" className="w-full">
             <TabsList className="grid w-full max-w-2xl grid-cols-3">
-                <TabsTrigger value="reception">Recepción de Tickets</TabsTrigger>
-                <TabsTrigger value="categories">Categorías</TabsTrigger>
-                <TabsTrigger value="subcategories">Subcategorías</TabsTrigger>
+                <TabsTrigger value="reception" className="cursor-pointer">Recepción de tickets</TabsTrigger>
+                <TabsTrigger value="categories" className="cursor-pointer">Categorías</TabsTrigger>
+                <TabsTrigger value="subcategories" className="cursor-pointer">Subcategorías</TabsTrigger>
             </TabsList>
 
             <TabsContent value="reception" className="mt-6">

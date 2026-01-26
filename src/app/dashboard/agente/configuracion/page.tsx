@@ -3,6 +3,7 @@ import { attentionAreas, ticketCategories, ticketSubcategories } from "@/db/sche
 import { requireAgent } from "@/lib/auth/helpers";
 import { eq, asc } from "drizzle-orm";
 import { SettingsTabs } from "./settings-tabs";
+import { Breadcrumb } from "@/components/shared/breadcrumb";
 
 export default async function SettingsPage() {
     const session = await requireAgent();
@@ -42,9 +43,13 @@ export default async function SettingsPage() {
 
     return (
         <div className="space-y-6">
+            {/* Breadcrumbs */}
+            <Breadcrumb items={[{ label: "Configuración del área" }]} />
+
+            {/* Header */}
             <div>
-                <h1 className="text-3xl font-bold tracking-tight">Configuración del Área</h1>
-                <p className="text-muted-foreground">
+                <h1 className="text-3xl font-bold tracking-tight">Configuración del área</h1>
+                <p className="text-muted-foreground mt-1">
                     Administra las preferencias para {areaConfig.name}
                 </p>
             </div>
