@@ -3,6 +3,7 @@ import { tickets, comments, ticketViews, ticketCategories, attentionAreas } from
 import { requireAgent } from "@/lib/auth/helpers";
 import { eq, desc, sql, and } from "drizzle-orm";
 import { TicketsList } from "@/components/tickets/tickets-list";
+import { Breadcrumb } from "@/components/shared/breadcrumb";
 
 export default async function AgentAreaTicketsPage() {
     const session = await requireAgent();
@@ -91,22 +92,23 @@ export default async function AgentAreaTicketsPage() {
 
     return (
         <div className="space-y-6">
-            <div className="flex justify-between items-center">
-                <div>
-                    <h1 className="text-3xl font-bold tracking-tight">Tickets del área</h1>
-                    <p className="text-muted-foreground">
-                        Gestión completa de tickets para {areaDetails?.name || "tu área"}
-                    </p>
-                </div>
+            {/* Breadcrumbs */}
+            <Breadcrumb items={[{ label: "Tickets del área" }]} />
+
+            {/* Header */}
+            <div>
+                <h1 className="text-3xl font-bold tracking-tight">Tickets del área</h1>
+                <p className="text-muted-foreground mt-1">
+                    Gestión completa de tickets para {areaDetails?.name || "tu área"}
+                </p>
             </div>
 
-            <div className="space-y-2">
-                <TicketsList
-                    tickets={mergedTickets}
-                    isAdmin={false}
-                    isAgent={true}
-                />
-            </div>
+            <TicketsList
+                tickets={mergedTickets}
+                isAdmin={session.user.role === "admin"}
+                isAgent={true}
+                hideHeader={true}
+            />
         </div>
     );
 }

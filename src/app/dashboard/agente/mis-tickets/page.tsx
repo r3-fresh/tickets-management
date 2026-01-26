@@ -3,6 +3,10 @@ import { tickets, comments, ticketViews, ticketCategories } from "@/db/schema";
 import { requireAgent } from "@/lib/auth/helpers";
 import { eq, desc, sql, and } from "drizzle-orm";
 import { TicketsList } from "@/components/tickets/tickets-list";
+import { Breadcrumb } from "@/components/shared/breadcrumb";
+import Link from "next/link";
+import { Button } from "@/components/ui/button";
+import { Plus } from "lucide-react";
 
 export default async function AgentMyTicketsPage() {
     const session = await requireAgent();
@@ -73,16 +77,29 @@ export default async function AgentMyTicketsPage() {
 
     return (
         <div className="space-y-6">
-            <div>
-                <h1 className="text-3xl font-bold tracking-tight">Mis tickets</h1>
-                <p className="text-muted-foreground">
-                    Tickets que has creado como usuario
-                </p>
+            {/* Breadcrumbs */}
+            <Breadcrumb items={[{ label: "Mis tickets" }]} />
+
+            {/* Header */}
+            <div className="flex justify-between items-start">
+                <div>
+                    <h1 className="text-3xl font-bold tracking-tight">Mis tickets</h1>
+                    <p className="text-muted-foreground mt-1">
+                        Tickets que has creado como usuario
+                    </p>
+                </div>
+                <Button asChild>
+                    <Link href="/dashboard/tickets/nuevo" className="flex items-center gap-2">
+                        <Plus className="h-4 w-4" />
+                        Crear nuevo ticket
+                    </Link>
+                </Button>
             </div>
 
             <TicketsList
                 tickets={mergedTickets}
                 isAdmin={session.user.role === "admin"}
+                hideHeader={true}
             />
         </div>
     );
