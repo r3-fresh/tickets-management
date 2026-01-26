@@ -57,6 +57,8 @@ export async function createTicketAction(formData: FormData) {
         }
     }
 
+    let ticketId: number;
+
     try {
         // Generate ticket code with year (YYYY-####)
         const { generateNextTicketCode } = await import("@/lib/utils/ticket-code");
@@ -76,6 +78,8 @@ export async function createTicketAction(formData: FormData) {
             attentionAreaId,
             watchers: watcherList,
         }).returning({ id: tickets.id });
+
+        ticketId = newTicket.id;
 
         // Send email notification
         // TO: Creator
@@ -144,5 +148,6 @@ export async function createTicketAction(formData: FormData) {
         return { error: "Error interno del servidor al crear el ticket" };
     }
 
-    redirect(`/dashboard/`);
+    // Redirect to ticket detail page (outside try-catch to avoid catching NEXT_REDIRECT)
+    redirect(`/dashboard/tickets/${ticketId}`);
 }
