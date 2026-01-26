@@ -21,9 +21,7 @@ export function getUserCommentTemplate(params: UserCommentTemplateParams): strin
         <p style="margin: 15px 0;">El usuario <strong>${params.userName}</strong> (${params.userEmail}) ha añadido un comentario al ticket:</p>
         
         <div style="background-color: #F9FAFB; border-left: 4px solid #4F46E5; padding: 15px; margin: 20px 0;">
-            <p style="margin: 0; color: #4B5563; white-space: pre-wrap;">
-                ${params.comment}
-            </p>
+            <p style="margin: 0; color: #4B5563; white-space: pre-wrap;">${params.comment}</p>
         </div>
         
         <div style="background-color: #F9FAFB; border-left: 4px solid #4F46E5; padding: 15px; margin: 20px 0;">
@@ -39,7 +37,7 @@ export function getUserCommentTemplate(params: UserCommentTemplateParams): strin
         </div>
         
         <div style="text-align: center; margin: 20px 0;">
-            <a href="${params.ticketUrl}" style="display: inline-block; background-color: #4F46E5; color: white; padding: 12px 30px; text-decoration: none; border-radius: 6px; font-weight: bold;">Ver Ticket Completo</a>
+            <a href="${params.ticketUrl}" style="display: inline-block; background-color: #4F46E5; color: white; padding: 12px 30px; text-decoration: none; border-radius: 6px; font-weight: bold;">Ver detalles del ticket</a>
         </div>
         
         <p style="margin-top: 30px; font-size: 13px; color: #6B7280; padding-top: 20px; border-top: 1px solid #E5E7EB;">

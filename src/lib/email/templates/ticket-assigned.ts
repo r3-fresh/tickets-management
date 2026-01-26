@@ -17,10 +17,10 @@ export function getTicketAssignedTemplate(params: TicketAssignedTemplateParams):
         
         <p style="margin: 15px 0;">Hola <strong>${params.userName}</strong>,</p>
         
-        <p style="margin: 15px 0;">Te informamos que tu ticket <strong>#${params.ticketCode}</strong> ha sido asignado al agente:</p>
+        <p style="margin: 15px 0;">Te informamos que tu ticket <strong>#${params.ticketCode}</strong> ha sido asignado a un agente de soporte y está en proceso de atención.</p>
         
-        <div style="background-color: #F3F4F6; border-left: 4px solid #4F46E5; padding: 15px; margin: 20px 0; border-radius: 4px;">
-            <p style="font-size: 16px; font-weight: bold; margin: 0; color: #1F2937;">${params.agentName}</p>
+        <div style="background-color: #DBEAFE; border-left: 4px solid #3B82F6; padding: 15px; margin: 20px 0; border-radius: 4px;">
+            <p style="margin: 0; color: #1E40AF; font-weight: 500;">Tu solicitud está siendo atendida por nuestro equipo de soporte especializado.</p>
         </div>
 
         <div style="background-color: #F9FAFB; padding: 15px; margin: 20px 0;">
@@ -35,7 +35,7 @@ export function getTicketAssignedTemplate(params: TicketAssignedTemplateParams):
         <p style="margin: 15px 0;">Estamos trabajando en tu solicitud y te contactaremos pronto si necesitamos más información. Puedes dar seguimiento en el siguiente botón:</p>
         
         <div style="text-align: center; margin: 20px 0;">
-            <a href="${params.ticketUrl}" style="display: inline-block; background-color: #4F46E5; color: white; padding: 12px 30px; text-decoration: none; border-radius: 6px; font-weight: bold;">Ver Ticket</a>
+            <a href="${params.ticketUrl}" style="display: inline-block; background-color: #4F46E5; color: white; padding: 12px 30px; text-decoration: none; border-radius: 6px; font-weight: bold;">Ver detalles del ticket</a>
         </div>
     `;
 
