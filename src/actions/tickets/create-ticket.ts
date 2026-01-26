@@ -144,5 +144,5 @@ export async function createTicketAction(formData: FormData) {
         return { error: "Error interno del servidor al crear el ticket" };
     }
 
-    redirect("/dashboard/tickets");
+    redirect(`/dashboard/`);
 }
