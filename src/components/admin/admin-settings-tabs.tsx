@@ -75,33 +75,33 @@ export function AdminSettingsTabs({
     return (
         <Tabs defaultValue="general" className="space-y-4">
             <TabsList className="grid w-full grid-cols-6">
-                <TabsTrigger value="general">General</TabsTrigger>
-                <TabsTrigger value="categories">
+                <TabsTrigger value="general" className="cursor-pointer">General</TabsTrigger>
+                <TabsTrigger value="categories" className="cursor-pointer">
                     <Tag className="h-4 w-4 mr-2" />
                     Categorías
                 </TabsTrigger>
-                <TabsTrigger value="subcategories">
+                <TabsTrigger value="subcategories" className="cursor-pointer">
                     <Grid3x3 className="h-4 w-4 mr-2" />
                     Subcategorías
                 </TabsTrigger>
-                <TabsTrigger value="campus">
+                <TabsTrigger value="campus" className="cursor-pointer">
                     <MapPin className="h-4 w-4 mr-2" />
                     Campus
                 </TabsTrigger>
-                <TabsTrigger value="work-areas">
+                <TabsTrigger value="work-areas" className="cursor-pointer">
                     <Briefcase className="h-4 w-4 mr-2" />
-                    Áreas Trabajo
+                    Áreas de trabajo
                 </TabsTrigger>
-                <TabsTrigger value="attention-areas">
+                <TabsTrigger value="attention-areas" className="cursor-pointer">
                     <Settings className="h-4 w-4 mr-2" />
-                    Áreas Atención
+                    Áreas de atención
                 </TabsTrigger>
             </TabsList>
 
             <TabsContent value="general" className="space-y-4">
                 <Card>
                     <CardHeader>
-                        <CardTitle>Configuración General</CardTitle>
+                        <CardTitle>Configuración general</CardTitle>
                         <CardDescription>
                             Administra las opciones globales de la aplicación
                         </CardDescription>
@@ -118,7 +118,7 @@ export function AdminSettingsTabs({
             <TabsContent value="categories" className="space-y-4">
                 <Card>
                     <CardHeader>
-                        <CardTitle>Categorías de Tickets</CardTitle>
+                        <CardTitle>Categorías de tickets</CardTitle>
                         <CardDescription>
                             Gestiona las categorías principales para clasificar los tickets
                         </CardDescription>
@@ -135,7 +135,7 @@ export function AdminSettingsTabs({
             <TabsContent value="subcategories" className="space-y-4">
                 <Card>
                     <CardHeader>
-                        <CardTitle>Subcategorías de Tickets</CardTitle>
+                        <CardTitle>Subcategorías de tickets</CardTitle>
                         <CardDescription>
                             Gestiona las subcategorías para cada categoría principal
                         </CardDescription>
@@ -152,7 +152,7 @@ export function AdminSettingsTabs({
             <TabsContent value="campus" className="space-y-4">
                 <Card>
                     <CardHeader>
-                        <CardTitle>Campus Locations</CardTitle>
+                        <CardTitle>Campus</CardTitle>
                         <CardDescription>
                             Gestiona las ubicaciones de campus disponibles
                         </CardDescription>
@@ -166,7 +166,7 @@ export function AdminSettingsTabs({
             <TabsContent value="work-areas" className="space-y-4">
                 <Card>
                     <CardHeader>
-                        <CardTitle>Áreas de Trabajo</CardTitle>
+                        <CardTitle>Áreas de trabajo</CardTitle>
                         <CardDescription>
                             Gestiona las áreas de trabajo (ubicaciones físicas/departamentos del usuario)
                         </CardDescription>
@@ -180,7 +180,7 @@ export function AdminSettingsTabs({
             <TabsContent value="attention-areas" className="space-y-4">
                 <Card>
                     <CardHeader>
-                        <CardTitle>Áreas de Atención</CardTitle>
+                        <CardTitle>Áreas de atención</CardTitle>
                         <CardDescription>
                             Gestiona las áreas responsables de resolver tickets (TSI, Fondo Editorial, etc.)
                         </CardDescription>

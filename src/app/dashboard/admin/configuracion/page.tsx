@@ -2,8 +2,8 @@ import { db } from "@/db";
 import { appSettings, ticketCategories, campusLocations, workAreas, ticketSubcategories, attentionAreas } from "@/db/schema";
 import { eq, asc } from "drizzle-orm";
 import { requireAdmin } from "@/lib/auth/helpers";
-import { Settings } from "lucide-react";
 import { AdminSettingsTabs } from "@/components/admin/admin-settings-tabs";
+import { Breadcrumb } from "@/components/shared/breadcrumb";
 
 export default async function AdminSettingsPage() {
     const session = await requireAdmin();
@@ -55,12 +55,13 @@ export default async function AdminSettingsPage() {
 
     return (
         <div className="space-y-6">
-            <div className="flex items-center gap-3">
-                <Settings className="h-8 w-8" />
-                <div>
-                    <h1 className="text-3xl font-bold tracking-tight">Configuración del Sistema</h1>
-                    <p className="text-muted-foreground">Administra las opciones globales y configuraciones de la aplicación</p>
-                </div>
+            {/* Breadcrumbs */}
+            <Breadcrumb items={[{ label: "Configuración del sistema" }]} />
+
+            {/* Header */}
+            <div>
+                <h1 className="text-3xl font-bold tracking-tight">Configuración del sistema</h1>
+                <p className="text-muted-foreground mt-1">Administra las opciones globales y configuraciones de la aplicación</p>
             </div>
 
             <AdminSettingsTabs
