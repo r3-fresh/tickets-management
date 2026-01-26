@@ -126,7 +126,7 @@ export default async function TicketDetailPage({ params }: { params: Promise<{ i
                 {/* Main Content */}
                 <div className="lg:col-span-2 space-y-6">
                     {/* Technical Details Accordion - FIRST */}
-                    <Accordion type="single" collapsible className="w-full">
+                    <Accordion type="single" collapsible className="w-full" suppressHydrationWarning>
                         <AccordionItem value="details" className="border rounded-lg px-4">
                             <AccordionTrigger className="text-sm font-medium text-muted-foreground hover:text-foreground hover:no-underline">
                                 Ver detalles técnicos completos
@@ -166,7 +166,7 @@ export default async function TicketDetailPage({ params }: { params: Promise<{ i
                     </Accordion>
 
                     {/* Detailed Description - SECOND, same style as technical details */}
-                    <Accordion type="single" collapsible className="w-full" defaultValue="description">
+                    <Accordion type="single" collapsible className="w-full" defaultValue="description" suppressHydrationWarning>
                         <AccordionItem value="description" className="border rounded-lg px-4">
                             <AccordionTrigger className="py-4 text-base font-semibold hover:no-underline">
                                 Descripción detallada
