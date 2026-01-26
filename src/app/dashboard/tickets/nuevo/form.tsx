@@ -427,7 +427,7 @@ export function NewTicketForm({
                 <div className="text-sm">
                     <p className="font-semibold text-amber-900 dark:text-amber-200">¿Es una emergencia crítica?</p>
                     <p className="text-amber-800 dark:text-amber-300 mt-1">
-                        Si el incidente afecta la operación de la planta o servicios críticos, por favor contacta directamente a la mesa de ayuda en la extensión <span className="font-bold">9999</span> después de crear este ticket.
+                        Por favor, contáctanos directamente a los chats grupales correspondientes después de crear este ticket.
                     </p>
                 </div>
             </div>
