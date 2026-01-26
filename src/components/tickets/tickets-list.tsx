@@ -18,6 +18,7 @@ import { differenceInDays } from "date-fns";
 import { CopyLinkButton } from "./copy-link-button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { TicketFilters } from "./ticket-filters";
+import { Pagination } from "@/components/shared/pagination";
 import { DateRange } from "react-day-picker";
 import { formatDate, translateStatus, translatePriority } from "@/lib/utils/format";
 import { isWithinInterval } from "date-fns";
@@ -59,6 +60,8 @@ export function TicketsList({ tickets, isAdmin, isWatchedView = false, isAgent =
         year?: string;
     }>({});
     const [searchQuery, setSearchQuery] = useState("");
+    const [currentPage, setCurrentPage] = useState(1);
+    const [itemsPerPage, setItemsPerPage] = useState(25);
 
     // Get unique assigned users for filter
     const assignedUsers = useMemo(() => {
@@ -138,6 +141,18 @@ export function TicketsList({ tickets, isAdmin, isWatchedView = false, isAgent =
         });
     }, [tickets, filters, searchQuery]);
 
+    // Paginate filtered tickets
+    const paginatedTickets = useMemo(() => {
+        const startIndex = (currentPage - 1) * itemsPerPage;
+        const endIndex = startIndex + itemsPerPage;
+        return filteredTickets.slice(startIndex, endIndex);
+    }, [filteredTickets, currentPage, itemsPerPage]);
+
+    // Reset to page 1 when filters change
+    useMemo(() => {
+        setCurrentPage(1);
+    }, [filters, searchQuery]);
+
     return (
         <div className="space-y-4">
             {!hideHeader && (
@@ -198,7 +213,7 @@ export function TicketsList({ tickets, isAdmin, isWatchedView = false, isAgent =
                                 </TableCell>
                             </TableRow>
                         ) : (
-                            filteredTickets.map((ticket) => (
+                            paginatedTickets.map((ticket) => (
                                 <TableRow key={ticket.id}>
                                     <TableCell className="font-medium text-xs text-gray-500">
                                         {ticket.ticketCode || `#${ticket.id}`}
@@ -280,6 +295,17 @@ export function TicketsList({ tickets, isAdmin, isWatchedView = false, isAgent =
                     </TableBody>
                 </Table>
             </div>
+
+            {/* Pagination */}
+            {!hideFilters && filteredTickets.length > 0 && (
+                <Pagination
+                    currentPage={currentPage}
+                    totalItems={filteredTickets.length}
+                    itemsPerPage={itemsPerPage}
+                    onPageChange={setCurrentPage}
+                    onItemsPerPageChange={setItemsPerPage}
+                />
+            )}
         </div>
     );
 }
