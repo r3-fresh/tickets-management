@@ -17,6 +17,7 @@ import { MessageCircle } from "lucide-react";
 import { CopyLinkButton } from "@/components/tickets/copy-link-button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { TicketFilters } from "@/components/tickets/ticket-filters";
+import { Pagination } from "@/components/shared/pagination";
 import { DateRange } from "react-day-picker";
 import { formatDate, translateStatus, translatePriority } from "@/lib/utils/format";
 import { isWithinInterval } from "date-fns";
@@ -54,6 +55,9 @@ export function AdminTicketsTable({ tickets }: AdminTicketsTableProps) {
         year?: string;
     }>({});
     const [searchQuery, setSearchQuery] = useState("");
+    const [currentPage, setCurrentPage] = useState(1);
+    const [itemsPerPage, setItemsPerPage] = useState(25);
+
     // Get unique assigned users for filter
     const assignedUsers = useMemo(() => {
         const users = tickets
@@ -132,6 +136,18 @@ export function AdminTicketsTable({ tickets }: AdminTicketsTableProps) {
         });
     }, [tickets, filters, searchQuery]);
 
+    // Paginate filtered tickets
+    const paginatedTickets = useMemo(() => {
+        const startIndex = (currentPage - 1) * itemsPerPage;
+        const endIndex = startIndex + itemsPerPage;
+        return filteredTickets.slice(startIndex, endIndex);
+    }, [filteredTickets, currentPage, itemsPerPage]);
+
+    // Reset to page 1 when filters change
+    useMemo(() => {
+        setCurrentPage(1);
+    }, [filters, searchQuery]);
+
     return (
         <div className="space-y-4">
             <div className="mb-4">
@@ -161,14 +177,14 @@ export function AdminTicketsTable({ tickets }: AdminTicketsTableProps) {
                         </TableRow>
                     </TableHeader>
                     <TableBody>
-                        {filteredTickets.length === 0 ? (
+                        {paginatedTickets.length === 0 ? (
                             <TableRow>
                                 <TableCell colSpan={9} className="h-24 text-center text-muted-foreground">
                                     No se encontraron tickets con los filtros aplicados.
                                 </TableCell>
                             </TableRow>
                         ) : (
-                            filteredTickets.map((ticket) => {
+                            paginatedTickets.map((ticket) => {
                                 const daysOpen = differenceInDays(new Date(), new Date(ticket.createdAt));
                                 return (
                                     <TableRow key={ticket.id}>
@@ -251,6 +267,17 @@ export function AdminTicketsTable({ tickets }: AdminTicketsTableProps) {
                     </TableBody>
                 </Table>
             </div>
+
+            {/* Pagination */}
+            {filteredTickets.length > 0 && (
+                <Pagination
+                    currentPage={currentPage}
+                    totalItems={filteredTickets.length}
+                    itemsPerPage={itemsPerPage}
+                    onPageChange={setCurrentPage}
+                    onItemsPerPageChange={setItemsPerPage}
+                />
+            )}
         </div>
     );
 }

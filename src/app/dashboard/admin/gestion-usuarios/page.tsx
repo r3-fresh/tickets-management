@@ -5,6 +5,7 @@ import { headers } from "next/headers";
 import { redirect } from "next/navigation";
 import { desc } from "drizzle-orm";
 import { RolesTable } from "@/components/admin/roles-table";
+import { Breadcrumb } from "@/components/shared/breadcrumb";
 
 export default async function AdminRolesPage() {
     const session = await auth.api.getSession({
@@ -24,8 +25,15 @@ export default async function AdminRolesPage() {
 
     return (
         <div className="space-y-6">
-            <h1 className="text-3xl font-bold tracking-tight">Gestión de Roles</h1>
-            <p className="text-muted-foreground">Administra los roles de los usuarios del sistema.</p>
+            {/* Breadcrumbs */}
+            <Breadcrumb items={[{ label: "Gestión de usuarios" }]} />
+
+            {/* Header */}
+            <div>
+                <h1 className="text-3xl font-bold tracking-tight">Gestión de usuarios</h1>
+                <p className="text-muted-foreground mt-1">Administra los roles de los usuarios del sistema</p>
+            </div>
+
             <RolesTable
                 users={allUsers}
                 currentUserId={session.user.id}

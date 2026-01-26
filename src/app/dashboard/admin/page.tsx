@@ -211,7 +211,7 @@ export default async function AdminDashboardPage() {
                                 <div key={user.id} className="flex items-center">
                                     <Avatar className="h-9 w-9">
                                         <AvatarImage src={user.image || undefined} alt={user.name || "User"} referrerPolicy="no-referrer" />
-                                        <AvatarFallback className="bg-gradient-to-br from-purple-500 to-pink-500 text-white">
+                                        <AvatarFallback className="bg-linear-to-br from-purple-500 to-pink-500 text-white">
                                             {user.name?.charAt(0) || "U"}
                                         </AvatarFallback>
                                     </Avatar>

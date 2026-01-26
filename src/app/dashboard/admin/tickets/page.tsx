@@ -3,6 +3,7 @@ import { tickets, comments, ticketViews, ticketCategories } from "@/db/schema";
 import { requireAdmin } from "@/lib/auth/helpers";
 import { desc, sql, eq, and } from "drizzle-orm";
 import { AdminTicketsTable } from "@/components/admin/admin-tickets-table";
+import { Breadcrumb } from "@/components/shared/breadcrumb";
 
 export default async function AdminTicketsPage() {
     const session = await requireAdmin();
@@ -71,10 +72,19 @@ export default async function AdminTicketsPage() {
     });
 
     return (
-        <div className="space-y-4">
-            <h1 className="text-3xl font-bold tracking-tight">Explorador de Tickets</h1>
+        <div className="space-y-6">
+            {/* Breadcrumbs */}
+            <Breadcrumb items={[{ label: "Explorador de tickets" }]} />
+
+            {/* Header */}
+            <div>
+                <h1 className="text-3xl font-bold tracking-tight">Explorador de tickets</h1>
+                <p className="text-muted-foreground mt-1">
+                    Gestión completa de todos los tickets del sistema
+                </p>
+            </div>
+
             <AdminTicketsTable tickets={mergedTickets} />
         </div>
     );
 }
-
