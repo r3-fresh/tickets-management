@@ -1,8 +1,9 @@
 import { db } from "@/db";
-import { tickets, comments, ticketViews, ticketCategories, users, attentionAreas } from "@/db/schema";
+import { tickets, comments, ticketViews, ticketCategories, attentionAreas } from "@/db/schema";
 import { requireAgent } from "@/lib/auth/helpers";
-import { eq, desc, sql, and, or, count } from "drizzle-orm";
+import { eq, desc, sql, and, not, count } from "drizzle-orm";
 import { TicketsList } from "@/components/tickets/tickets-list";
+import { Breadcrumb } from "@/components/shared/breadcrumb";
 import Link from "next/link";
 import {
     Card,
@@ -11,13 +12,17 @@ import {
     CardTitle,
 } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
 import {
     Ticket,
     CheckCircle2,
     Clock,
     AlertCircle,
-    Activity,
-    ArrowRight
+    Eye,
+    HourglassIcon,
+    Users,
+    Building2,
+    Plus
 } from "lucide-react";
 
 export default async function AgentDashboardPage() {
@@ -42,16 +47,8 @@ export default async function AgentDashboardPage() {
         where: eq(attentionAreas.id, attentionAreaId),
     });
 
-    // --- Statistics Gathering ---
-
-    // Total Tickets for this area
-    const [totalTicketsRes] = await db
-        .select({ count: count() })
-        .from(tickets)
-        .where(eq(tickets.attentionAreaId, attentionAreaId));
-
-    // Tickets by Status for this area
-    const statusStats = await db.select({
+    // --- AREA Statistics (Tickets of the area) ---
+    const areaStatusStats = await db.select({
         status: tickets.status,
         count: count()
     })
@@ -59,40 +56,74 @@ export default async function AgentDashboardPage() {
         .where(eq(tickets.attentionAreaId, attentionAreaId))
         .groupBy(tickets.status);
 
-    const getStat = (status: string) => statusStats.find(s => s.status === status)?.count || 0;
+    const getAreaStat = (status: string) => areaStatusStats.find(s => s.status === status)?.count || 0;
 
-    const statsCards = [
-        {
-            title: "Total tickets",
-            value: totalTicketsRes.count,
-            icon: Ticket,
-            color: "text-blue-600",
-            bg: "bg-blue-100 dark:bg-blue-900/20"
-        },
+    // --- USER Statistics (My tickets as user) ---
+    const userStatusStats = await db.select({
+        status: tickets.status,
+        count: count()
+    })
+        .from(tickets)
+        .where(eq(tickets.createdById, session.user.id))
+        .groupBy(tickets.status);
+
+    const getUserStat = (status: string) => userStatusStats.find(s => s.status === status)?.count || 0;
+
+    // Count tickets where user is a watcher
+    const [watcherCountResult] = await db
+        .select({ count: count() })
+        .from(tickets)
+        .where(sql`${session.user.id} = ANY(${tickets.watchers})`);
+
+    const areaStatsCards = [
         {
             title: "Abiertos",
-            value: getStat("open"),
+            value: getAreaStat("open"),
             icon: AlertCircle,
             color: "text-amber-600",
-            bg: "bg-amber-100 dark:bg-amber-900/20"
+            bg: "bg-amber-100 dark:bg-amber-900/20",
         },
         {
             title: "En proceso",
-            value: getStat("in_progress"),
+            value: getAreaStat("in_progress"),
             icon: Clock,
             color: "text-indigo-600",
-            bg: "bg-indigo-100 dark:bg-indigo-900/20"
+            bg: "bg-indigo-100 dark:bg-indigo-900/20",
         },
         {
             title: "Resueltos",
-            value: getStat("resolved"),
+            value: getAreaStat("resolved"),
             icon: CheckCircle2,
             color: "text-emerald-600",
-            bg: "bg-emerald-100 dark:bg-emerald-900/20"
+            bg: "bg-emerald-100 dark:bg-emerald-900/20",
         }
     ];
 
-    // Fetch RECENT tickets for this attention area (last 10)
+    const userStatsCards = [
+        {
+            title: "Abiertos",
+            value: getUserStat("open"),
+            icon: AlertCircle,
+            color: "text-amber-600",
+            bg: "bg-amber-100 dark:bg-amber-900/20",
+        },
+        {
+            title: "Pendientes de validación",
+            value: getUserStat("pending_validation"),
+            icon: HourglassIcon,
+            color: "text-yellow-600",
+            bg: "bg-yellow-100 dark:bg-yellow-900/20",
+        },
+        {
+            title: "En progreso",
+            value: getUserStat("in_progress"),
+            icon: Clock,
+            color: "text-indigo-600",
+            bg: "bg-indigo-100 dark:bg-indigo-900/20",
+        }
+    ];
+
+    // --- Fetch RECENT area tickets (last 5) ---
     const recentAreaTickets = await db
         .select({
             id: tickets.id,
@@ -136,20 +167,19 @@ export default async function AgentDashboardPage() {
         .where(eq(tickets.attentionAreaId, attentionAreaId))
         .groupBy(tickets.id, ticketCategories.name, ticketViews.lastViewedAt)
         .orderBy(desc(tickets.createdAt))
-        .limit(10); // Only recent 10
+        .limit(5);
 
-    // Fetch assigned users for recent tickets
-    const ticketIds = recentAreaTickets.map(t => t.id);
-    const ticketsWithAssigned = await db.query.tickets.findMany({
+    const areaTicketsWithAssigned = await db.query.tickets.findMany({
         where: eq(tickets.attentionAreaId, attentionAreaId),
         with: {
             assignedTo: true,
         },
         orderBy: [desc(tickets.createdAt)],
+        limit: 5,
     });
 
-    const mergedTickets = recentAreaTickets.map((ticket) => {
-        const withAssigned = ticketsWithAssigned.find((t) => t.id === ticket.id);
+    const mergedAreaTickets = recentAreaTickets.map((ticket) => {
+        const withAssigned = areaTicketsWithAssigned.find((t) => t.id === ticket.id);
         return {
             ...ticket,
             assignedTo: withAssigned?.assignedTo || null,
@@ -157,56 +187,320 @@ export default async function AgentDashboardPage() {
         };
     });
 
+    // --- Fetch RECENT user tickets (last 3) ---
+    const recentUserTickets = await db
+        .select({
+            id: tickets.id,
+            ticketCode: tickets.ticketCode,
+            title: tickets.title,
+            description: tickets.description,
+            status: tickets.status,
+            priority: tickets.priority,
+            categoryId: tickets.categoryId,
+            categoryName: ticketCategories.name,
+            subcategoryId: tickets.subcategoryId,
+            areaId: tickets.areaId,
+            campusId: tickets.campusId,
+            createdById: tickets.createdById,
+            assignedToId: tickets.assignedToId,
+            createdAt: tickets.createdAt,
+            updatedAt: tickets.updatedAt,
+            unreadCommentCount: sql<number>`
+                cast(
+                    count(
+                        case 
+                            when ${comments.createdAt} > coalesce(${ticketViews.lastViewedAt}, ${tickets.createdAt})
+                            and ${comments.userId} != ${session.user.id}
+                            then 1 
+                        end
+                    ) as integer
+                )
+            `,
+            commentCount: sql<number>`cast(count(${comments.id}) as integer)`,
+        })
+        .from(tickets)
+        .leftJoin(ticketCategories, eq(tickets.categoryId, ticketCategories.id))
+        .leftJoin(comments, eq(tickets.id, comments.ticketId))
+        .leftJoin(
+            ticketViews,
+            and(
+                eq(tickets.id, ticketViews.ticketId),
+                eq(ticketViews.userId, session.user.id)
+            )
+        )
+        .where(eq(tickets.createdById, session.user.id))
+        .groupBy(tickets.id, ticketCategories.name, ticketViews.lastViewedAt)
+        .orderBy(desc(tickets.createdAt))
+        .limit(3);
+
+    const userTicketsWithAssigned = await db.query.tickets.findMany({
+        where: eq(tickets.createdById, session.user.id),
+        with: {
+            assignedTo: true,
+        },
+        orderBy: [desc(tickets.createdAt)],
+        limit: 3,
+    });
+
+    const mergedUserTickets = recentUserTickets.map((ticket) => {
+        const withAssigned = userTicketsWithAssigned.find((t) => t.id === ticket.id);
+        return {
+            ...ticket,
+            assignedTo: withAssigned?.assignedTo || null,
+            commentCount: ticket.commentCount,
+        };
+    });
+
+    // --- Fetch RECENT watched tickets (last 3) ---
+    const recentWatchedTickets = await db
+        .select({
+            id: tickets.id,
+            ticketCode: tickets.ticketCode,
+            title: tickets.title,
+            description: tickets.description,
+            status: tickets.status,
+            priority: tickets.priority,
+            categoryId: tickets.categoryId,
+            categoryName: ticketCategories.name,
+            subcategoryId: tickets.subcategoryId,
+            areaId: tickets.areaId,
+            campusId: tickets.campusId,
+            createdById: tickets.createdById,
+            assignedToId: tickets.assignedToId,
+            createdAt: tickets.createdAt,
+            updatedAt: tickets.updatedAt,
+            unreadCommentCount: sql<number>`
+                cast(
+                    count(
+                        case 
+                            when ${comments.createdAt} > coalesce(${ticketViews.lastViewedAt}, ${tickets.createdAt})
+                            and ${comments.userId} != ${session.user.id}
+                            then 1 
+                        end
+                    ) as integer
+                )
+            `,
+            commentCount: sql<number>`cast(count(${comments.id}) as integer)`,
+        })
+        .from(tickets)
+        .leftJoin(ticketCategories, eq(tickets.categoryId, ticketCategories.id))
+        .leftJoin(comments, eq(tickets.id, comments.ticketId))
+        .leftJoin(
+            ticketViews,
+            and(
+                eq(tickets.id, ticketViews.ticketId),
+                eq(ticketViews.userId, session.user.id)
+            )
+        )
+        .where(
+            and(
+                not(eq(tickets.createdById, session.user.id)),
+                sql`${session.user.id} = ANY(${tickets.watchers})`
+            )
+        )
+        .groupBy(tickets.id, ticketCategories.name, ticketViews.lastViewedAt)
+        .orderBy(desc(tickets.createdAt))
+        .limit(3);
+
+    const watchedTicketsWithRelations = await db.query.tickets.findMany({
+        where: and(
+            not(eq(tickets.createdById, session.user.id)),
+            sql`${session.user.id} = ANY(${tickets.watchers})`
+        ),
+        with: {
+            assignedTo: true,
+            createdBy: true,
+        },
+        orderBy: [desc(tickets.createdAt)],
+        limit: 3,
+    });
+
+    const mergedWatchedTickets = recentWatchedTickets.map((ticket) => {
+        const withRelations = watchedTicketsWithRelations.find((t) => t.id === ticket.id);
+        return {
+            ...ticket,
+            assignedTo: withRelations?.assignedTo || null,
+            createdBy: withRelations?.createdBy || null,
+            commentCount: ticket.commentCount,
+        };
+    });
+
     return (
         <div className="space-y-6">
-            <div className="flex justify-between items-center">
+            {/* Breadcrumbs */}
+            <Breadcrumb items={[{ label: "Mi panel" }]} />
+
+            {/* Header */}
+            <div className="flex justify-between items-start">
                 <div>
                     <h1 className="text-3xl font-bold tracking-tight">Mi panel</h1>
-                    <p className="text-muted-foreground">
+                    <p className="text-muted-foreground mt-1">
                         Vista rápida de {areaDetails?.name || "tu área"}
                     </p>
                 </div>
+                <Button asChild>
+                    <Link href="/dashboard/tickets/nuevo" className="flex items-center gap-2">
+                        <Plus className="h-4 w-4" />
+                        Crear nuevo ticket
+                    </Link>
+                </Button>
             </div>
 
-            {/* Stats Grid */}
-            <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-                {statsCards.map((stat, i) => (
-                    <Card key={i}>
-                        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                            <CardTitle className="text-sm font-medium">
-                                {stat.title}
-                            </CardTitle>
-                            <div className={`p-2 rounded-full ${stat.bg}`}>
-                                <stat.icon className={`h-4 w-4 ${stat.color}`} />
-                            </div>
-                        </CardHeader>
-                        <CardContent>
-                            <div className="text-2xl font-bold">{stat.value}</div>
-                        </CardContent>
-                    </Card>
-                ))}
+            {/* Statistics Grid - Simplified */}
+            <div className="grid gap-6 md:grid-cols-2">
+                {/* Area Stats */}
+                <div className="space-y-3">
+                    <div className="flex items-center gap-2 px-1">
+                        <Building2 className="h-4 w-4 text-muted-foreground" />
+                        <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wide">Área de atención</h3>
+                    </div>
+                    <div className="grid gap-4 grid-cols-2">
+                        <Card>
+                            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                                <CardTitle className="text-sm font-medium">
+                                    Abiertos
+                                </CardTitle>
+                                <div className="p-2 rounded-full bg-amber-100 dark:bg-amber-900/20">
+                                    <AlertCircle className="h-4 w-4 text-amber-600" />
+                                </div>
+                            </CardHeader>
+                            <CardContent>
+                                <div className="text-3xl font-bold">{getAreaStat("open")}</div>
+                            </CardContent>
+                        </Card>
+                        <Card>
+                            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                                <CardTitle className="text-sm font-medium">
+                                    En proceso
+                                </CardTitle>
+                                <div className="p-2 rounded-full bg-indigo-100 dark:bg-indigo-900/20">
+                                    <Clock className="h-4 w-4 text-indigo-600" />
+                                </div>
+                            </CardHeader>
+                            <CardContent>
+                                <div className="text-3xl font-bold">{getAreaStat("in_progress")}</div>
+                            </CardContent>
+                        </Card>
+                    </div>
+                </div>
+
+                {/* User Stats */}
+                <div className="space-y-3">
+                    <div className="flex items-center gap-2 px-1">
+                        <Users className="h-4 w-4 text-muted-foreground" />
+                        <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wide">Mis tickets personales</h3>
+                    </div>
+                    <div className="grid gap-4 grid-cols-2">
+                        <Card>
+                            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                                <CardTitle className="text-sm font-medium">
+                                    Abiertos
+                                </CardTitle>
+                                <div className="p-2 rounded-full bg-amber-100 dark:bg-amber-900/20">
+                                    <AlertCircle className="h-4 w-4 text-amber-600" />
+                                </div>
+                            </CardHeader>
+                            <CardContent>
+                                <div className="text-3xl font-bold">{getUserStat("open")}</div>
+                            </CardContent>
+                        </Card>
+                        <Card>
+                            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                                <CardTitle className="text-sm font-medium">
+                                    Pendientes
+                                </CardTitle>
+                                <div className="p-2 rounded-full bg-yellow-100 dark:bg-yellow-900/20">
+                                    <HourglassIcon className="h-4 w-4 text-yellow-600" />
+                                </div>
+                            </CardHeader>
+                            <CardContent>
+                                <div className="text-3xl font-bold">{getUserStat("pending_validation")}</div>
+                            </CardContent>
+                        </Card>
+                    </div>
+                </div>
             </div>
 
-            {/* Recent Tickets */}
+            {/* Area Tickets Table */}
             <div className="space-y-4">
                 <div className="flex items-center justify-between">
-                    <div>
+                    <div className="flex items-center gap-2">
+                        <Building2 className="h-5 w-5" />
                         <h2 className="text-xl font-semibold">Tickets recientes del área</h2>
-                        <p className="text-sm text-muted-foreground">Últimos 10 tickets</p>
                     </div>
-                    <Button asChild variant="outline">
-                        <Link href="/dashboard/agente/tickets-area" className="flex items-center gap-2">
-                            Ver todos los tickets del área
-                            <ArrowRight className="h-4 w-4" />
+                    <Button asChild variant="link" className="text-primary">
+                        <Link href="/dashboard/agente/tickets-area">
+                            Ver todo el historial
                         </Link>
                     </Button>
                 </div>
 
                 <TicketsList
-                    tickets={mergedTickets}
+                    tickets={mergedAreaTickets}
                     isAdmin={false}
                     isAgent={true}
+                    hideFilters={true}
+                    hideHeader={true}
                 />
+            </div>
+
+            {/* My Tickets Table */}
+            <div className="space-y-4">
+                <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                        <Users className="h-5 w-5" />
+                        <h2 className="text-xl font-semibold">Mis tickets</h2>
+                    </div>
+                    <Button asChild variant="link" className="text-primary">
+                        <Link href="/dashboard/agente/mis-tickets">
+                            Ver todo el historial
+                        </Link>
+                    </Button>
+                </div>
+
+                <TicketsList
+                    tickets={mergedUserTickets}
+                    isAdmin={false}
+                    hideFilters={true}
+                    hideHeader={true}
+                />
+            </div>
+
+            {/* Watched Tickets Table */}
+            <div className="space-y-4">
+                <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                        <Eye className="h-5 w-5" />
+                        <h2 className="text-xl font-semibold">En seguimiento</h2>
+                        {mergedWatchedTickets.length > 0 && (
+                            <Badge variant="secondary">{mergedWatchedTickets.length} elementos</Badge>
+                        )}
+                    </div>
+                    {mergedWatchedTickets.length > 0 && (
+                        <Button asChild variant="link" className="text-primary">
+                            <Link href="/dashboard/agente/seguimiento">
+                                Ver todo
+                            </Link>
+                        </Button>
+                    )}
+                </div>
+
+                {mergedWatchedTickets.length > 0 ? (
+                    <TicketsList
+                        tickets={mergedWatchedTickets}
+                        isAdmin={false}
+                        isWatchedView={true}
+                        hideFilters={true}
+                        hideHeader={true}
+                    />
+                ) : (
+                    <Card>
+                        <CardContent className="p-6 text-center text-muted-foreground">
+                            <Eye className="h-12 w-12 mx-auto mb-2 opacity-50" />
+                            <p>No estás siguiendo ningún ticket aún</p>
+                        </CardContent>
+                    </Card>
+                )}
             </div>
         </div>
     );
