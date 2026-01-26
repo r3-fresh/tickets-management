@@ -3,6 +3,7 @@ import { tickets, comments, ticketViews, ticketCategories } from "@/db/schema";
 import { requireAuth } from "@/lib/auth/helpers";
 import { desc, sql, and, not, eq } from "drizzle-orm";
 import { TicketsList } from "@/components/tickets/tickets-list";
+import { Breadcrumb } from "@/components/shared/breadcrumb";
 
 export default async function UserWatchedTicketsPage() {
     const session = await requireAuth();
@@ -83,9 +84,13 @@ export default async function UserWatchedTicketsPage() {
 
     return (
         <div className="space-y-6">
+            {/* Breadcrumbs */}
+            <Breadcrumb items={[{ label: "En seguimiento" }]} />
+
+            {/* Header */}
             <div>
                 <h1 className="text-3xl font-bold tracking-tight">En seguimiento</h1>
-                <p className="text-muted-foreground">
+                <p className="text-muted-foreground mt-1">
                     Tickets donde estás asignado como observador
                 </p>
             </div>
@@ -94,6 +99,7 @@ export default async function UserWatchedTicketsPage() {
                 tickets={mergedTickets}
                 isAdmin={session.user.role === "admin"}
                 isWatchedView={true}
+                hideHeader={true}
             />
         </div>
     );
