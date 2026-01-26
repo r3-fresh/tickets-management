@@ -125,25 +125,7 @@ export default async function TicketDetailPage({ params }: { params: Promise<{ i
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
                 {/* Main Content */}
                 <div className="lg:col-span-2 space-y-6">
-                    {/* Detailed Description */}
-                    <Card>
-                        <CardHeader>
-                            <Accordion type="single" collapsible className="w-full">
-                                <AccordionItem value="description" className="border-b-0">
-                                    <AccordionTrigger className="py-0 text-base font-semibold hover:no-underline">
-                                        📄 Descripción detallada
-                                    </AccordionTrigger>
-                                    <AccordionContent className="pt-4">
-                                        <div className="prose max-w-none text-foreground">
-                                            <RichTextEditor value={ticket.description} disabled={true} />
-                                        </div>
-                                    </AccordionContent>
-                                </AccordionItem>
-                            </Accordion>
-                        </CardHeader>
-                    </Card>
-
-                    {/* Technical Details Accordion */}
+                    {/* Technical Details Accordion - FIRST */}
                     <Accordion type="single" collapsible className="w-full">
                         <AccordionItem value="details" className="border rounded-lg px-4">
                             <AccordionTrigger className="text-sm font-medium text-muted-foreground hover:text-foreground hover:no-underline">
@@ -183,36 +165,48 @@ export default async function TicketDetailPage({ params }: { params: Promise<{ i
                         </AccordionItem>
                     </Accordion>
 
+                    {/* Detailed Description - SECOND, same style as technical details */}
+                    <Accordion type="single" collapsible className="w-full" defaultValue="description">
+                        <AccordionItem value="description" className="border rounded-lg px-4">
+                            <AccordionTrigger className="py-4 text-base font-semibold hover:no-underline">
+                                Descripción detallada
+                            </AccordionTrigger>
+                            <AccordionContent className="pb-4">
+                                <div className="prose max-w-none text-foreground">
+                                    <RichTextEditor value={ticket.description} disabled={true} />
+                                </div>
+                            </AccordionContent>
+                        </AccordionItem>
+                    </Accordion>
+
                     {/* Comments Section */}
                     <div className="space-y-4">
-                        <h3 className="text-lg font-semibold">💬 Comentarios</h3>
+                        <h3 className="text-lg font-semibold">Comentarios</h3>
 
                         {/* Comment List */}
-                        <div className="space-y-3">
+                        <div className="space-y-4">
                             {ticket.comments.map((comment) => (
-                                <Card key={comment.id} className="bg-muted/30">
-                                    <CardContent className="p-4">
-                                        <div className="flex items-start space-x-3">
-                                            <Avatar className="h-8 w-8 mt-1">
-                                                <AvatarImage src={comment.author.image || undefined} />
-                                                <AvatarFallback className="bg-cyan-600 text-white font-bold text-xs">
-                                                    {comment.author.name.charAt(0)}
-                                                </AvatarFallback>
-                                            </Avatar>
-                                            <div className="flex-1 min-w-0">
-                                                <div className="flex items-center justify-between mb-2">
-                                                    <p className="text-sm font-semibold">{comment.author.name}</p>
-                                                    <span className="text-xs text-muted-foreground">
-                                                        {formatDate(comment.createdAt)}
-                                                    </span>
-                                                </div>
-                                                <div className="text-sm text-foreground [&_p]:my-1 [&_ul]:my-1 [&_ol]:my-1">
-                                                    <RichTextEditor value={comment.content} disabled={true} />
-                                                </div>
+                                <div key={comment.id} className="flex gap-3">
+                                    <Avatar className="h-10 w-10 shrink-0">
+                                        <AvatarImage src={comment.author.image || undefined} />
+                                        <AvatarFallback className="bg-cyan-600 text-white font-bold text-sm">
+                                            {comment.author.name.charAt(0)}
+                                        </AvatarFallback>
+                                    </Avatar>
+                                    <div className="flex-1 min-w-0">
+                                        <div className="flex items-baseline justify-between mb-2 gap-2">
+                                            <p className="text-base font-semibold">{comment.author.name}</p>
+                                            <span className="text-xs text-muted-foreground whitespace-nowrap">
+                                                {formatDate(comment.createdAt)}
+                                            </span>
+                                        </div>
+                                        <div className="rounded-lg bg-muted/50 border">
+                                            <div className="text-sm text-foreground [&_p]:my-1 [&_ul]:my-1 [&_ol]:my-1">
+                                                <RichTextEditor value={comment.content} disabled={true} />
                                             </div>
                                         </div>
-                                    </CardContent>
-                                </Card>
+                                    </div>
+                                </div>
                             ))}
                         </div>
 
