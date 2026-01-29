@@ -349,7 +349,7 @@ export default function DashboardLayout({
                     >
                         <Menu className="h-6 w-6" />
                     </button>
-                    <span className="text-lg font-bold">Gestión de Tickets</span>
+                    <span className="text-lg font-bold">Gestión de tickets</span>
                     <div className="w-6" />
                 </header>
 

@@ -7,9 +7,19 @@ import { revalidatePath } from "next/cache";
 import { eq, and, inArray } from "drizzle-orm";
 import { TICKET_STATUS } from "@/lib/constants/tickets";
 import { sendUserCommentEmail } from "@/lib/email/send-emails";
+import { createRateLimiter } from "@/lib/utils/rate-limit";
+
+// Rate limiter para comentarios: 10 por minuto
+const commentRateLimiter = createRateLimiter('MODERATE');
 
 export async function addCommentAction(formData: FormData) {
     const session = await requireAuth();
+
+    // Aplicar rate limiting
+    const rateLimitResult = commentRateLimiter(`comment-${session.user.id}`);
+    if (!rateLimitResult.success) {
+        return { error: "Estás enviando comentarios muy rápido. Por favor, espera un momento." };
+    }
 
     const ticketId = Number(formData.get("ticketId"));
     const content = formData.get("content") as string;

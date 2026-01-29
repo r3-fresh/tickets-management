@@ -165,13 +165,13 @@ export function AgentCategoriesManagement({ categories }: AgentCategoriesManagem
                                 setIsDialogOpen(true);
                             }}>
                                 <Plus className="mr-2 h-4 w-4" />
-                                Nueva Categoría
+                                Nueva categoría
                             </Button>
                         </DialogTrigger>
                         <DialogContent className="sm:max-w-[525px]">
                             <DialogHeader>
                                 <DialogTitle>
-                                    {editingCategory ? "Editar Categoría" : "Nueva Categoría"}
+                                    {editingCategory ? "Editar categoría" : "Nueva categoría"}
                                 </DialogTitle>
                                 <DialogDescription>
                                     {editingCategory

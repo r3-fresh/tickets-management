@@ -45,8 +45,8 @@ export const VALIDATION_TIMEOUT_HOURS = 48;
 
 export const STATUS_LABELS: Record<TicketStatus, string> = {
     open: "Abierto",
-    in_progress: "En Progreso",
-    pending_validation: "Pendiente de Validación",
+    in_progress: "En progreso",
+    pending_validation: "Pendiente de validación",
     resolved: "Resuelto",
     voided: "Anulado",
 };

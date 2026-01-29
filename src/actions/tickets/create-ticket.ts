@@ -8,9 +8,26 @@ import { redirect } from "next/navigation";
 import { TICKET_STATUS } from "@/lib/constants/tickets";
 import { sendTicketCreatedEmail } from "@/lib/email/send-emails";
 import { eq, inArray, and } from "drizzle-orm";
+import { createRateLimiter } from "@/lib/utils/rate-limit";
+
+// Rate limiter: 5 tickets por minuto por usuario
+const ticketRateLimiter = createRateLimiter('MODERATE');
 
 export async function createTicketAction(formData: FormData) {
     const session = await requireAuth();
+
+    // Aplicar rate limiting
+    const rateLimitResult = ticketRateLimiter(session.user.id);
+    if (!rateLimitResult.success) {
+        const resetDate = new Date(rateLimitResult.reset);
+        const resetTime = resetDate.toLocaleTimeString('es-ES', { 
+            hour: '2-digit', 
+            minute: '2-digit' 
+        });
+        return { 
+            error: `Has alcanzado el límite de creación de tickets. Por favor, espera hasta las ${resetTime} para crear más tickets.` 
+        };
+    }
 
     const rawData = {
         title: formData.get("title"),

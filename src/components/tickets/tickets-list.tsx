@@ -158,7 +158,7 @@ export function TicketsList({ tickets, isAdmin, isWatchedView = false, isAgent =
             {!hideHeader && (
                 <div className="flex items-center justify-between">
                     <h1 className="text-3xl font-bold tracking-tight">
-                        {isWatchedView ? "Tickets Observados" : (isAgent ? "Bandeja de atención" : "Mis Tickets")}
+                        {isWatchedView ? "Tickets observados" : (isAgent ? "Bandeja de atención" : "Mis tickets")}
                     </h1>
                     {!isAdmin && !isWatchedView && !isAgent && (
                         <Button asChild>

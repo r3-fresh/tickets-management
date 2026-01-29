@@ -86,7 +86,7 @@ export function AdminTicketControls({
         <div className="space-y-4">
             <div>
                 <label className="block text-sm font-medium mb-2">
-                    Cambiar Estado
+                    Cambiar estado
                 </label>
                 <Select
                     value={currentStatus}
@@ -135,7 +135,7 @@ export function AdminTicketControls({
                             className="w-full bg-green-600 hover:bg-green-700 text-white"
                         >
                             <CheckCircle className="mr-2 h-4 w-4" />
-                            Solicitar Validación
+                            Solicitar validación
                         </Button>
                     )}
                 </>
@@ -144,7 +144,7 @@ export function AdminTicketControls({
             <Dialog open={isValidationDialogOpen} onOpenChange={setIsValidationDialogOpen}>
                 <DialogContent className="sm:max-w-[600px]">
                     <DialogHeader>
-                        <DialogTitle>Solicitar Validación</DialogTitle>
+                        <DialogTitle>Solicitar validación</DialogTitle>
                         <DialogDescription>
                             El usuario recibirá un correo notificando que el ticket ha sido resuelto y requiere su validación.
                             Puedes añadir un mensaje personalizado.
@@ -172,7 +172,7 @@ export function AdminTicketControls({
                             onClick={submitValidationRequest}
                             disabled={isPending}
                         >
-                            {isPending ? "Enviando..." : "Enviar Solicitud"}
+                            {isPending ? "Enviando..." : "Enviar solicitud"}
                         </Button>
                     </DialogFooter>
                 </DialogContent>

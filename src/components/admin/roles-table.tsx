@@ -61,7 +61,7 @@ export function RolesTable({ users, currentUserId, attentionAreas }: RolesTableP
                             <TableHead>Usuario</TableHead>
                             <TableHead>Email</TableHead>
                             <TableHead>Estado</TableHead>
-                            <TableHead>Rol Actual</TableHead>
+                            <TableHead>Rol actual</TableHead>
                             <TableHead className="text-right">Acciones</TableHead>
                         </TableRow>
                     </TableHeader>
