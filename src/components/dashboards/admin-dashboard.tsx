@@ -22,9 +22,7 @@ import {
 import { Breadcrumb } from "@/components/shared/breadcrumb";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 
-export default async function () {
-    // Authorization handled by (admin) layout
-
+export async function AdminDashboard() {
     // --- Statistics Gathering ---
 
     // Total Tickets

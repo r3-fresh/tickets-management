@@ -72,7 +72,7 @@ export default function DashboardLayout({
     ];
 
     const adminNavItems = [
-        { href: "/dashboard/panel", label: "Panel de control", icon: LayoutDashboard },
+        { href: "/dashboard", label: "Panel de control", icon: LayoutDashboard },
         { href: "/dashboard/explorador", label: "Explorador de tickets", icon: Ticket },
     ];
 

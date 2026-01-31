@@ -1,6 +1,5 @@
 import { db } from "@/db";
 import { tickets, comments, ticketViews, ticketCategories, attentionAreas } from "@/db/schema";
-import { requireAgent } from "@/lib/auth/helpers";
 import { eq, desc, sql, and, not, count } from "drizzle-orm";
 import { TicketsList } from "@/components/tickets/tickets-list";
 import { Breadcrumb } from "@/components/shared/breadcrumb";
@@ -14,10 +13,8 @@ import {
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import {
-    Ticket,
-    CheckCircle2,
-    Clock,
     AlertCircle,
+    Clock,
     Eye,
     HourglassIcon,
     Users,
@@ -25,23 +22,12 @@ import {
     Plus
 } from "lucide-react";
 
-export default async function () {
-    const session = await requireAgent();
+interface AgentDashboardProps {
+    userId: string;
+    attentionAreaId: number;
+}
 
-    if (!session.user.attentionAreaId) {
-        return (
-            <div className="p-8 text-center">
-                <h1 className="text-2xl font-bold text-red-600">Error de configuración</h1>
-                <p className="mt-2 text-gray-600">
-                    Tu usuario tiene rol de agente pero no tiene un área de atención asignada.
-                    Contacta al administrador.
-                </p>
-            </div>
-        );
-    }
-
-    const { attentionAreaId } = session.user;
-
+export async function AgentDashboard({ userId, attentionAreaId }: AgentDashboardProps) {
     // Fetch details of the attention area
     const areaDetails = await db.query.attentionAreas.findFirst({
         where: eq(attentionAreas.id, attentionAreaId),
@@ -64,7 +50,7 @@ export default async function () {
         count: count()
     })
         .from(tickets)
-        .where(eq(tickets.createdById, session.user.id))
+        .where(eq(tickets.createdById, userId))
         .groupBy(tickets.status);
 
     const getUserStat = (status: string) => userStatusStats.find(s => s.status === status)?.count || 0;
@@ -73,55 +59,7 @@ export default async function () {
     const [watcherCountResult] = await db
         .select({ count: count() })
         .from(tickets)
-        .where(sql`${session.user.id} = ANY(${tickets.watchers})`);
-
-    const areaStatsCards = [
-        {
-            title: "Abiertos",
-            value: getAreaStat("open"),
-            icon: AlertCircle,
-            color: "text-amber-600",
-            bg: "bg-amber-100 dark:bg-amber-900/20",
-        },
-        {
-            title: "En proceso",
-            value: getAreaStat("in_progress"),
-            icon: Clock,
-            color: "text-indigo-600",
-            bg: "bg-indigo-100 dark:bg-indigo-900/20",
-        },
-        {
-            title: "Resueltos",
-            value: getAreaStat("resolved"),
-            icon: CheckCircle2,
-            color: "text-emerald-600",
-            bg: "bg-emerald-100 dark:bg-emerald-900/20",
-        }
-    ];
-
-    const userStatsCards = [
-        {
-            title: "Abiertos",
-            value: getUserStat("open"),
-            icon: AlertCircle,
-            color: "text-amber-600",
-            bg: "bg-amber-100 dark:bg-amber-900/20",
-        },
-        {
-            title: "Pendientes de validación",
-            value: getUserStat("pending_validation"),
-            icon: HourglassIcon,
-            color: "text-yellow-600",
-            bg: "bg-yellow-100 dark:bg-yellow-900/20",
-        },
-        {
-            title: "En progreso",
-            value: getUserStat("in_progress"),
-            icon: Clock,
-            color: "text-indigo-600",
-            bg: "bg-indigo-100 dark:bg-indigo-900/20",
-        }
-    ];
+        .where(sql`${userId} = ANY(${tickets.watchers})`);
 
     // --- Fetch RECENT area tickets (last 5) ---
     const recentAreaTickets = await db
@@ -146,7 +84,7 @@ export default async function () {
                     count(
                         case 
                             when ${comments.createdAt} > coalesce(${ticketViews.lastViewedAt}, ${tickets.createdAt})
-                            and ${comments.userId} != ${session.user.id}
+                            and ${comments.userId} != ${userId}
                             then 1 
                         end
                     ) as integer
@@ -161,7 +99,7 @@ export default async function () {
             ticketViews,
             and(
                 eq(tickets.id, ticketViews.ticketId),
-                eq(ticketViews.userId, session.user.id)
+                eq(ticketViews.userId, userId)
             )
         )
         .where(eq(tickets.attentionAreaId, attentionAreaId))
@@ -210,7 +148,7 @@ export default async function () {
                     count(
                         case 
                             when ${comments.createdAt} > coalesce(${ticketViews.lastViewedAt}, ${tickets.createdAt})
-                            and ${comments.userId} != ${session.user.id}
+                            and ${comments.userId} != ${userId}
                             then 1 
                         end
                     ) as integer
@@ -225,16 +163,16 @@ export default async function () {
             ticketViews,
             and(
                 eq(tickets.id, ticketViews.ticketId),
-                eq(ticketViews.userId, session.user.id)
+                eq(ticketViews.userId, userId)
             )
         )
-        .where(eq(tickets.createdById, session.user.id))
+        .where(eq(tickets.createdById, userId))
         .groupBy(tickets.id, ticketCategories.name, ticketViews.lastViewedAt)
         .orderBy(desc(tickets.createdAt))
         .limit(3);
 
     const userTicketsWithAssigned = await db.query.tickets.findMany({
-        where: eq(tickets.createdById, session.user.id),
+        where: eq(tickets.createdById, userId),
         with: {
             assignedTo: true,
         },
@@ -274,7 +212,7 @@ export default async function () {
                     count(
                         case 
                             when ${comments.createdAt} > coalesce(${ticketViews.lastViewedAt}, ${tickets.createdAt})
-                            and ${comments.userId} != ${session.user.id}
+                            and ${comments.userId} != ${userId}
                             then 1 
                         end
                     ) as integer
@@ -289,13 +227,13 @@ export default async function () {
             ticketViews,
             and(
                 eq(tickets.id, ticketViews.ticketId),
-                eq(ticketViews.userId, session.user.id)
+                eq(ticketViews.userId, userId)
             )
         )
         .where(
             and(
-                not(eq(tickets.createdById, session.user.id)),
-                sql`${session.user.id} = ANY(${tickets.watchers})`
+                not(eq(tickets.createdById, userId)),
+                sql`${userId} = ANY(${tickets.watchers})`
             )
         )
         .groupBy(tickets.id, ticketCategories.name, ticketViews.lastViewedAt)
@@ -304,8 +242,8 @@ export default async function () {
 
     const watchedTicketsWithRelations = await db.query.tickets.findMany({
         where: and(
-            not(eq(tickets.createdById, session.user.id)),
-            sql`${session.user.id} = ANY(${tickets.watchers})`
+            not(eq(tickets.createdById, userId)),
+            sql`${userId} = ANY(${tickets.watchers})`
         ),
         with: {
             assignedTo: true,

@@ -1,6 +1,5 @@
 import { db } from "@/db";
 import { tickets, comments, ticketViews, ticketCategories } from "@/db/schema";
-import { requireAuth } from "@/lib/auth/helpers";
 import { eq, desc, sql, and, not, count } from "drizzle-orm";
 import { TicketsList } from "@/components/tickets/tickets-list";
 import { Breadcrumb } from "@/components/shared/breadcrumb";
@@ -14,7 +13,6 @@ import {
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import {
-    Ticket,
     CheckCircle2,
     Clock,
     AlertCircle,
@@ -24,9 +22,11 @@ import {
     Users
 } from "lucide-react";
 
-export default async function () {
-    const session = await requireAuth();
+interface UserDashboardProps {
+    userId: string;
+}
 
+export async function UserDashboard({ userId }: UserDashboardProps) {
     // --- Statistics Gathering ---
 
     // Tickets by Status for this user
@@ -35,7 +35,7 @@ export default async function () {
         count: count()
     })
         .from(tickets)
-        .where(eq(tickets.createdById, session.user.id))
+        .where(eq(tickets.createdById, userId))
         .groupBy(tickets.status);
 
     const getStat = (status: string) => statusStats.find(s => s.status === status)?.count || 0;
@@ -44,7 +44,7 @@ export default async function () {
     const [watcherCountResult] = await db
         .select({ count: count() })
         .from(tickets)
-        .where(sql`${session.user.id} = ANY(${tickets.watchers})`);
+        .where(sql`${userId} = ANY(${tickets.watchers})`);
 
     const statsCards = [
         {
@@ -104,7 +104,7 @@ export default async function () {
                     count(
                         case 
                             when ${comments.createdAt} > coalesce(${ticketViews.lastViewedAt}, ${tickets.createdAt})
-                            and ${comments.userId} != ${session.user.id}
+                            and ${comments.userId} != ${userId}
                             then 1 
                         end
                     ) as integer
@@ -119,17 +119,17 @@ export default async function () {
             ticketViews,
             and(
                 eq(tickets.id, ticketViews.ticketId),
-                eq(ticketViews.userId, session.user.id)
+                eq(ticketViews.userId, userId)
             )
         )
-        .where(eq(tickets.createdById, session.user.id))
+        .where(eq(tickets.createdById, userId))
         .groupBy(tickets.id, ticketCategories.name, ticketViews.lastViewedAt)
         .orderBy(desc(tickets.createdAt))
         .limit(5);
 
     // Fetch assigned users for recent tickets
     const ticketsWithAssigned = await db.query.tickets.findMany({
-        where: eq(tickets.createdById, session.user.id),
+        where: eq(tickets.createdById, userId),
         with: {
             assignedTo: true,
         },
@@ -169,7 +169,7 @@ export default async function () {
                     count(
                         case 
                             when ${comments.createdAt} > coalesce(${ticketViews.lastViewedAt}, ${tickets.createdAt})
-                            and ${comments.userId} != ${session.user.id}
+                            and ${comments.userId} != ${userId}
                             then 1 
                         end
                     ) as integer
@@ -184,13 +184,13 @@ export default async function () {
             ticketViews,
             and(
                 eq(tickets.id, ticketViews.ticketId),
-                eq(ticketViews.userId, session.user.id)
+                eq(ticketViews.userId, userId)
             )
         )
         .where(
             and(
-                not(eq(tickets.createdById, session.user.id)),
-                sql`${session.user.id} = ANY(${tickets.watchers})`
+                not(eq(tickets.createdById, userId)),
+                sql`${userId} = ANY(${tickets.watchers})`
             )
         )
         .groupBy(tickets.id, ticketCategories.name, ticketViews.lastViewedAt)
@@ -199,8 +199,8 @@ export default async function () {
 
     const watchedTicketsWithRelations = await db.query.tickets.findMany({
         where: and(
-            not(eq(tickets.createdById, session.user.id)),
-            sql`${session.user.id} = ANY(${tickets.watchers})`
+            not(eq(tickets.createdById, userId)),
+            sql`${userId} = ANY(${tickets.watchers})`
         ),
         with: {
             assignedTo: true,
@@ -223,12 +223,12 @@ export default async function () {
     return (
         <div className="space-y-6">
             {/* Breadcrumbs */}
-            <Breadcrumb items={[{ label: "Resumen de tickets" }]} />
+            <Breadcrumb items={[{ label: "Mi panel" }]} />
 
             {/* Header */}
             <div className="flex justify-between items-start">
                 <div>
-                    <h1 className="text-3xl font-bold tracking-tight">Resumen de tickets</h1>
+                    <h1 className="text-3xl font-bold tracking-tight">Mi panel</h1>
                     <p className="text-muted-foreground mt-1">
                         Gestiona y rastrea tus solicitudes de soporte y aprobaciones.
                     </p>
