@@ -1,0 +1,162 @@
+PROPRIETARY SOFTWARE LICENSE AGREEMENT
+
+Copyright (c) 2026 r3-fresh. All rights reserved.
+
+================================================================================
+
+TERMS AND CONDITIONS FOR USE, REPRODUCTION, AND DISTRIBUTION
+
+1. DEFINITIONS
+
+"Software" refers to the Tickets Management System and all associated 
+documentation, source code, binaries, and other materials included in this 
+repository.
+
+"Licensor" refers to r3-fresh, the copyright holder.
+
+"Licensee" refers to any individual or entity that uses the Software.
+
+"Personal Use" refers to use by individuals for non-commercial, educational, 
+or evaluation purposes only.
+
+"Commercial Use" refers to any use of the Software in a commercial, 
+production, or revenue-generating environment, including but not limited to:
+  - Use by businesses, organizations, or institutions
+  - Use in products or services offered to third parties
+  - Use in internal business operations
+  - Use that directly or indirectly generates revenue
+
+2. GRANT OF LICENSE
+
+2.1 Personal Use License
+Subject to the terms of this Agreement, Licensor grants Licensee a limited, 
+non-exclusive, non-transferable, revocable license to:
+  - View and study the source code
+  - Use the Software for personal, educational, or evaluation purposes
+  - Modify the Software for personal learning purposes only
+
+2.2 Commercial Use License
+Commercial use of this Software requires a separate Commercial License 
+Agreement with the Licensor. Any commercial use without a valid commercial 
+license is strictly prohibited and constitutes copyright infringement.
+
+3. RESTRICTIONS
+
+Licensee shall NOT, without prior written permission from Licensor:
+  - Use the Software for any commercial purpose
+  - Sell, rent, lease, sublicense, or distribute the Software
+  - Remove or alter any copyright notices or proprietary legends
+  - Reverse engineer, decompile, or disassemble the Software (except as 
+    permitted by law)
+  - Create derivative works based on the Software for commercial purposes
+  - Deploy the Software in production environments
+  - Use the Software to provide services to third parties
+  - Transfer any rights granted under this license to third parties
+
+4. COMMERCIAL LICENSING
+
+4.1 To obtain a Commercial License, contact the Licensor through:
+  - GitHub: https://github.com/r3-fresh
+
+4.2 Commercial License Fees
+Commercial licenses are available on a case-by-case basis and may include:
+  - One-time licensing fees
+  - Ongoing royalties based on usage or revenue
+  - Support and maintenance agreements
+  - Custom development services
+
+4.3 Enterprise Solutions
+For organizations requiring custom features, dedicated support, or 
+white-label solutions, contact the Licensor for enterprise pricing.
+
+5. INTELLECTUAL PROPERTY RIGHTS
+
+5.1 The Software is protected by copyright laws and international copyright 
+treaties, as well as other intellectual property laws and treaties.
+
+5.2 All rights, title, and interest in and to the Software, including all 
+copyrights, patents, trade secrets, trademarks, and other intellectual 
+property rights, are and shall remain the exclusive property of the Licensor.
+
+5.3 This Agreement does not grant Licensee any rights to use Licensor's 
+trademarks, service marks, or trade names.
+
+6. DISCLAIMER OF WARRANTY
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR 
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, 
+FITNESS FOR A PARTICULAR PURPOSE, AND NONINFRINGEMENT.
+
+IN NO EVENT SHALL THE LICENSOR BE LIABLE FOR ANY CLAIM, DAMAGES, OR OTHER 
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, 
+OUT OF, OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN 
+THE SOFTWARE.
+
+7. LIMITATION OF LIABILITY
+
+TO THE MAXIMUM EXTENT PERMITTED BY APPLICABLE LAW, IN NO EVENT SHALL LICENSOR 
+BE LIABLE FOR ANY SPECIAL, INCIDENTAL, INDIRECT, OR CONSEQUENTIAL DAMAGES 
+WHATSOEVER (INCLUDING, WITHOUT LIMITATION, DAMAGES FOR LOSS OF BUSINESS 
+PROFITS, BUSINESS INTERRUPTION, LOSS OF BUSINESS INFORMATION, OR ANY OTHER 
+PECUNIARY LOSS) ARISING OUT OF THE USE OF OR INABILITY TO USE THE SOFTWARE.
+
+8. TERMINATION
+
+8.1 This license is effective until terminated.
+
+8.2 Licensor may terminate this license immediately if Licensee breaches any 
+term of this Agreement.
+
+8.3 Upon termination, Licensee must immediately cease all use of the Software 
+and destroy all copies in their possession or control.
+
+8.4 Termination does not relieve Licensee of any obligations incurred prior 
+to termination.
+
+9. AUDIT RIGHTS
+
+Licensor reserves the right to audit Licensee's use of the Software to ensure 
+compliance with this Agreement. Licensee agrees to provide reasonable 
+assistance and access to information necessary for such audits.
+
+10. GOVERNING LAW
+
+This Agreement shall be governed by and construed in accordance with the laws 
+of the jurisdiction in which the Licensor resides, without regard to its 
+conflict of law provisions.
+
+11. ENTIRE AGREEMENT
+
+This Agreement constitutes the entire agreement between Licensor and Licensee 
+concerning the Software and supersedes all prior or contemporaneous 
+communications and proposals.
+
+12. AMENDMENTS
+
+Licensor reserves the right to modify this license at any time. Continued use 
+of the Software after such modifications constitutes acceptance of the updated 
+terms.
+
+13. SEVERABILITY
+
+If any provision of this Agreement is held to be unenforceable, such provision 
+shall be reformed only to the extent necessary to make it enforceable, and the 
+remaining provisions shall remain in full force and effect.
+
+14. CONTACT INFORMATION
+
+For commercial licensing inquiries, support, or questions about this license:
+  - GitHub: https://github.com/r3-fresh
+  - Repository: https://github.com/r3-fresh/tickets-management
+
+================================================================================
+
+BY USING THIS SOFTWARE, YOU ACKNOWLEDGE THAT YOU HAVE READ THIS AGREEMENT, 
+UNDERSTAND IT, AND AGREE TO BE BOUND BY ITS TERMS AND CONDITIONS.
+
+IF YOU DO NOT AGREE TO THE TERMS OF THIS AGREEMENT, DO NOT USE THE SOFTWARE.
+
+================================================================================
+
+Copyright (c) 2026 r3-fresh
+All Rights Reserved
