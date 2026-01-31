@@ -24,7 +24,7 @@ import {
     Users
 } from "lucide-react";
 
-export default async function UserDashboardPage() {
+export default async function () {
     const session = await requireAuth();
 
     // --- Statistics Gathering ---

@@ -17,7 +17,7 @@ async function getAppSetting(key: string): Promise<string | null> {
     }
 }
 
-export default async function NewTicketPage() {
+export default async function () {
     const session = await auth.api.getSession({
         headers: await headers(),
     });

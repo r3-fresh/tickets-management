@@ -20,7 +20,7 @@ import { UserValidationControls } from "./user-validation-controls";
 import { RichTextEditor } from "@/components/shared/rich-text-editor";
 import { CommentForm } from "./comment-form";
 
-export default async function TicketDetailPage({ params }: { params: Promise<{ id: string }> }) {
+export default async function ({ params }: { params: Promise<{ id: string }> }) {
     const session = await auth.api.getSession({
         headers: await headers(),
     });

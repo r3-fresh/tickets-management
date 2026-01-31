@@ -19,11 +19,8 @@ const nextConfig: NextConfig = {
     },
   },
 
-  // Configuración experimental para Next.js 16
-  experimental: {
-    // Optimización de server components
-    serverComponentsExternalPackages: ['@node-rs/argon2', 'bcrypt'],
-  },
+  // Optimización de paquetes externos en server components (Next.js 16)
+  serverExternalPackages: ['@node-rs/argon2', 'bcrypt'],
 };
 
 export default nextConfig;

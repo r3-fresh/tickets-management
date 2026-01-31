@@ -5,7 +5,7 @@ import { eq, desc, sql, and } from "drizzle-orm";
 import { TicketsList } from "@/components/tickets/tickets-list";
 import { Breadcrumb } from "@/components/shared/breadcrumb";
 
-export default async function AgentAreaTicketsPage() {
+export default async function () {
     const session = await requireAgent();
 
     if (!session.user.attentionAreaId) {

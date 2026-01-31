@@ -5,7 +5,7 @@ import { desc, sql, eq, and } from "drizzle-orm";
 import { AdminTicketsTable } from "@/components/admin/admin-tickets-table";
 import { Breadcrumb } from "@/components/shared/breadcrumb";
 
-export default async function AdminTicketsPage() {
+export default async function () {
     const session = await requireAdmin();
 
     // Fetch ALL tickets with unread count for current admin

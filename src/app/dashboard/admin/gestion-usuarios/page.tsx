@@ -7,7 +7,7 @@ import { desc } from "drizzle-orm";
 import { RolesTable } from "@/components/admin/roles-table";
 import { Breadcrumb } from "@/components/shared/breadcrumb";
 
-export default async function AdminRolesPage() {
+export default async function () {
     const session = await auth.api.getSession({
         headers: await headers(),
     });

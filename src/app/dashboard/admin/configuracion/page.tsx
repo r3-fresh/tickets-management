@@ -5,7 +5,7 @@ import { requireAdmin } from "@/lib/auth/helpers";
 import { AdminSettingsTabs } from "@/components/admin/admin-settings-tabs";
 import { Breadcrumb } from "@/components/shared/breadcrumb";
 
-export default async function AdminSettingsPage() {
+export default async function () {
     const session = await requireAdmin();
 
     // Fetch current setting

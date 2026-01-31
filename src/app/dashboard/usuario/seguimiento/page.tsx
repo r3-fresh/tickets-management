@@ -5,7 +5,7 @@ import { desc, sql, and, not, eq } from "drizzle-orm";
 import { TicketsList } from "@/components/tickets/tickets-list";
 import { Breadcrumb } from "@/components/shared/breadcrumb";
 
-export default async function UserWatchedTicketsPage() {
+export default async function () {
     const session = await requireAuth();
 
     // Fetch tickets where user is a watcher BUT NOT the creator

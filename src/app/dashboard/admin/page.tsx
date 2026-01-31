@@ -24,7 +24,7 @@ import {
 import { Breadcrumb } from "@/components/shared/breadcrumb";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 
-export default async function AdminDashboardPage() {
+export default async function () {
     const session = await requireAdmin();
 
     // --- Statistics Gathering ---

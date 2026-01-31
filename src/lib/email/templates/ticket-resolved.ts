@@ -12,7 +12,7 @@ export interface TicketResolvedTemplateParams {
 
 export function getTicketResolvedTemplate(params: TicketResolvedTemplateParams): string {
     const content = `
-        <h2 style="color: #333; font-size: 20px; margin-top: 0; text-align: center;">Ticket Resuelto</h2>
+        <h2 style="color: #333; font-size: 20px; margin-top: 0; text-align: center;">Ticket resuelto</h2>
         
         <p style="margin: 15px 0;">Hola <strong>${params.userName}</strong>,</p>
         

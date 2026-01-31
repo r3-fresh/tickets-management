@@ -25,7 +25,7 @@ import {
     Plus
 } from "lucide-react";
 
-export default async function AgentDashboardPage() {
+export default async function () {
     const session = await requireAgent();
 
     if (!session.user.attentionAreaId) {

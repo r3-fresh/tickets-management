@@ -3,7 +3,7 @@ import { headers } from "next/headers";
 import { redirect } from "next/navigation";
 import { LoginForm } from "./login-form";
 
-export default async function LoginPage() {
+export default async function () {
     const session = await auth.api.getSession({
         headers: await headers(),
     });

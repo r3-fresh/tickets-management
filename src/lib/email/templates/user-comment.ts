@@ -16,7 +16,7 @@ export interface UserCommentTemplateParams {
 
 export function getUserCommentTemplate(params: UserCommentTemplateParams): string {
     const content = `
-        <h2 style="color: #333; font-size: 20px; margin-top: 0; text-align: center;">Nuevo comentario en Ticket #${params.ticketCode}</h2>
+        <h2 style="color: #333; font-size: 20px; margin-top: 0; text-align: center;">Nuevo comentario en ticket #${params.ticketCode}</h2>
         
         <p style="margin: 15px 0;">El usuario <strong>${params.userName}</strong> (${params.userEmail}) ha añadido un comentario al ticket:</p>
         

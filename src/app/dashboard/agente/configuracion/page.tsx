@@ -5,7 +5,7 @@ import { eq, asc } from "drizzle-orm";
 import { SettingsTabs } from "./settings-tabs";
 import { Breadcrumb } from "@/components/shared/breadcrumb";
 
-export default async function SettingsPage() {
+export default async function () {
     const session = await requireAgent();
 
     if (!session.user.attentionAreaId) {

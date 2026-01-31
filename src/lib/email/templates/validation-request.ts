@@ -13,7 +13,7 @@ export interface ValidationRequestTemplateParams {
 
 export function getValidationRequestTemplate(params: ValidationRequestTemplateParams): string {
     const content = `
-        <h2 style="color: #333; font-size: 20px; margin-top: 0; text-align: center;">Validación de Ticket Requerida</h2>
+        <h2 style="color: #333; font-size: 20px; margin-top: 0; text-align: center;">Validación de ticket requerida</h2>
         
         <p style="margin: 15px 0;">Estimado <strong>${params.userName}</strong>:</p>
         
@@ -46,7 +46,7 @@ export function getValidationRequestTemplate(params: ValidationRequestTemplatePa
         </div>
         
         <div style="text-align: center; margin: 20px 0;">
-            <a href="${params.ticketUrl}" style="display: inline-block; background-color: #10B981; color: white; padding: 12px 30px; text-decoration: none; border-radius: 6px; font-weight: bold;">Revisar y Validar Ticket</a>
+            <a href="${params.ticketUrl}" style="display: inline-block; background-color: #10B981; color: white; padding: 12px 30px; text-decoration: none; border-radius: 6px; font-weight: bold;">Revisar y validar ticket</a>
         </div>
         
         <p style="margin-top: 30px; font-size: 13px; color: #6B7280; padding-top: 20px; border-top: 1px solid #E5E7EB;">

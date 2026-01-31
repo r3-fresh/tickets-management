@@ -8,7 +8,7 @@ import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Plus } from "lucide-react";
 
-export default async function UserMyTicketsPage() {
+export default async function () {
     const session = await requireAuth();
 
     // Fetch tickets created by this user
