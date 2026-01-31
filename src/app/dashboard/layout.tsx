@@ -59,32 +59,32 @@ export default function DashboardLayout({
     };
 
     const userNavItems = [
-        { href: "/dashboard/usuario", label: "Mi panel", icon: LayoutDashboard },
-        { href: "/dashboard/usuario/mis-tickets", label: "Mis tickets", icon: Ticket },
-        { href: "/dashboard/usuario/seguimiento", label: "En seguimiento", icon: Eye },
+        { href: "/dashboard", label: "Mi panel", icon: LayoutDashboard },
+        { href: "/dashboard/mis-tickets", label: "Mis tickets", icon: Ticket },
+        { href: "/dashboard/seguimiento", label: "En seguimiento", icon: Eye },
     ];
 
     const agentNavItems = [
-        { href: "/dashboard/agente", label: "Mi panel", icon: LayoutDashboard },
-        { href: "/dashboard/agente/mis-tickets", label: "Mis tickets", icon: Ticket },
-        { href: "/dashboard/agente/seguimiento", label: "En seguimiento", icon: Eye },
-        { href: "/dashboard/agente/tickets-area", label: "Tickets del área", icon: Ticket },
+        { href: "/dashboard", label: "Mi panel", icon: LayoutDashboard },
+        { href: "/dashboard/mis-tickets", label: "Mis tickets", icon: Ticket },
+        { href: "/dashboard/seguimiento", label: "En seguimiento", icon: Eye },
+        { href: "/dashboard/area", label: "Tickets del área", icon: Ticket },
     ];
 
     const adminNavItems = [
-        { href: "/dashboard/admin", label: "Panel de control", icon: LayoutDashboard },
-        { href: "/dashboard/admin/tickets", label: "Explorador de tickets", icon: Ticket },
+        { href: "/dashboard/panel", label: "Panel de control", icon: LayoutDashboard },
+        { href: "/dashboard/explorador", label: "Explorador de tickets", icon: Ticket },
     ];
 
     // Type assertion for better-auth session with role
     const userRole = (session?.user as { role?: string })?.role;
 
     // Roles item (Admin)
-    const rolesItem = { href: "/dashboard/admin/gestion-usuarios", label: "Gestión de usuarios", icon: Shield, external: false };
+    const rolesItem = { href: "/dashboard/usuarios", label: "Gestión de usuarios", icon: Shield, external: false };
 
     // Settings items (Agent/Admin)
     const settingsItem = {
-        href: userRole === "admin" ? "/dashboard/admin/configuracion" : "/dashboard/agente/configuracion",
+        href: userRole === "admin" ? "/dashboard/sistema" : "/dashboard/configuracion",
         label: userRole === "admin" ? "Configuración del sistema" : "Configuración del área",
         icon: Settings,
         external: false

@@ -8,14 +8,12 @@ export default async function () {
         redirect("/login");
     }
 
+    // Admins go to their control panel
     if (session.user.role === "admin") {
-        redirect("/dashboard/admin");
+        redirect("/dashboard/panel");
     }
 
-    if (session.user.role === "agent") {
-        redirect("/dashboard/agente");
-    }
-
-    // Regular users go to their dashboard
-    redirect("/dashboard/usuario");
+    // Agents and regular users: redirect to mis-tickets for now
+    // In the future, this could be a unified home page
+    redirect("/dashboard/mis-tickets");
 }
