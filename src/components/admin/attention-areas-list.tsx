@@ -31,7 +31,7 @@ export function AttentionAreasList({ areas }: AttentionAreasListProps) {
             <div className="flex justify-end">
                 <Button onClick={() => { setEditingArea(null); setIsDialogOpen(true); }}>
                     <Plus className="mr-2 h-4 w-4" />
-                    Nueva Área
+                    Nueva área
                 </Button>
             </div>
 
@@ -126,7 +126,7 @@ function AreaDialog({
         <Dialog open={open} onOpenChange={onOpenChange}>
             <DialogContent>
                 <DialogHeader>
-                    <DialogTitle>{area ? "Editar Área" : "Nueva Área"}</DialogTitle>
+                    <DialogTitle>{area ? "Editar área" : "Nueva área"}</DialogTitle>
                     <DialogDescription>
                         {area ? "Modifica los datos del área de atención." : "Crea una nueva área de atención."}
                     </DialogDescription>
@@ -158,7 +158,7 @@ function AreaDialog({
                             name="isAcceptingTickets"
                             defaultChecked={area?.isAcceptingTickets ?? true}
                         />
-                        <Label htmlFor="isAcceptingTickets">Aceptar Tickets</Label>
+                        <Label htmlFor="isAcceptingTickets">Aceptar tickets</Label>
                     </div>
                     <DialogFooter>
                         <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>

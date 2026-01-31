@@ -76,12 +76,12 @@ export function WatchersManager({ ticketId, currentWatchers, allUsers, currentUs
             <DialogTrigger asChild>
                 <Button variant="outline" size="sm" className="w-full justify-start mt-2">
                     <Plus className="mr-2 h-4 w-4" />
-                    Gestionar Observadores
+                    Gestionar observadores
                 </Button>
             </DialogTrigger>
             <DialogContent className="sm:max-w-[425px]">
                 <DialogHeader>
-                    <DialogTitle>Gestionar Observadores</DialogTitle>
+                    <DialogTitle>Gestionar observadores</DialogTitle>
                     <DialogDescription>
                         Añade o elimina usuarios que recibirán notificaciones sobre este ticket.
                     </DialogDescription>
@@ -147,7 +147,7 @@ export function WatchersManager({ ticketId, currentWatchers, allUsers, currentUs
                         Cancelar
                     </Button>
                     <Button onClick={handleSave} disabled={loading}>
-                        {loading ? "Guardando..." : "Guardar Cambios"}
+                        {loading ? "Guardando..." : "Guardar cambios"}
                     </Button>
                 </div>
             </DialogContent>

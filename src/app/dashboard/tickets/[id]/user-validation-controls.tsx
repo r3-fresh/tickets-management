@@ -38,7 +38,7 @@ export function UserValidationControls({ ticketId }: { ticketId: number }) {
             if (result?.error) {
                 toast.error(result.error);
             } else {
-                toast.success("Ticket regresado a 'En Progreso' para ajustes");
+                toast.success("Ticket regresado a 'En progreso' para ajustes");
             }
         });
     };
@@ -48,7 +48,7 @@ export function UserValidationControls({ ticketId }: { ticketId: number }) {
             <CardHeader>
                 <CardTitle className="flex items-center gap-2 text-orange-900 dark:text-orange-100">
                     <AlertCircle className="h-5 w-5" />
-                    Validación Requerida
+                    Validación requerida
                 </CardTitle>
                 <CardDescription className="text-orange-700 dark:text-orange-300">
                     El agente ha culminado la atención. Por favor revisa y valida si el ticket puede cerrarse.
@@ -63,7 +63,7 @@ export function UserValidationControls({ ticketId }: { ticketId: number }) {
                             disabled={isPending}
                         >
                             <CheckCircle2 className="mr-2 h-4 w-4" />
-                            Aprobar Cierre
+                            Aprobar cierre
                         </Button>
                     </AlertDialogTrigger>
                     <AlertDialogContent>
@@ -91,14 +91,14 @@ export function UserValidationControls({ ticketId }: { ticketId: number }) {
                             disabled={isPending}
                         >
                             <XCircle className="mr-2 h-4 w-4" />
-                            Rechazar (Necesita ajustes)
+                            Rechazar (necesita ajustes)
                         </Button>
                     </AlertDialogTrigger>
                     <AlertDialogContent>
                         <AlertDialogHeader>
                             <AlertDialogTitle>¿Rechazar validación?</AlertDialogTitle>
                             <AlertDialogDescription>
-                                El ticket regresará al estado "En Progreso" para que el agente pueda realizar los ajustes necesarios.
+                                El ticket regresará al estado "En progreso" para que el agente pueda realizar los ajustes necesarios.
                                 Puedes agregar un comentario explicando qué ajustes se requieren.
                             </AlertDialogDescription>
                         </AlertDialogHeader>

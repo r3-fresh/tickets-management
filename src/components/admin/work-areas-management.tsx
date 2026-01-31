@@ -116,13 +116,13 @@ export function WorkAreasManagement({ initialAreas }: WorkAreasManagementProps) 
                     <DialogTrigger asChild>
                         <Button onClick={resetForm}>
                             <Plus className="h-4 w-4 mr-2" />
-                            Nueva Área
+                            Nueva área
                         </Button>
                     </DialogTrigger>
                     <DialogContent>
                         <DialogHeader>
                             <DialogTitle>
-                                {editingArea ? "Editar Área de Trabajo" : "Nueva Área de Trabajo"}
+                                {editingArea ? "Editar área de trabajo" : "Nueva área de trabajo"}
                             </DialogTitle>
                             <DialogDescription>
                                 {editingArea
@@ -224,7 +224,7 @@ export function WorkAreasManagement({ initialAreas }: WorkAreasManagementProps) 
                 open={deleteId !== null}
                 onOpenChange={(open) => !open && setDeleteId(null)}
                 onConfirm={confirmDelete}
-                title="Eliminar Área de Trabajo"
+                title="Eliminar área de trabajo"
                 description="¿Estás seguro de eliminar esta área de trabajo? Esta acción no se puede deshacer."
             />
                                         </div>

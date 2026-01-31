@@ -205,13 +205,13 @@ export function AgentSubcategoriesManagement({
                                 setIsDialogOpen(true);
                             }}>
                                 <Plus className="mr-2 h-4 w-4" />
-                                Nueva Subcategoría
+                                Nueva subcategoría
                             </Button>
                         </DialogTrigger>
                         <DialogContent className="sm:max-w-[525px]">
                             <DialogHeader>
                                 <DialogTitle>
-                                    {editingSubcategory ? "Editar Subcategoría" : "Nueva Subcategoría"}
+                                    {editingSubcategory ? "Editar subcategoría" : "Nueva subcategoría"}
                                 </DialogTitle>
                                 <DialogDescription>
                                     {editingSubcategory

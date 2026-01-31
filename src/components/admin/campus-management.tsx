@@ -115,13 +115,13 @@ export function CampusManagement({ initialCampus }: CampusManagementProps) {
                     <DialogTrigger asChild>
                         <Button onClick={resetForm}>
                             <Plus className="h-4 w-4 mr-2" />
-                            Nuevo Campus
+                            Nuevo campus
                         </Button>
                     </DialogTrigger>
                     <DialogContent>
                         <DialogHeader>
                             <DialogTitle>
-                                {editingCampus ? "Editar Campus" : "Nuevo Campus"}
+                                {editingCampus ? "Editar campus" : "Nuevo campus"}
                             </DialogTitle>
                             <DialogDescription>
                                 {editingCampus
@@ -229,7 +229,7 @@ export function CampusManagement({ initialCampus }: CampusManagementProps) {
                 open={deleteId !== null}
                 onOpenChange={(open) => !open && setDeleteId(null)}
                 onConfirm={confirmDelete}
-                title="Eliminar Campus"
+                title="Eliminar campus"
                 description="¿Estás seguro de eliminar este campus? Esta acción no se puede deshacer."
             />
         </div>

@@ -13,8 +13,8 @@ import { Label } from "@/components/ui/label";
 
 const STATUS_OPTIONS = [
     { value: "open", label: "Abierto" },
-    { value: "in_progress", label: "En Progreso" },
-    { value: "pending_validation", label: "Pendiente de Validación" },
+    { value: "in_progress", label: "En progreso" },
+    { value: "pending_validation", label: "Pendiente de validación" },
     { value: "resolved", label: "Resuelto" },
     { value: "voided", label: "Anulado" },
 ];

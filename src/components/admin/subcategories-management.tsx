@@ -190,13 +190,13 @@ export function SubcategoriesManagement({ initialSubcategories, categories }: Su
                     <DialogTrigger asChild>
                         <Button onClick={resetForm}>
                             <Plus className="h-4 w-4 mr-2" />
-                            Nueva Subcategoría
+                            Nueva subcategoría
                         </Button>
                     </DialogTrigger>
                     <DialogContent>
                         <DialogHeader>
                             <DialogTitle>
-                                {editingSubcategory ? "Editar Subcategoría" : "Nueva Subcategoría"}
+                                {editingSubcategory ? "Editar subcategoría" : "Nueva subcategoría"}
                             </DialogTitle>
                             <DialogDescription>
                                 {editingSubcategory
@@ -359,7 +359,7 @@ export function SubcategoriesManagement({ initialSubcategories, categories }: Su
                 open={deleteId !== null}
                 onOpenChange={(open) => !open && setDeleteId(null)}
                 onConfirm={confirmDelete}
-                title="Eliminar Subcategoría"
+                title="Eliminar subcategoría"
                 description="¿Estás seguro de eliminar esta subcategoría? Esta acción no se puede deshacer y puede afectar tickets existentes."
             />
         </div>

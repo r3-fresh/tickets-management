@@ -60,12 +60,12 @@ export function UserRoleManager({
             <DialogTrigger asChild>
                 <Button variant="outline" size="sm" disabled={disabled}>
                     <Settings className="mr-2 h-4 w-4" />
-                    Gestionar Rol
+                    Gestionar rol
                 </Button>
             </DialogTrigger>
             <DialogContent className="sm:max-w-[425px]">
                 <DialogHeader>
-                    <DialogTitle>Gestionar Rol de Usuario</DialogTitle>
+                    <DialogTitle>Gestionar rol de usuario</DialogTitle>
                     <DialogDescription>
                         Configura el rol y permisos para {userName}.
                     </DialogDescription>
@@ -140,7 +140,7 @@ export function UserRoleManager({
                     <Button variant="outline" onClick={() => setOpen(false)}>Cancelar</Button>
                     <Button onClick={handleSave} disabled={isPending}>
                         {isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                        Guardar Cambios
+                        Guardar cambios
                     </Button>
                 </DialogFooter>
             </DialogContent>

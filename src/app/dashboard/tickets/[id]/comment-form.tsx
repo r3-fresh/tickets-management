@@ -48,7 +48,7 @@ export function CommentForm({ ticketId }: CommentFormProps) {
                 <div className="flex justify-end">
                     <Button onClick={handleSubmit} disabled={isPending || !content}>
                         {isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                        Enviar Respuesta
+                        Enviar respuesta
                     </Button>
                 </div>
             </CardContent>
