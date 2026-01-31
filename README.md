@@ -1,6 +1,5 @@
 # 🎫 Sistema de Gestión de Tickets
 
-[![Version](https://img.shields.io/badge/version-1.0.0-blue.svg)](https://github.com/r3-fresh/tickets-management/releases/tag/v1.0.0)
 [![Next.js](https://img.shields.io/badge/Next.js-16.1.1-black.svg)](https://nextjs.org/)
 [![TypeScript](https://img.shields.io/badge/TypeScript-5.0-blue.svg)](https://www.typescriptlang.org/)
 [![License](https://img.shields.io/badge/license-Proprietary-red.svg)](LICENSE)
@@ -166,7 +165,6 @@ UPDATE "user" SET role = 'admin' WHERE email = 'tu-email@example.com';
 
 ## 📚 Documentación
 
-- **[CHANGELOG.md](./CHANGELOG.md)** - Registro de cambios
 - **[AGENTS.md](./AGENTS.md)** - Guía para agentes de código AI
 
 ---
@@ -197,4 +195,4 @@ Para consultas comerciales o licencias empresariales, contactar a través de Git
 
 ---
 
-**Sistema de Gestión de Tickets v1.0.0** - © 2026 r3-fresh. Todos los derechos reservados.
+**Sistema de Gestión de Tickets** - © 2026 r3-fresh. Todos los derechos reservados.
