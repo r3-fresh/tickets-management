@@ -204,6 +204,27 @@ No aplica para v1.0.0
 
 ---
 
+## [1.0.1] - 2026-01-31
+
+### 📄 Documentación y Licencia
+
+#### Changed
+- **BREAKING**: Cambio de licencia de MIT a Propietaria
+  - Uso personal y educativo: Gratuito
+  - Uso comercial: Requiere licencia comercial pagada
+  - Consultar LICENSE para términos completos
+- Simplificación del README.md (de 450 a ~180 líneas, -60%)
+  - Eliminadas secciones verbosas y redundantes
+  - Foco en información esencial
+  - Estructura más clara y concisa
+
+#### Fixed
+- Corregidas referencias a SMTP en .env.example (proyecto usa Gmail API)
+- Cambiados emails específicos a ejemplos genéricos
+- Actualizado badge de licencia en README (MIT → Proprietary)
+
+---
+
 ## [Unreleased]
 
 ### Pendiente para futuras versiones
@@ -219,4 +240,5 @@ No aplica para v1.0.0
 
 ---
 
+[1.0.1]: https://github.com/r3-fresh/tickets-management/releases/tag/v1.0.1
 [1.0.0]: https://github.com/r3-fresh/tickets-management/releases/tag/v1.0.0
