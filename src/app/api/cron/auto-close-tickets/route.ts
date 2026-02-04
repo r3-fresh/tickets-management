@@ -8,13 +8,13 @@ export const dynamic = 'force-dynamic';
 
 /**
  * Auto-close tickets that have been pending validation for more than 48 hours
- * This endpoint should be called by a cron job periodically (e.g., every hour)
+ * This endpoint is called by Vercel Cron daily at 00:00 UTC
  */
 export async function GET(request: Request) {
     try {
-        // Simple authorization - you might want to add a secret token
-        const authHeader = request.headers.get('authorization');
-        if (authHeader !== `Bearer ${process.env.CRON_SECRET}`) {
+        // Verify request is from Vercel Cron
+        const userAgent = request.headers.get('user-agent');
+        if (userAgent !== 'vercel-cron/1.0') {
             return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
         }
 
