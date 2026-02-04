@@ -1,6 +1,6 @@
 import { db } from "@/db";
 import { tickets } from "@/db/schema";
-import { lt, and, eq, sql } from "drizzle-orm";
+import { lt, and, eq, inArray } from "drizzle-orm";
 import { NextResponse } from "next/server";
 import { TICKET_STATUS, CLOSURE_TYPE, VALIDATION_TIMEOUT_HOURS } from "@/lib/constants/tickets";
 
@@ -54,7 +54,7 @@ export async function GET(request: Request) {
                 closedAt: now,
                 updatedAt: now,
             })
-            .where(sql`${tickets.id} = ANY(${ticketIds})`);
+            .where(inArray(tickets.id, ticketIds));
 
         console.log(`Auto-closed ${ticketsToClose.length} tickets:`, ticketsToClose.map(t => t.ticketCode));
 
