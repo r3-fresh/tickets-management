@@ -81,8 +81,8 @@ export function LoginForm() {
             {/* Panel de formulario */}
             <div className="flex flex-1 flex-col items-center justify-center px-6 py-12 sm:px-12">
                 <div className="w-full max-w-sm space-y-10">
-                    {/* Header con branding */}
-                    <div className="flex items-center gap-3">
+                    {/* Header con branding - solo mobile */}
+                    <div className="flex items-center gap-3 lg:hidden">
                         <div className="flex size-10 items-center justify-center rounded-lg bg-foreground text-background">
                             <Monitor className="size-5" />
                         </div>
