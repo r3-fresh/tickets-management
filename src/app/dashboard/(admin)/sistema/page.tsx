@@ -7,50 +7,47 @@ import { Breadcrumb } from "@/components/shared/breadcrumb";
 export default async function () {
     // Authorization handled by (admin) layout
 
-    // Fetch current setting
-    const setting = await db.query.appSettings.findFirst({
-        where: eq(appSettings.key, "allow_new_tickets"),
-    });
+    // All queries are independent — run in parallel
+    const [
+        setting,
+        disabledMessageSetting,
+        categories,
+        subcategories,
+        campusData,
+        areas,
+        attentionAreasList,
+    ] = await Promise.all([
+        db.query.appSettings.findFirst({
+            where: eq(appSettings.key, "allow_new_tickets"),
+        }),
+        db.query.appSettings.findFirst({
+            where: eq(appSettings.key, "ticket_disabled_message"),
+        }),
+        db.query.ticketCategories.findMany({
+            orderBy: [asc(ticketCategories.displayOrder)],
+            with: {
+                subcategories: true,
+            },
+        }),
+        db.query.ticketSubcategories.findMany({
+            orderBy: [asc(ticketSubcategories.categoryId), asc(ticketSubcategories.displayOrder)],
+            with: {
+                category: true,
+            },
+        }),
+        db.query.campusLocations.findMany({
+            orderBy: [asc(campusLocations.name)],
+        }),
+        db.query.workAreas.findMany({
+            orderBy: [asc(workAreas.name)],
+        }),
+        db.query.attentionAreas.findMany({
+            orderBy: [asc(attentionAreas.name)],
+        }),
+    ]);
 
-    const allowNewTickets = setting ? setting.value === "true" : true; // Default to true
-
-    // Fetch disabled message
-    const disabledMessageSetting = await db.query.appSettings.findFirst({
-        where: eq(appSettings.key, "ticket_disabled_message"),
-    });
+    const allowNewTickets = setting ? setting.value === "true" : true;
     const disabledMessage = disabledMessageSetting?.value || "";
-
-    // Fetch all categories with subcategories
-    const categories = await db.query.ticketCategories.findMany({
-        orderBy: [asc(ticketCategories.displayOrder)],
-        with: {
-            subcategories: true,
-        },
-    });
-
-
-    // Fetch all subcategories with category relation
-    const subcategories = await db.query.ticketSubcategories.findMany({
-        orderBy: [asc(ticketSubcategories.categoryId), asc(ticketSubcategories.displayOrder)],
-        with: {
-            category: true,
-        },
-    });
-
-    // Fetch all campus
-    const campusData = await db.query.campusLocations.findMany({
-        orderBy: [asc(campusLocations.name)],
-    });
-
-    // Fetch all work areas
-    const areas = await db.query.workAreas.findMany({
-        orderBy: [asc(workAreas.name)],
-    });
-
-    // Fetch attention areas
-    const attentionAreasList = await db.query.attentionAreas.findMany({
-        orderBy: [asc(attentionAreas.name)],
-    });
 
     return (
         <div className="space-y-6">

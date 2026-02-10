@@ -32,10 +32,11 @@ export async function updateDisabledMessage(title: string, message: string) {
     await requireAdmin();
 
     try {
-        // Update title
-        await updateAppSetting("ticket_disabled_title", title);
-        // Update message
-        await updateAppSetting("ticket_disabled_message", message);
+        // Both updates are independent — run in parallel
+        await Promise.all([
+            updateAppSetting("ticket_disabled_title", title),
+            updateAppSetting("ticket_disabled_message", message),
+        ]);
 
         return { success: true };
     } catch (error) {

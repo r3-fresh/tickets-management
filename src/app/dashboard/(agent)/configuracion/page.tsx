@@ -14,26 +14,27 @@ export default async function () {
         return <div>Error: No tienes área asignada.</div>;
     }
 
-    const areaConfig = await db.query.attentionAreas.findFirst({
-        where: eq(attentionAreas.id, session.user.attentionAreaId),
-    });
+    // areaConfig and categories are independent — run in parallel
+    const [areaConfig, categories] = await Promise.all([
+        db.query.attentionAreas.findFirst({
+            where: eq(attentionAreas.id, session.user.attentionAreaId),
+        }),
+        db.query.ticketCategories.findMany({
+            where: eq(ticketCategories.attentionAreaId, session.user.attentionAreaId),
+            with: {
+                subcategories: {
+                    orderBy: [asc(ticketSubcategories.displayOrder)],
+                },
+            },
+            orderBy: [asc(ticketCategories.displayOrder)],
+        }),
+    ]);
 
     if (!areaConfig) {
         return <div>Error: No se encontró la configuración del área.</div>;
     }
 
-    // Fetch categories for this area
-    const categories = await db.query.ticketCategories.findMany({
-        where: eq(ticketCategories.attentionAreaId, session.user.attentionAreaId),
-        with: {
-            subcategories: {
-                orderBy: [asc(ticketSubcategories.displayOrder)],
-            },
-        },
-        orderBy: [asc(ticketCategories.displayOrder)],
-    });
-
-    // Fetch all subcategories for this area (flatten from categories)
+    // Subcategories depend on categories result
     const subcategories = await db.query.ticketSubcategories.findMany({
         where: (subcategories, { inArray }) =>
             inArray(subcategories.categoryId, categories.map(c => c.id)),

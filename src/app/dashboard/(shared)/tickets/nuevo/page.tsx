@@ -26,25 +26,31 @@ export default async function () {
         redirect("/login");
     }
 
-    // Fetch all users for watchers
-    const availableUsers = await db.select({
-        id: users.id,
-        name: users.name,
-        email: users.email,
-        image: users.image
-    }).from(users);
+    // All queries are independent after session — run in parallel
+    const [
+        availableUsers,
+        allowNewTicketsSetting,
+        categories,
+        campuses,
+        workAreas,
+        attentionAreas,
+        disabledMessage,
+    ] = await Promise.all([
+        db.select({
+            id: users.id,
+            name: users.name,
+            email: users.email,
+            image: users.image
+        }).from(users),
+        getAppSetting("allow_new_tickets"),
+        getActiveCategories(),
+        getActiveCampuses(),
+        getActiveWorkAreas(),
+        getActiveAttentionAreas(),
+        getAppSetting("ticket_disabled_message"),
+    ]);
 
-    // Check if new tickets are allowed
-    const allowNewTickets = (await getAppSetting("allow_new_tickets")) !== "false";
-
-    // Fetch configuration data
-    const categories = await getActiveCategories();
-    const campuses = await getActiveCampuses();
-    const workAreas = await getActiveWorkAreas();
-    const attentionAreas = await getActiveAttentionAreas();
-
-    // Fetch custom disabled message
-    const disabledMessage = await getAppSetting("ticket_disabled_message");
+    const allowNewTickets = allowNewTicketsSetting !== "false";
 
     return (
         <NewTicketForm

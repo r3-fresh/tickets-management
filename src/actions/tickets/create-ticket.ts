@@ -102,31 +102,28 @@ export async function createTicketAction(formData: FormData) {
         // TO: Creator
         // CC: Agents of category + Watchers
         try {
-            // Get category and subcategory names
-            const category = await db.query.ticketCategories.findFirst({
-                where: eq(ticketCategories.id, categoryId),
-            });
-
-            const subcategory = await db.query.ticketSubcategories.findFirst({
-                where: eq(ticketSubcategories.id, subcategoryId),
-            });
-
-            // Get watcher emails
-            let watcherEmails: string[] = [];
-            if (watcherList.length > 0) {
-                const watcherData = await db.select({ email: users.email })
+            // Get category, subcategory, watcher, and agent data in parallel
+            const [category, subcategory, watcherData, agentData] = await Promise.all([
+                db.query.ticketCategories.findFirst({
+                    where: eq(ticketCategories.id, categoryId),
+                }),
+                db.query.ticketSubcategories.findFirst({
+                    where: eq(ticketSubcategories.id, subcategoryId),
+                }),
+                watcherList.length > 0
+                    ? db.select({ email: users.email })
+                        .from(users)
+                        .where(inArray(users.id, watcherList))
+                    : Promise.resolve([] as { email: string }[]),
+                db.select({ email: users.email })
                     .from(users)
-                    .where(inArray(users.id, watcherList));
-                watcherEmails = watcherData.map(w => w.email);
-            }
+                    .where(and(
+                        eq(users.role, 'agent'),
+                        eq(users.attentionAreaId, attentionAreaId)
+                    )),
+            ]);
 
-            // Get Agent emails for this attention area
-            const agentData = await db.select({ email: users.email })
-                .from(users)
-                .where(and(
-                    eq(users.role, 'agent'),
-                    eq(users.attentionAreaId, attentionAreaId)
-                ));
+            const watcherEmails = watcherData.map(w => w.email);
 
             const emailResult = await sendTicketCreatedEmail({
                 ticketCode,

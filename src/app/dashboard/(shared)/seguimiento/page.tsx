@@ -8,9 +8,10 @@ import { Breadcrumb } from "@/components/shared/breadcrumb";
 export default async function () {
     const session = await requireAuth();
 
-    // Fetch tickets where user is a watcher BUT NOT the creator
-    const watchedTickets = await db
-        .select({
+    // Both queries are independent — run in parallel
+    const [watchedTickets, ticketsWithRelations] = await Promise.all([
+        // Fetch tickets where user is a watcher BUT NOT the creator
+        db.select({
             id: tickets.id,
             ticketCode: tickets.ticketCode,
             title: tickets.title,
@@ -39,37 +40,37 @@ export default async function () {
             `,
             commentCount: sql<number>`cast(count(${comments.id}) as integer)`,
         })
-        .from(tickets)
-        .leftJoin(ticketCategories, eq(tickets.categoryId, ticketCategories.id))
-        .leftJoin(comments, eq(tickets.id, comments.ticketId))
-        .leftJoin(
-            ticketViews,
-            and(
-                eq(tickets.id, ticketViews.ticketId),
-                eq(ticketViews.userId, session.user.id)
+            .from(tickets)
+            .leftJoin(ticketCategories, eq(tickets.categoryId, ticketCategories.id))
+            .leftJoin(comments, eq(tickets.id, comments.ticketId))
+            .leftJoin(
+                ticketViews,
+                and(
+                    eq(tickets.id, ticketViews.ticketId),
+                    eq(ticketViews.userId, session.user.id)
+                )
             )
-        )
-        .where(
-            and(
-                not(eq(tickets.createdById, session.user.id)), // NOT created by me
-                sql`${session.user.id} = ANY(${tickets.watchers})` // I am a watcher
+            .where(
+                and(
+                    not(eq(tickets.createdById, session.user.id)),
+                    sql`${session.user.id} = ANY(${tickets.watchers})`
+                )
             )
-        )
-        .groupBy(tickets.id, ticketCategories.name, ticketViews.lastViewedAt)
-        .orderBy(desc(tickets.createdAt));
-
-    // Fetch assigned users and creators separately
-    const ticketsWithRelations = await db.query.tickets.findMany({
-        where: and(
-            not(eq(tickets.createdById, session.user.id)),
-            sql`${session.user.id} = ANY(${tickets.watchers})`
-        ),
-        with: {
-            assignedTo: true,
-            createdBy: true,
-        },
-        orderBy: [desc(tickets.createdAt)],
-    });
+            .groupBy(tickets.id, ticketCategories.name, ticketViews.lastViewedAt)
+            .orderBy(desc(tickets.createdAt)),
+        // Fetch assigned users and creators separately
+        db.query.tickets.findMany({
+            where: and(
+                not(eq(tickets.createdById, session.user.id)),
+                sql`${session.user.id} = ANY(${tickets.watchers})`
+            ),
+            with: {
+                assignedTo: true,
+                createdBy: true,
+            },
+            orderBy: [desc(tickets.createdAt)],
+        }),
+    ]);
 
     // Merge with relation data
     const mergedTickets = watchedTickets.map((ticket) => {

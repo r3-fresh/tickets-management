@@ -11,9 +11,10 @@ import { Plus } from "lucide-react";
 export default async function () {
     const session = await requireAuth();
 
-    // Fetch tickets created by this user
-    const userTickets = await db
-        .select({
+    // Both queries are independent — run in parallel
+    const [userTickets, ticketsWithAssigned] = await Promise.all([
+        // Fetch tickets created by this user
+        db.select({
             id: tickets.id,
             ticketCode: tickets.ticketCode,
             title: tickets.title,
@@ -42,28 +43,28 @@ export default async function () {
             `,
             commentCount: sql<number>`cast(count(${comments.id}) as integer)`,
         })
-        .from(tickets)
-        .leftJoin(ticketCategories, eq(tickets.categoryId, ticketCategories.id))
-        .leftJoin(comments, eq(tickets.id, comments.ticketId))
-        .leftJoin(
-            ticketViews,
-            and(
-                eq(tickets.id, ticketViews.ticketId),
-                eq(ticketViews.userId, session.user.id)
+            .from(tickets)
+            .leftJoin(ticketCategories, eq(tickets.categoryId, ticketCategories.id))
+            .leftJoin(comments, eq(tickets.id, comments.ticketId))
+            .leftJoin(
+                ticketViews,
+                and(
+                    eq(tickets.id, ticketViews.ticketId),
+                    eq(ticketViews.userId, session.user.id)
+                )
             )
-        )
-        .where(eq(tickets.createdById, session.user.id))
-        .groupBy(tickets.id, ticketCategories.name, ticketViews.lastViewedAt)
-        .orderBy(desc(tickets.createdAt));
-
-    // Fetch assigned users separately
-    const ticketsWithAssigned = await db.query.tickets.findMany({
-        where: eq(tickets.createdById, session.user.id),
-        with: {
-            assignedTo: true,
-        },
-        orderBy: [desc(tickets.createdAt)],
-    });
+            .where(eq(tickets.createdById, session.user.id))
+            .groupBy(tickets.id, ticketCategories.name, ticketViews.lastViewedAt)
+            .orderBy(desc(tickets.createdAt)),
+        // Fetch assigned users separately
+        db.query.tickets.findMany({
+            where: eq(tickets.createdById, session.user.id),
+            with: {
+                assignedTo: true,
+            },
+            orderBy: [desc(tickets.createdAt)],
+        }),
+    ]);
 
     // Merge unread counts with assigned user data
     const mergedTickets = userTickets.map((ticket) => {
