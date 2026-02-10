@@ -2,7 +2,7 @@
 
 import { Button } from "@/components/ui/button";
 import { authClient } from "@/lib/auth/client";
-import { Loader2, Ticket } from "lucide-react";
+import { Loader2, Monitor } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
 
@@ -29,10 +29,10 @@ export function LoginForm() {
             <div className="hidden lg:flex lg:w-[45%] xl:w-[40%] bg-foreground text-background flex-col justify-between p-10 xl:p-14">
                 <div className="flex items-center gap-3">
                     <div className="flex size-9 items-center justify-center rounded-lg bg-background/10 border border-background/15">
-                        <Ticket className="size-5" />
+                        <Monitor className="size-5" />
                     </div>
                     <span className="text-sm font-medium tracking-wide uppercase opacity-80">
-                        Tickets
+                        Tecnologías y sistemas de información
                     </span>
                 </div>
 
@@ -42,8 +42,8 @@ export function LoginForm() {
                         <span className="block">requerimientos</span>
                     </h1>
                     <p className="text-background/60 text-lg leading-relaxed max-w-md">
-                        Plataforma centralizada para el seguimiento y resolución
-                        de tickets internos.
+                        Seguimiento y resolución de solicitudes de soporte
+                        técnico.
                     </p>
                 </div>
 
@@ -57,7 +57,7 @@ export function LoginForm() {
                 {/* Logo móvil - visible solo en móvil */}
                 <div className="mb-10 flex items-center gap-3 lg:hidden">
                     <div className="flex size-10 items-center justify-center rounded-lg bg-foreground text-background">
-                        <Ticket className="size-5" />
+                        <Monitor className="size-5" />
                     </div>
                     <span className="text-lg font-semibold tracking-tight">
                         Gestión de requerimientos
@@ -67,10 +67,11 @@ export function LoginForm() {
                 <div className="w-full max-w-sm space-y-8">
                     <div className="space-y-2 text-center lg:text-left">
                         <h2 className="text-2xl font-semibold tracking-tight">
-                            Iniciar sesión
+                            Bienvenido
                         </h2>
                         <p className="text-muted-foreground text-sm">
-                            Usa tu cuenta corporativa de Google para continuar.
+                            Ingresa con tu cuenta institucional para acceder al
+                            sistema de gestión de requerimientos.
                         </p>
                     </div>
 
@@ -107,7 +108,7 @@ export function LoginForm() {
                         )}
                         {isLoading
                             ? "Redirigiendo..."
-                            : "Continuar con Google"}
+                            : "Ingresar con Google"}
                     </Button>
                 </div>
             </div>

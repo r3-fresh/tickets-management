@@ -9,8 +9,8 @@ import { ThemeProvider } from "@/components/shared/theme-provider";
 const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
-  title: "Tickets management",
-  description: "Sistema de gestión de tickets",
+  title: "Gestión de requerimientos",
+  description: "Sistema de gestión de requerimientos",
 };
 
 export default function RootLayout({
