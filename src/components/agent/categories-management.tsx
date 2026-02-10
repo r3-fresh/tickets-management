@@ -185,7 +185,7 @@ export function AgentCategoriesManagement({ categories }: AgentCategoriesManagem
                                     <Input
                                         id="name"
                                         value={formData.name}
-                                        onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                                        onChange={(e) => setFormData(prev => ({ ...prev, name: e.target.value }))}
                                         placeholder="Ej: Soporte Técnico"
                                     />
                                 </div>
@@ -195,7 +195,7 @@ export function AgentCategoriesManagement({ categories }: AgentCategoriesManagem
                                     <Textarea
                                         id="description"
                                         value={formData.description}
-                                        onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+                                        onChange={(e) => setFormData(prev => ({ ...prev, description: e.target.value }))}
                                     />
                                 </div>
 
@@ -204,7 +204,7 @@ export function AgentCategoriesManagement({ categories }: AgentCategoriesManagem
                                         id="isActive"
                                         checked={formData.isActive}
                                         onCheckedChange={(checked) =>
-                                            setFormData({ ...formData, isActive: checked })
+                                            setFormData(prev => ({ ...prev, isActive: checked }))
                                         }
                                     />
                                     <Label htmlFor="isActive" className="cursor-pointer">

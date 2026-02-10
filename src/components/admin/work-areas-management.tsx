@@ -136,7 +136,7 @@ export function WorkAreasManagement({ initialAreas }: WorkAreasManagementProps) 
                                 <Input
                                     id="name"
                                     value={formData.name}
-                                    onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                                    onChange={(e) => setFormData(prev => ({ ...prev, name: e.target.value }))}
                                     placeholder="Ej: Recursos Humanos"
                                 />
                             </div>
@@ -145,7 +145,7 @@ export function WorkAreasManagement({ initialAreas }: WorkAreasManagementProps) 
                                 <Textarea
                                     id="description"
                                     value={formData.description}
-                                    onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+                                    onChange={(e) => setFormData(prev => ({ ...prev, description: e.target.value }))}
                                     placeholder="Descripción opcional del área"
                                     rows={3}
                                 />
@@ -154,7 +154,7 @@ export function WorkAreasManagement({ initialAreas }: WorkAreasManagementProps) 
                                 <Switch
                                     id="isActive"
                                     checked={formData.isActive}
-                                    onCheckedChange={(checked) => setFormData({ ...formData, isActive: checked })}
+                                    onCheckedChange={(checked) => setFormData(prev => ({ ...prev, isActive: checked }))}
                                 />
                                 <Label htmlFor="isActive">Activo</Label>
                             </div>

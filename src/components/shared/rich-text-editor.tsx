@@ -19,23 +19,27 @@ interface RichTextEditorProps {
     disabled?: boolean;
 }
 
+const EDITOR_EXTENSIONS = [
+    StarterKit.configure({
+        heading: {
+            levels: [1, 2, 3],
+        },
+    }),
+    TextStyle,
+    Color,
+    Link.configure({
+        openOnClick: false,
+        HTMLAttributes: {
+            class: 'text-blue-600 underline cursor-pointer hover:text-blue-800',
+        },
+    }),
+];
+
+const COLOR_PALETTE = ['#000000', '#ef4444', '#f97316', '#f59e0b', '#10b981', '#3b82f6', '#6366f1', '#8b5cf6', '#d946ef', '#64748b'];
+
 export function RichTextEditor({ value, onChange, placeholder, disabled }: RichTextEditorProps) {
     const editor = useEditor({
-        extensions: [
-            StarterKit.configure({
-                heading: {
-                    levels: [1, 2, 3],
-                },
-            }),
-            TextStyle,
-            Color,
-            Link.configure({
-                openOnClick: false,
-                HTMLAttributes: {
-                    class: 'text-blue-600 underline cursor-pointer hover:text-blue-800',
-                },
-            }),
-        ],
+        extensions: EDITOR_EXTENSIONS,
         immediatelyRender: false,
         content: value,
         editable: !disabled,
@@ -124,7 +128,7 @@ export function RichTextEditor({ value, onChange, placeholder, disabled }: RichT
                         </PopoverTrigger>
                         <PopoverContent className="w-40 p-2" align="start">
                             <div className="grid grid-cols-5 gap-1">
-                                {['#000000', '#ef4444', '#f97316', '#f59e0b', '#10b981', '#3b82f6', '#6366f1', '#8b5cf6', '#d946ef', '#64748b'].map((color) => (
+                                {COLOR_PALETTE.map((color) => (
                                     <button
                                         key={color}
                                         className="h-6 w-6 rounded-md border border-muted"

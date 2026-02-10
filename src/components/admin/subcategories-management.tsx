@@ -62,6 +62,20 @@ export function SubcategoriesManagement({ initialSubcategories, categories }: Su
         return initialSubcategories.filter(sub => sub.categoryId.toString() === filterCategoryId);
     }, [initialSubcategories, filterCategoryId]);
 
+    // Pre-compute subcategories grouped by categoryId for O(1) lookup per row
+    const subcategoriesByCategoryId = useMemo(() => {
+        const map = new Map<number, Subcategory[]>();
+        for (const sub of initialSubcategories) {
+            const list = map.get(sub.categoryId);
+            if (list) {
+                list.push(sub);
+            } else {
+                map.set(sub.categoryId, [sub]);
+            }
+        }
+        return map;
+    }, [initialSubcategories]);
+
     const resetForm = () => {
         setFormData({ categoryId: "", name: "", description: "", isActive: true });
         setEditingSubcategory(null);
@@ -209,7 +223,7 @@ export function SubcategoriesManagement({ initialSubcategories, categories }: Su
                                 <Label htmlFor="category">Categoría *</Label>
                                 <Select
                                     value={formData.categoryId}
-                                    onValueChange={(value) => setFormData({ ...formData, categoryId: value })}
+                                    onValueChange={(value) => setFormData(prev => ({ ...prev, categoryId: value }))}
                                 >
                                     <SelectTrigger id="category">
                                         <SelectValue placeholder="Selecciona una categoría" />
@@ -228,7 +242,7 @@ export function SubcategoriesManagement({ initialSubcategories, categories }: Su
                                 <Input
                                     id="name"
                                     value={formData.name}
-                                    onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                                    onChange={(e) => setFormData(prev => ({ ...prev, name: e.target.value }))}
                                     placeholder="Ej: Hardware"
                                 />
                             </div>
@@ -237,7 +251,7 @@ export function SubcategoriesManagement({ initialSubcategories, categories }: Su
                                 <Textarea
                                     id="description"
                                     value={formData.description}
-                                    onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+                                    onChange={(e) => setFormData(prev => ({ ...prev, description: e.target.value }))}
                                     placeholder="Descripción opcional de la subcategoría"
                                     rows={3}
                                 />
@@ -246,7 +260,7 @@ export function SubcategoriesManagement({ initialSubcategories, categories }: Su
                                 <Switch
                                     id="isActive"
                                     checked={formData.isActive}
-                                    onCheckedChange={(checked) => setFormData({ ...formData, isActive: checked })}
+                                    onCheckedChange={(checked) => setFormData(prev => ({ ...prev, isActive: checked }))}
                                 />
                                 <Label htmlFor="isActive">Activo</Label>
                             </div>
@@ -286,9 +300,7 @@ export function SubcategoriesManagement({ initialSubcategories, categories }: Su
                             </TableRow>
                         ) : (
                             filteredSubcategories.map((subcategory, index) => {
-                                const categorySubcategories = initialSubcategories.filter(
-                                    s => s.categoryId === subcategory.categoryId
-                                );
+                                const categorySubcategories = subcategoriesByCategoryId.get(subcategory.categoryId) || [];
                                 const indexInCategory = categorySubcategories.findIndex(s => s.id === subcategory.id);
 
                                 return (

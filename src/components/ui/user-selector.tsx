@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { Check, ChevronsUpDown, X } from "lucide-react";
 import { cn } from "@/lib/utils/cn";
 import { Button } from "@/components/ui/button";
@@ -41,7 +41,10 @@ export function UserSelector({
 }: UserSelectorProps) {
     const [open, setOpen] = useState(false);
 
-    const selectedUsers = users.filter((user) => selectedUserIds.includes(user.id));
+    const selectedUsers = useMemo(
+        () => users.filter((user) => selectedUserIds.includes(user.id)),
+        [users, selectedUserIds]
+    );
 
     const toggleUser = (userId: string) => {
         const newSelection = selectedUserIds.includes(userId)

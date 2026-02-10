@@ -135,7 +135,7 @@ export function CampusManagement({ initialCampus }: CampusManagementProps) {
                                 <Input
                                     id="name"
                                     value={formData.name}
-                                    onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                                    onChange={(e) => setFormData(prev => ({ ...prev, name: e.target.value }))}
                                     placeholder="Ej: Campus Principal"
                                 />
                             </div>
@@ -144,7 +144,7 @@ export function CampusManagement({ initialCampus }: CampusManagementProps) {
                                 <Input
                                     id="code"
                                     value={formData.code}
-                                    onChange={(e) => setFormData({ ...formData, code: e.target.value })}
+                                    onChange={(e) => setFormData(prev => ({ ...prev, code: e.target.value }))}
                                     placeholder="Ej: CP-01"
                                 />
                             </div>
@@ -152,7 +152,7 @@ export function CampusManagement({ initialCampus }: CampusManagementProps) {
                                 <Switch
                                     id="isActive"
                                     checked={formData.isActive}
-                                    onCheckedChange={(checked) => setFormData({ ...formData, isActive: checked })}
+                                    onCheckedChange={(checked) => setFormData(prev => ({ ...prev, isActive: checked }))}
                                 />
                                 <Label htmlFor="isActive">Activo</Label>
                             </div>

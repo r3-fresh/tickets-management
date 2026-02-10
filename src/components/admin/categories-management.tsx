@@ -225,7 +225,7 @@ export function AdminCategoriesManagement({
                                 <Input
                                     id="name"
                                     value={formData.name}
-                                    onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                                    onChange={(e) => setFormData(prev => ({ ...prev, name: e.target.value }))}
                                     placeholder="Ej: Soporte Técnico"
                                 />
                             </div>
@@ -235,10 +235,10 @@ export function AdminCategoriesManagement({
                                 <Select
                                     value={formData.attentionAreaId?.toString() || "none"}
                                     onValueChange={(value) =>
-                                        setFormData({
-                                            ...formData,
+                                        setFormData(prev => ({
+                                            ...prev,
                                             attentionAreaId: value === "none" ? undefined : Number(value),
-                                        })
+                                        }))
                                     }
                                 >
                                     <SelectTrigger>
@@ -263,7 +263,7 @@ export function AdminCategoriesManagement({
                                 <Textarea
                                     id="description"
                                     value={formData.description}
-                                    onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+                                    onChange={(e) => setFormData(prev => ({ ...prev, description: e.target.value }))}
                                 />
                             </div>
 
@@ -272,7 +272,7 @@ export function AdminCategoriesManagement({
                                     id="isActive"
                                     checked={formData.isActive}
                                     onCheckedChange={(checked) =>
-                                        setFormData({ ...formData, isActive: checked })
+                                        setFormData(prev => ({ ...prev, isActive: checked }))
                                     }
                                 />
                                 <Label htmlFor="isActive" className="cursor-pointer">

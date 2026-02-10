@@ -60,6 +60,13 @@ interface NewTicketFormProps {
     disabledMessage?: string | null;
 }
 
+const PRIORITIES = [
+    { value: "low", label: "Baja", activeColor: "bg-green-500 hover:bg-green-600 text-white border-green-500", inactiveColor: "bg-muted hover:bg-muted/80 text-muted-foreground border-muted" },
+    { value: "medium", label: "Media", activeColor: "bg-yellow-500 hover:bg-yellow-600 text-white border-yellow-500", inactiveColor: "bg-muted hover:bg-muted/80 text-muted-foreground border-muted" },
+    { value: "high", label: "Alta", activeColor: "bg-orange-500 hover:bg-orange-600 text-white border-orange-500", inactiveColor: "bg-muted hover:bg-muted/80 text-muted-foreground border-muted" },
+    { value: "critical", label: "Cr\u00edtica", activeColor: "bg-red-500 hover:bg-red-600 text-white border-red-500", inactiveColor: "bg-muted hover:bg-muted/80 text-muted-foreground border-muted" },
+] as const;
+
 export function NewTicketForm({
     availableUsers,
     allowNewTickets = true,
@@ -134,13 +141,6 @@ export function NewTicketForm({
 
     const currentSubcategories = categories.find(c => c.id === selectedCategory)?.subcategories || [];
 
-    const priorities = [
-        { value: "low", label: "Baja", activeColor: "bg-green-500 hover:bg-green-600 text-white border-green-500", inactiveColor: "bg-muted hover:bg-muted/80 text-muted-foreground border-muted" },
-        { value: "medium", label: "Media", activeColor: "bg-yellow-500 hover:bg-yellow-600 text-white border-yellow-500", inactiveColor: "bg-muted hover:bg-muted/80 text-muted-foreground border-muted" },
-        { value: "high", label: "Alta", activeColor: "bg-orange-500 hover:bg-orange-600 text-white border-orange-500", inactiveColor: "bg-muted hover:bg-muted/80 text-muted-foreground border-muted" },
-        { value: "critical", label: "Crítica", activeColor: "bg-red-500 hover:bg-red-600 text-white border-red-500", inactiveColor: "bg-muted hover:bg-muted/80 text-muted-foreground border-muted" },
-    ];
-
     return (
         <div className="space-y-6 max-w-4xl mx-auto">
             <div>
@@ -179,7 +179,7 @@ export function NewTicketForm({
                                     <FormItem>
                                         <FormLabel>Nivel de prioridad <span className="text-red-500">*</span></FormLabel>
                                         <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-                                            {priorities.map((priority) => (
+                                            {PRIORITIES.map((priority) => (
                                                 <button
                                                     key={priority.value}
                                                     type="button"

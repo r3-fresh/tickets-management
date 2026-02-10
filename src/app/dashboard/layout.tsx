@@ -25,6 +25,35 @@ import { ModeToggle } from "@/components/shared/mode-toggle";
 import { SidebarUserInfo } from "@/components/dashboard/sidebar-user-info";
 import { cn } from "@/lib/utils/cn";
 
+// --- STATIC NAVIGATION ITEMS (hoisted outside component) ---
+
+const KNOWLEDGE_BASE_ITEM = {
+    href: "https://docs.google.com/spreadsheets/d/1F23_z7fQJbfGCmvavge3Igw-FcyG4Xd_A-MR3s5WURc/",
+    label: "Base de conocimiento",
+    icon: BookOpen,
+    external: true
+};
+
+const USER_NAV_ITEMS = [
+    { href: "/dashboard", label: "Mi panel", icon: LayoutDashboard },
+    { href: "/dashboard/mis-tickets", label: "Mis tickets", icon: Ticket },
+    { href: "/dashboard/seguimiento", label: "En seguimiento", icon: Eye },
+];
+
+const AGENT_NAV_ITEMS = [
+    { href: "/dashboard", label: "Mi panel", icon: LayoutDashboard },
+    { href: "/dashboard/mis-tickets", label: "Mis tickets", icon: Ticket },
+    { href: "/dashboard/seguimiento", label: "En seguimiento", icon: Eye },
+    { href: "/dashboard/area", label: "Tickets del área", icon: Ticket },
+];
+
+const ADMIN_NAV_ITEMS = [
+    { href: "/dashboard", label: "Panel de control", icon: LayoutDashboard },
+    { href: "/dashboard/explorador", label: "Explorador de tickets", icon: Ticket },
+];
+
+const ROLES_ITEM = { href: "/dashboard/usuarios", label: "Gestión de usuarios", icon: Shield, external: false };
+
 export default function DashboardLayout({
     children,
 }: {
@@ -50,39 +79,10 @@ export default function DashboardLayout({
 
     // --- NAVIGATION ITEMS CONFIGURATION ---
 
-    // Common items
-    const knowledgeBaseItem = {
-        href: "https://docs.google.com/spreadsheets/d/1F23_z7fQJbfGCmvavge3Igw-FcyG4Xd_A-MR3s5WURc/",
-        label: "Base de conocimiento",
-        icon: BookOpen,
-        external: true
-    };
-
-    const userNavItems = [
-        { href: "/dashboard", label: "Mi panel", icon: LayoutDashboard },
-        { href: "/dashboard/mis-tickets", label: "Mis tickets", icon: Ticket },
-        { href: "/dashboard/seguimiento", label: "En seguimiento", icon: Eye },
-    ];
-
-    const agentNavItems = [
-        { href: "/dashboard", label: "Mi panel", icon: LayoutDashboard },
-        { href: "/dashboard/mis-tickets", label: "Mis tickets", icon: Ticket },
-        { href: "/dashboard/seguimiento", label: "En seguimiento", icon: Eye },
-        { href: "/dashboard/area", label: "Tickets del área", icon: Ticket },
-    ];
-
-    const adminNavItems = [
-        { href: "/dashboard", label: "Panel de control", icon: LayoutDashboard },
-        { href: "/dashboard/explorador", label: "Explorador de tickets", icon: Ticket },
-    ];
-
     // Type assertion for better-auth session with role
     const userRole = (session?.user as { role?: string })?.role;
 
-    // Roles item (Admin)
-    const rolesItem = { href: "/dashboard/usuarios", label: "Gestión de usuarios", icon: Shield, external: false };
-
-    // Settings items (Agent/Admin)
+    // Settings items (Agent/Admin) - depends on userRole, cannot be hoisted
     const settingsItem = {
         href: userRole === "admin" ? "/dashboard/sistema" : "/dashboard/configuracion",
         label: userRole === "admin" ? "Configuración del sistema" : "Configuración del área",
@@ -90,16 +90,15 @@ export default function DashboardLayout({
         external: false
     };
 
-    let navigationSection = userNavItems;
-    let resourcesSection = [knowledgeBaseItem];
+    let navigationSection = USER_NAV_ITEMS;
+    let resourcesSection = [KNOWLEDGE_BASE_ITEM];
 
     if (userRole === "admin") {
-        navigationSection = adminNavItems;
-        resourcesSection.push(rolesItem); // Add Roles to resources
-        resourcesSection.push(settingsItem);
+        navigationSection = ADMIN_NAV_ITEMS;
+        resourcesSection = [...resourcesSection, ROLES_ITEM, settingsItem];
     } else if (userRole === "agent") {
-        navigationSection = agentNavItems;
-        resourcesSection.push(settingsItem);
+        navigationSection = AGENT_NAV_ITEMS;
+        resourcesSection = [...resourcesSection, settingsItem];
     }
 
     return (
@@ -224,7 +223,7 @@ export default function DashboardLayout({
                         <Button
                             variant="ghost"
                             size="icon"
-                            onClick={() => setIsCollapsed(!isCollapsed)}
+                            onClick={() => setIsCollapsed(prev => !prev)}
                             className={cn(
                                 "text-muted-foreground hover:text-foreground hover:bg-sidebar-accent h-9 w-9 border border-sidebar-border transition-all",
                                 isCollapsed ? "order-2" : "order-2"

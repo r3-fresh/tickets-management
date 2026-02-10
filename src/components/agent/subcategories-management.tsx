@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useTransition } from "react";
+import { useState, useTransition, useMemo } from "react";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -165,9 +165,12 @@ export function AgentSubcategoriesManagement({
     };
 
     // Filter subcategories by selected category
-    const filteredSubcategories = selectedCategory === "all"
-        ? subcategories
-        : subcategories.filter(sub => sub.categoryId === parseInt(selectedCategory));
+    const filteredSubcategories = useMemo(
+        () => selectedCategory === "all"
+            ? subcategories
+            : subcategories.filter(sub => sub.categoryId === parseInt(selectedCategory)),
+        [subcategories, selectedCategory]
+    );
 
     return (
         <Card>
@@ -225,7 +228,7 @@ export function AgentSubcategoriesManagement({
                                     <Select
                                         value={formData.categoryId}
                                         onValueChange={(value) =>
-                                            setFormData({ ...formData, categoryId: value })
+                                            setFormData(prev => ({ ...prev, categoryId: value }))
                                         }
                                     >
                                         <SelectTrigger>
@@ -246,7 +249,7 @@ export function AgentSubcategoriesManagement({
                                     <Input
                                         id="name"
                                         value={formData.name}
-                                        onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                                        onChange={(e) => setFormData(prev => ({ ...prev, name: e.target.value }))}
                                         placeholder="Ej: Instalación de Software"
                                     />
                                 </div>
@@ -256,7 +259,7 @@ export function AgentSubcategoriesManagement({
                                     <Textarea
                                         id="description"
                                         value={formData.description}
-                                        onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+                                        onChange={(e) => setFormData(prev => ({ ...prev, description: e.target.value }))}
                                     />
                                 </div>
 
@@ -265,7 +268,7 @@ export function AgentSubcategoriesManagement({
                                         id="isActive"
                                         checked={formData.isActive}
                                         onCheckedChange={(checked) =>
-                                            setFormData({ ...formData, isActive: checked })
+                                            setFormData(prev => ({ ...prev, isActive: checked }))
                                         }
                                     />
                                     <Label htmlFor="isActive" className="cursor-pointer">

@@ -47,11 +47,11 @@ export function WatchersManager({ ticketId, currentWatchers, allUsers, currentUs
     const availableUsers = allUsers.filter(user => user.id !== currentUserId);
 
     const handleToggleWatcher = (userId: string) => {
-        const newWatchers = selectedWatchers.includes(userId)
-            ? selectedWatchers.filter(id => id !== userId)
-            : [...selectedWatchers, userId];
-
-        setSelectedWatchers(newWatchers);
+        setSelectedWatchers(prev =>
+            prev.includes(userId)
+                ? prev.filter(id => id !== userId)
+                : [...prev, userId]
+        );
     };
 
     const handleSave = async () => {
