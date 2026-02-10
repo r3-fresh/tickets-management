@@ -1,8 +1,7 @@
 
 import { db } from "@/db";
 import { tickets, comments, users } from "@/db/schema";
-import { auth } from "@/lib/auth/server";
-import { headers } from "next/headers";
+import { requireAuth } from "@/lib/auth/helpers";
 import { notFound, redirect } from "next/navigation";
 import { eq, desc, inArray } from "drizzle-orm";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -27,14 +26,8 @@ const RichTextEditor = dynamic(
     }
 );
 
-export default async function ({ params }: { params: Promise<{ id: string }> }) {
-    const session = await auth.api.getSession({
-        headers: await headers(),
-    });
-
-    if (!session?.user) {
-        redirect("/login");
-    }
+export default async function TicketDetailPage({ params }: { params: Promise<{ id: string }> }) {
+    const session = await requireAuth();
 
     const { id } = await params;
     const ticketId = Number(id);

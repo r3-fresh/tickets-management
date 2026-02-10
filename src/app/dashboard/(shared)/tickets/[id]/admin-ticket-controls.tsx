@@ -7,11 +7,12 @@ import { toast } from "sonner";
 import { useTransition } from "react";
 import { UserPlus, UserMinus, CheckCircle } from "lucide-react";
 import { useState } from "react";
+import type { TicketStatus } from "@/types";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { RichTextEditor } from "@/components/shared/rich-text-editor";
 import { Label } from "@/components/ui/label";
 
-const STATUS_OPTIONS = [
+const STATUS_OPTIONS: { value: TicketStatus; label: string }[] = [
     { value: "open", label: "Abierto" },
     { value: "in_progress", label: "En progreso" },
     { value: "pending_validation", label: "Pendiente de validación" },
@@ -32,9 +33,9 @@ export function AdminTicketControls({
     const [isValidationDialogOpen, setIsValidationDialogOpen] = useState(false);
     const [validationMessage, setValidationMessage] = useState("");
 
-    const handleStatusChange = (newStatus: string) => {
+    const handleStatusChange = (newStatus: TicketStatus) => {
         startTransition(async () => {
-            const result = await updateTicketStatus(ticketId, newStatus as any);
+            const result = await updateTicketStatus(ticketId, newStatus);
             if (result?.error) {
                 toast.error(result.error);
             } else {
@@ -90,7 +91,7 @@ export function AdminTicketControls({
                 </label>
                 <Select
                     value={currentStatus}
-                    onValueChange={handleStatusChange}
+                    onValueChange={(value) => handleStatusChange(value as TicketStatus)}
                     disabled={isPending}
                 >
                     <SelectTrigger>

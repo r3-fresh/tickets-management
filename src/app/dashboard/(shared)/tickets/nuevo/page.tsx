@@ -1,8 +1,6 @@
 import { db } from "@/db";
 import { users } from "@/db/schema";
-import { auth } from "@/lib/auth/server";
-import { headers } from "next/headers";
-import { redirect } from "next/navigation";
+import { requireAuth } from "@/lib/auth/helpers";
 import { eq } from "drizzle-orm";
 import dynamic from "next/dynamic";
 import { getActiveCategories, getActiveCampuses, getActiveWorkAreas, getActiveAttentionAreas } from "@/actions/config/get-config";
@@ -24,14 +22,8 @@ async function getAppSetting(key: string): Promise<string | null> {
     }
 }
 
-export default async function () {
-    const session = await auth.api.getSession({
-        headers: await headers(),
-    });
-
-    if (!session?.user) {
-        redirect("/login");
-    }
+export default async function NuevoTicketPage() {
+    const session = await requireAuth();
 
     // All queries are independent after session — run in parallel
     const [

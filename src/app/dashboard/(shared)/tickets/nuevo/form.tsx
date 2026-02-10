@@ -1,6 +1,6 @@
 "use client";
 
-import { useForm } from "react-hook-form";
+import { useForm, type Resolver } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { createTicketSchema, CreateTicketSchema } from "@/lib/validation/schemas";
 import { Button } from "@/components/ui/button";
@@ -81,6 +81,16 @@ export function NewTicketForm({
     const [selectedAttentionArea, setSelectedAttentionArea] = useState<number | null>(null);
     const [selectedWatchers, setSelectedWatchers] = useState<string[]>([]);
 
+    const form = useForm<CreateTicketSchema>({
+        // zodResolver type mismatch with z.coerce.number() (Zod 4 + @hookform/resolvers 5.x)
+        resolver: zodResolver(createTicketSchema) as Resolver<CreateTicketSchema>,
+        defaultValues: {
+            priority: "medium",
+            title: "",
+            description: "",
+        },
+    });
+
     if (!allowNewTickets) {
         return (
             <div className="max-w-4xl mx-auto">
@@ -103,15 +113,6 @@ export function NewTicketForm({
             </div>
         );
     }
-
-    const form = useForm<CreateTicketSchema>({
-        resolver: zodResolver(createTicketSchema) as any,
-        defaultValues: {
-            priority: "medium",
-            title: "",
-            description: "",
-        },
-    });
 
     const onSubmit = (data: CreateTicketSchema) => {
         const formData = new FormData();
@@ -215,8 +216,8 @@ export function NewTicketForm({
                                                 field.onChange(areaId);
                                                 setSelectedAttentionArea(areaId);
                                                 // Reset category/subcategory if area changes
-                                                form.setValue("categoryId", undefined as any);
-                                                form.setValue("subcategoryId", undefined as any);
+                                                form.resetField("categoryId");
+                                                form.resetField("subcategoryId");
                                                 setSelectedCategory(null);
                                             }}
                                             value={field.value?.toString()}
@@ -254,7 +255,7 @@ export function NewTicketForm({
                                                 onValueChange={(val) => {
                                                     field.onChange(Number(val));
                                                     setSelectedCategory(Number(val));
-                                                    form.setValue("subcategoryId", undefined as any);
+                                                    form.resetField("subcategoryId");
                                                 }}
                                                 value={field.value?.toString()}
                                                 disabled={!selectedAttentionArea || filteredCategories.length === 0}

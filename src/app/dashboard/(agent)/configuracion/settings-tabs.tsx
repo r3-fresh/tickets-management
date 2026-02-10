@@ -5,12 +5,39 @@ import { SettingsForm } from "./form";
 import { AgentCategoriesManagement } from "@/components/agent/categories-management";
 import { AgentSubcategoriesManagement } from "@/components/agent/subcategories-management";
 
+interface Category {
+    id: number;
+    name: string;
+    description: string | null;
+    isActive: boolean;
+    displayOrder: number;
+    attentionAreaId?: number | null;
+    subcategories?: {
+        id: number;
+        name: string;
+        isActive: boolean;
+    }[];
+}
+
+interface Subcategory {
+    id: number;
+    categoryId: number;
+    name: string;
+    description: string | null;
+    isActive: boolean;
+    displayOrder: number;
+    category?: {
+        id: number;
+        name: string;
+    };
+}
+
 interface SettingsTabsProps {
     initialData: {
         isAcceptingTickets: boolean;
     };
-    categories: any[];
-    subcategories: any[];
+    categories: Category[];
+    subcategories: Subcategory[];
     areaId: number;
 }
 
