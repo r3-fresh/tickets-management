@@ -4,6 +4,7 @@ import { db } from "@/db";
 import { comments, tickets, users, ticketCategories, ticketSubcategories } from "@/db/schema";
 import { requireAuth } from "@/lib/auth/helpers";
 import { revalidatePath } from "next/cache";
+import { after } from "next/server";
 import { eq, and, inArray } from "drizzle-orm";
 import { TICKET_STATUS } from "@/lib/constants/tickets";
 import { sendUserCommentEmail } from "@/lib/email/send-emails";
@@ -53,52 +54,53 @@ export async function addCommentAction(formData: FormData) {
             isInternal: false,
         });
 
-        // Send email notification (Unified logic handles recipients: Creator + Agents + Watchers)
-        // We trigger this for ANY comment (User or Agent), usually strict logic is applied but
-        // user requested threads for everyone.
+        // Defer email notification after response is sent to user
         if (ticket.attentionAreaId) {
-            try {
-                // Get agents and watchers in parallel
-                const [agentData, watcherData] = await Promise.all([
-                    db.select({ email: users.email })
-                        .from(users)
-                        .where(and(
-                            eq(users.role, 'agent'),
-                            eq(users.attentionAreaId, ticket.attentionAreaId)
-                        )),
-                    ticket.watchers && ticket.watchers.length > 0
-                        ? db.select({ email: users.email })
+            const ticketData = ticket;
+            const userEmail = session.user.email;
+            const userName = session.user.name;
+            after(async () => {
+                try {
+                    // Get agents and watchers in parallel
+                    const [agentData, watcherData] = await Promise.all([
+                        db.select({ email: users.email })
                             .from(users)
-                            .where(inArray(users.id, ticket.watchers))
-                        : Promise.resolve([] as { email: string }[]),
-                ]);
+                            .where(and(
+                                eq(users.role, 'agent'),
+                                eq(users.attentionAreaId, ticketData.attentionAreaId!)
+                            )),
+                        ticketData.watchers && ticketData.watchers.length > 0
+                            ? db.select({ email: users.email })
+                                .from(users)
+                                .where(inArray(users.id, ticketData.watchers))
+                            : Promise.resolve([] as { email: string }[]),
+                    ]);
 
-                const watcherEmails = watcherData.map(w => w.email);
+                    const watcherEmails = watcherData.map(w => w.email);
 
-                await sendUserCommentEmail({
-                    ticketCode: ticket.ticketCode,
-                    title: ticket.title,
-                    status: ticket.status,
-                    priority: ticket.priority,
-                    categoryName: ticket.category?.name || 'Sin categoría',
-                    subcategoryName: ticket.subcategory?.name || 'Sin subcategoría',
-                    ticketId: ticket.id,
-                    comment: content,
-                    userEmail: session.user.email,
-                    userName: session.user.name,
-                    // Unified Context Params
-                    creatorEmail: ticket.createdBy.email,
-                    creatorName: ticket.createdBy.name,
-                    agentEmails: agentData.map(a => a.email),
-                    watcherEmails: watcherEmails,
-                    attentionAreaName: ticket.attentionArea?.name || 'Hub de Información',
-                    emailThreadId: ticket.emailThreadId,
-                    initialMessageId: ticket.initialMessageId,
-                });
-            } catch (emailError) {
-                // Log error but don't fail comment creation
-                console.error("Error sending comment notification email:", emailError);
-            }
+                    await sendUserCommentEmail({
+                        ticketCode: ticketData.ticketCode,
+                        title: ticketData.title,
+                        status: ticketData.status,
+                        priority: ticketData.priority,
+                        categoryName: ticketData.category?.name || 'Sin categoría',
+                        subcategoryName: ticketData.subcategory?.name || 'Sin subcategoría',
+                        ticketId: ticketData.id,
+                        comment: content,
+                        userEmail,
+                        userName,
+                        creatorEmail: ticketData.createdBy.email,
+                        creatorName: ticketData.createdBy.name,
+                        agentEmails: agentData.map(a => a.email),
+                        watcherEmails: watcherEmails,
+                        attentionAreaName: ticketData.attentionArea?.name || 'Hub de Información',
+                        emailThreadId: ticketData.emailThreadId,
+                        initialMessageId: ticketData.initialMessageId,
+                    });
+                } catch (emailError) {
+                    console.error("Error sending comment notification email:", emailError);
+                }
+            });
         }
 
         revalidatePath(`/dashboard/tickets/${ticketId}`);

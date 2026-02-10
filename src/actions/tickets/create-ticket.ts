@@ -5,6 +5,7 @@ import { tickets, users, attentionAreas, ticketCategories, ticketSubcategories }
 import { createTicketSchema } from "@/lib/validation/schemas";
 import { requireAuth } from "@/lib/auth/helpers";
 import { redirect } from "next/navigation";
+import { after } from "next/server";
 import { TICKET_STATUS } from "@/lib/constants/tickets";
 import { sendTicketCreatedEmail } from "@/lib/email/send-emails";
 import { eq, inArray, and } from "drizzle-orm";
@@ -98,64 +99,64 @@ export async function createTicketAction(formData: FormData) {
 
         ticketId = newTicket.id;
 
-        // Send email notification
-        // TO: Creator
-        // CC: Agents of category + Watchers
-        try {
-            // Get category, subcategory, watcher, and agent data in parallel
-            const [category, subcategory, watcherData, agentData] = await Promise.all([
-                db.query.ticketCategories.findFirst({
-                    where: eq(ticketCategories.id, categoryId),
-                }),
-                db.query.ticketSubcategories.findFirst({
-                    where: eq(ticketSubcategories.id, subcategoryId),
-                }),
-                watcherList.length > 0
-                    ? db.select({ email: users.email })
+        // Defer email notification after response is sent to user
+        after(async () => {
+            try {
+                // Get category, subcategory, watcher, and agent data in parallel
+                const [category, subcategory, watcherData, agentData] = await Promise.all([
+                    db.query.ticketCategories.findFirst({
+                        where: eq(ticketCategories.id, categoryId),
+                    }),
+                    db.query.ticketSubcategories.findFirst({
+                        where: eq(ticketSubcategories.id, subcategoryId),
+                    }),
+                    watcherList.length > 0
+                        ? db.select({ email: users.email })
+                            .from(users)
+                            .where(inArray(users.id, watcherList))
+                        : Promise.resolve([] as { email: string }[]),
+                    db.select({ email: users.email })
                         .from(users)
-                        .where(inArray(users.id, watcherList))
-                    : Promise.resolve([] as { email: string }[]),
-                db.select({ email: users.email })
-                    .from(users)
-                    .where(and(
-                        eq(users.role, 'agent'),
-                        eq(users.attentionAreaId, attentionAreaId)
-                    )),
-            ]);
+                        .where(and(
+                            eq(users.role, 'agent'),
+                            eq(users.attentionAreaId, attentionAreaId)
+                        )),
+                ]);
 
-            const watcherEmails = watcherData.map(w => w.email);
+                const watcherEmails = watcherData.map(w => w.email);
 
-            const emailResult = await sendTicketCreatedEmail({
-                ticketCode,
-                title,
-                description,
-                priority,
-                categoryName: category?.name || 'Sin categoría',
-                subcategoryName: subcategory?.name || 'Sin subcategoría',
-                createdAt: new Date(),
-                ticketId: newTicket.id,
-                creatorEmail: session.user.email,
-                creatorName: session.user.name,
-                agentEmails: agentData.map(a => a.email),
-                watcherEmails,
-                attentionAreaName: targetArea.name,
-            });
+                const emailResult = await sendTicketCreatedEmail({
+                    ticketCode,
+                    title,
+                    description,
+                    priority,
+                    categoryName: category?.name || 'Sin categoría',
+                    subcategoryName: subcategory?.name || 'Sin subcategoría',
+                    createdAt: new Date(),
+                    ticketId: newTicket.id,
+                    creatorEmail: session.user.email,
+                    creatorName: session.user.name,
+                    agentEmails: agentData.map(a => a.email),
+                    watcherEmails,
+                    attentionAreaName: targetArea.name,
+                });
 
-            if (emailResult.success) {
-                // Update ticket with threading info
-                // 1. Thread ID (Gmail Native)
-                // 2. Initial Message ID (RFC Header for recipients) - NEW ROBUST METHOD
-                await db.update(tickets)
-                    .set({
-                        emailThreadId: emailResult.data?.threadId,
-                        initialMessageId: emailResult.data?.rfcMessageId // Captured from actual sent email
-                    })
-                    .where(eq(tickets.id, newTicket.id));
+                if (emailResult.success) {
+                    // Update ticket with threading info
+                    // 1. Thread ID (Gmail Native)
+                    // 2. Initial Message ID (RFC Header for recipients) - NEW ROBUST METHOD
+                    await db.update(tickets)
+                        .set({
+                            emailThreadId: emailResult.data?.threadId,
+                            initialMessageId: emailResult.data?.rfcMessageId // Captured from actual sent email
+                        })
+                        .where(eq(tickets.id, newTicket.id));
+                }
+            } catch (emailError) {
+                // Log error but don't fail ticket creation
+                console.error("Error sending email:", emailError);
             }
-        } catch (emailError) {
-            // Log error but don't fail ticket creation
-            console.error("Error sending email:", emailError);
-        }
+        });
 
     } catch (error) {
         console.error("Error creating ticket:", error);

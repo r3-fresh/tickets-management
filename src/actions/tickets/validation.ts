@@ -5,6 +5,7 @@ import { tickets, users, attentionAreas, comments } from "@/db/schema";
 import { requireAuth, requireAgent } from "@/lib/auth/helpers";
 import { eq, inArray, and } from "drizzle-orm";
 import { revalidatePath } from "next/cache";
+import { after } from "next/server";
 import { TICKET_STATUS, CLOSURE_TYPE } from "@/lib/constants/tickets";
 import { sendValidationRequestEmail, sendTicketResolvedEmail, sendTicketRejectedEmail } from "@/lib/email/send-emails";
 
@@ -49,44 +50,46 @@ export async function approveTicketValidation(ticketId: number) {
             })
             .where(eq(tickets.id, ticketId));
 
-        // Send Email: Ticket Resolved
+        // Defer email notification after response is sent to user
         if (ticket.attentionAreaId) {
-            try {
-                // Get agents and watchers in parallel
-                const [agentData, watcherData] = await Promise.all([
-                    db.select({ email: users.email })
-                        .from(users)
-                        .where(and(
-                            eq(users.role, 'agent'),
-                            eq(users.attentionAreaId, ticket.attentionAreaId)
-                        )),
-                    ticket.watchers && ticket.watchers.length > 0
-                        ? db.select({ email: users.email })
+            const ticketData = ticket;
+            after(async () => {
+                try {
+                    // Get agents and watchers in parallel
+                    const [agentData, watcherData] = await Promise.all([
+                        db.select({ email: users.email })
                             .from(users)
-                            .where(inArray(users.id, ticket.watchers))
-                        : Promise.resolve([] as { email: string }[]),
-                ]);
+                            .where(and(
+                                eq(users.role, 'agent'),
+                                eq(users.attentionAreaId, ticketData.attentionAreaId!)
+                            )),
+                        ticketData.watchers && ticketData.watchers.length > 0
+                            ? db.select({ email: users.email })
+                                .from(users)
+                                .where(inArray(users.id, ticketData.watchers))
+                            : Promise.resolve([] as { email: string }[]),
+                    ]);
 
-                const watcherEmails = watcherData.map(w => w.email);
+                    const watcherEmails = watcherData.map(w => w.email);
 
-                await sendTicketResolvedEmail({
-                    ticketCode: ticket.ticketCode,
-                    title: ticket.title,
-                    categoryName: ticket.category?.name || 'Sin categoría',
-                    subcategoryName: ticket.subcategory?.name || 'Sin subcategoría',
-                    ticketId: ticket.id,
-                    // Unified Context
-                    creatorEmail: ticket.createdBy.email,
-                    creatorName: ticket.createdBy.name,
-                    agentEmails: agentData.map(a => a.email),
-                    watcherEmails: watcherEmails,
-                    attentionAreaName: ticket.attentionArea?.name || 'Hub de Información',
-                    emailThreadId: ticket.emailThreadId,
-                    initialMessageId: ticket.initialMessageId,
-                });
-            } catch (emailError) {
-                console.error("Error sending resolved email:", emailError);
-            }
+                    await sendTicketResolvedEmail({
+                        ticketCode: ticketData.ticketCode,
+                        title: ticketData.title,
+                        categoryName: ticketData.category?.name || 'Sin categoría',
+                        subcategoryName: ticketData.subcategory?.name || 'Sin subcategoría',
+                        ticketId: ticketData.id,
+                        creatorEmail: ticketData.createdBy.email,
+                        creatorName: ticketData.createdBy.name,
+                        agentEmails: agentData.map(a => a.email),
+                        watcherEmails: watcherEmails,
+                        attentionAreaName: ticketData.attentionArea?.name || 'Hub de Información',
+                        emailThreadId: ticketData.emailThreadId,
+                        initialMessageId: ticketData.initialMessageId,
+                    });
+                } catch (emailError) {
+                    console.error("Error sending resolved email:", emailError);
+                }
+            });
         }
 
         revalidatePath(`/dashboard/tickets/${ticketId}`);
@@ -137,44 +140,46 @@ export async function rejectTicketValidation(ticketId: number) {
             })
             .where(eq(tickets.id, ticketId));
 
-        // Send Email: Ticket Rejected
+        // Defer email notification after response is sent to user
         if (ticket.attentionAreaId) {
-            try {
-                // Get agents and watchers in parallel
-                const [agentData, watcherData] = await Promise.all([
-                    db.select({ email: users.email })
-                        .from(users)
-                        .where(and(
-                            eq(users.role, 'agent'),
-                            eq(users.attentionAreaId, ticket.attentionAreaId)
-                        )),
-                    ticket.watchers && ticket.watchers.length > 0
-                        ? db.select({ email: users.email })
+            const ticketData = ticket;
+            after(async () => {
+                try {
+                    // Get agents and watchers in parallel
+                    const [agentData, watcherData] = await Promise.all([
+                        db.select({ email: users.email })
                             .from(users)
-                            .where(inArray(users.id, ticket.watchers))
-                        : Promise.resolve([] as { email: string }[]),
-                ]);
+                            .where(and(
+                                eq(users.role, 'agent'),
+                                eq(users.attentionAreaId, ticketData.attentionAreaId!)
+                            )),
+                        ticketData.watchers && ticketData.watchers.length > 0
+                            ? db.select({ email: users.email })
+                                .from(users)
+                                .where(inArray(users.id, ticketData.watchers))
+                            : Promise.resolve([] as { email: string }[]),
+                    ]);
 
-                const watcherEmails = watcherData.map(w => w.email);
+                    const watcherEmails = watcherData.map(w => w.email);
 
-                await sendTicketRejectedEmail({
-                    ticketCode: ticket.ticketCode,
-                    title: ticket.title,
-                    categoryName: ticket.category?.name || 'Sin categoría',
-                    subcategoryName: ticket.subcategory?.name || 'Sin subcategoría',
-                    ticketId: ticket.id,
-                    // Unified Context
-                    creatorEmail: ticket.createdBy.email,
-                    creatorName: ticket.createdBy.name,
-                    agentEmails: agentData.map(a => a.email),
-                    watcherEmails: watcherEmails,
-                    attentionAreaName: ticket.attentionArea?.name || 'Hub de Información',
-                    emailThreadId: ticket.emailThreadId,
-                    initialMessageId: ticket.initialMessageId,
-                });
-            } catch (emailError) {
-                console.error("Error sending rejected email:", emailError);
-            }
+                    await sendTicketRejectedEmail({
+                        ticketCode: ticketData.ticketCode,
+                        title: ticketData.title,
+                        categoryName: ticketData.category?.name || 'Sin categoría',
+                        subcategoryName: ticketData.subcategory?.name || 'Sin subcategoría',
+                        ticketId: ticketData.id,
+                        creatorEmail: ticketData.createdBy.email,
+                        creatorName: ticketData.createdBy.name,
+                        agentEmails: agentData.map(a => a.email),
+                        watcherEmails: watcherEmails,
+                        attentionAreaName: ticketData.attentionArea?.name || 'Hub de Información',
+                        emailThreadId: ticketData.emailThreadId,
+                        initialMessageId: ticketData.initialMessageId,
+                    });
+                } catch (emailError) {
+                    console.error("Error sending rejected email:", emailError);
+                }
+            });
         }
 
         revalidatePath(`/dashboard/tickets/${ticketId}`);
@@ -234,46 +239,47 @@ export async function requestValidation(ticketId: number, message?: string) {
             });
         }
 
-        // Send email notification
-        try {
-            if (ticket.attentionAreaId) {
-                // Get agents and watchers in parallel
-                const [agentData, watcherData] = await Promise.all([
-                    db.select({ email: users.email })
-                        .from(users)
-                        .where(and(
-                            eq(users.role, 'agent'),
-                            eq(users.attentionAreaId, ticket.attentionAreaId)
-                        )),
-                    ticket.watchers && ticket.watchers.length > 0
-                        ? db.select({ email: users.email })
+        // Defer email notification after response is sent to user
+        if (ticket.attentionAreaId) {
+            const ticketData = ticket;
+            after(async () => {
+                try {
+                    // Get agents and watchers in parallel
+                    const [agentData, watcherData] = await Promise.all([
+                        db.select({ email: users.email })
                             .from(users)
-                            .where(inArray(users.id, ticket.watchers))
-                        : Promise.resolve([] as { email: string }[]),
-                ]);
+                            .where(and(
+                                eq(users.role, 'agent'),
+                                eq(users.attentionAreaId, ticketData.attentionAreaId!)
+                            )),
+                        ticketData.watchers && ticketData.watchers.length > 0
+                            ? db.select({ email: users.email })
+                                .from(users)
+                                .where(inArray(users.id, ticketData.watchers))
+                            : Promise.resolve([] as { email: string }[]),
+                    ]);
 
-                const watcherEmails = watcherData.map(w => w.email);
+                    const watcherEmails = watcherData.map(w => w.email);
 
-                await sendValidationRequestEmail({
-                    ticketCode: ticket.ticketCode,
-                    title: ticket.title,
-                    categoryName: ticket.category?.name || 'Sin categoría',
-                    subcategoryName: ticket.subcategory?.name || 'Sin subcategoría',
-                    ticketId: ticket.id,
-                    creatorEmail: ticket.createdBy.email,
-                    creatorName: ticket.createdBy.name,
-                    // Unified Context
-                    agentEmails: agentData.map(a => a.email),
-                    watcherEmails: watcherEmails,
-                    attentionAreaName: ticket.attentionArea?.name || 'Hub de Información',
-                    emailThreadId: ticket.emailThreadId,
-                    initialMessageId: ticket.initialMessageId,
-                    message,
-                });
-            }
-        } catch (emailError) {
-            // Log error but don't fail the validation request
-            console.error("Error sending email:", emailError);
+                    await sendValidationRequestEmail({
+                        ticketCode: ticketData.ticketCode,
+                        title: ticketData.title,
+                        categoryName: ticketData.category?.name || 'Sin categoría',
+                        subcategoryName: ticketData.subcategory?.name || 'Sin subcategoría',
+                        ticketId: ticketData.id,
+                        creatorEmail: ticketData.createdBy.email,
+                        creatorName: ticketData.createdBy.name,
+                        agentEmails: agentData.map(a => a.email),
+                        watcherEmails: watcherEmails,
+                        attentionAreaName: ticketData.attentionArea?.name || 'Hub de Información',
+                        emailThreadId: ticketData.emailThreadId,
+                        initialMessageId: ticketData.initialMessageId,
+                        message,
+                    });
+                } catch (emailError) {
+                    console.error("Error sending email:", emailError);
+                }
+            });
         }
 
         revalidatePath(`/dashboard/tickets/${ticketId}`);
