@@ -2,8 +2,15 @@ import { db } from "@/db";
 import { tickets, comments, ticketViews, ticketCategories } from "@/db/schema";
 import { getSession } from "@/lib/auth/helpers";
 import { desc, sql, eq, and } from "drizzle-orm";
-import { AdminTicketsTable } from "@/components/admin/admin-tickets-table";
+import dynamic from "next/dynamic";
 import { Breadcrumb } from "@/components/shared/breadcrumb";
+
+const AdminTicketsTable = dynamic(
+    () => import("@/components/admin/admin-tickets-table").then(mod => ({ default: mod.AdminTicketsTable })),
+    {
+        loading: () => <div className="h-96 animate-pulse rounded-lg bg-muted" />,
+    }
+);
 
 export default async function () {
     // Authorization handled by (admin) layout

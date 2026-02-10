@@ -17,8 +17,15 @@ import { MarkAsViewed } from "./mark-as-viewed";
 import { WatchersManager } from "./watchers-manager";
 import { CancelTicketButton } from "./cancel-ticket-button";
 import { UserValidationControls } from "./user-validation-controls";
-import { RichTextEditor } from "@/components/shared/rich-text-editor";
+import dynamic from "next/dynamic";
 import { CommentForm } from "./comment-form";
+
+const RichTextEditor = dynamic(
+    () => import("@/components/shared/rich-text-editor").then(mod => ({ default: mod.RichTextEditor })),
+    {
+        loading: () => <div className="h-24 animate-pulse rounded-md bg-muted" />,
+    }
+);
 
 export default async function ({ params }: { params: Promise<{ id: string }> }) {
     const session = await auth.api.getSession({

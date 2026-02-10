@@ -1,8 +1,15 @@
 import { db } from "@/db";
 import { appSettings, ticketCategories, campusLocations, workAreas, ticketSubcategories, attentionAreas } from "@/db/schema";
 import { eq, asc } from "drizzle-orm";
-import { AdminSettingsTabs } from "@/components/admin/admin-settings-tabs";
+import dynamic from "next/dynamic";
 import { Breadcrumb } from "@/components/shared/breadcrumb";
+
+const AdminSettingsTabs = dynamic(
+    () => import("@/components/admin/admin-settings-tabs").then(mod => ({ default: mod.AdminSettingsTabs })),
+    {
+        loading: () => <div className="h-96 animate-pulse rounded-lg bg-muted" />,
+    }
+);
 
 export default async function () {
     // Authorization handled by (admin) layout

@@ -2,9 +2,16 @@ import { db } from "@/db";
 import { tickets, comments, ticketViews, ticketCategories } from "@/db/schema";
 import { requireAuth } from "@/lib/auth/helpers";
 import { eq, desc, sql, and } from "drizzle-orm";
-import { TicketsList } from "@/components/tickets/tickets-list";
+import dynamic from "next/dynamic";
 import { Breadcrumb } from "@/components/shared/breadcrumb";
 import Link from "next/link";
+
+const TicketsList = dynamic(
+    () => import("@/components/tickets/tickets-list").then(mod => ({ default: mod.TicketsList })),
+    {
+        loading: () => <div className="h-96 animate-pulse rounded-lg bg-muted" />,
+    }
+);
 import { Button } from "@/components/ui/button";
 import { Plus } from "lucide-react";
 

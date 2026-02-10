@@ -4,8 +4,15 @@ import { auth } from "@/lib/auth/server";
 import { headers } from "next/headers";
 import { redirect } from "next/navigation";
 import { eq } from "drizzle-orm";
-import { NewTicketForm } from "./form";
+import dynamic from "next/dynamic";
 import { getActiveCategories, getActiveCampuses, getActiveWorkAreas, getActiveAttentionAreas } from "@/actions/config/get-config";
+
+const NewTicketForm = dynamic(
+    () => import("./form").then(mod => ({ default: mod.NewTicketForm })),
+    {
+        loading: () => <div className="h-96 animate-pulse rounded-lg bg-muted" />,
+    }
+);
 
 async function getAppSetting(key: string): Promise<string | null> {
     try {

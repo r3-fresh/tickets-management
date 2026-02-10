@@ -2,8 +2,15 @@ import { db } from "@/db";
 import { tickets, comments, ticketViews, ticketCategories } from "@/db/schema";
 import { requireAuth } from "@/lib/auth/helpers";
 import { desc, sql, and, not, eq } from "drizzle-orm";
-import { TicketsList } from "@/components/tickets/tickets-list";
+import dynamic from "next/dynamic";
 import { Breadcrumb } from "@/components/shared/breadcrumb";
+
+const TicketsList = dynamic(
+    () => import("@/components/tickets/tickets-list").then(mod => ({ default: mod.TicketsList })),
+    {
+        loading: () => <div className="h-96 animate-pulse rounded-lg bg-muted" />,
+    }
+);
 
 export default async function () {
     const session = await requireAuth();

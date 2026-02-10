@@ -1,8 +1,15 @@
 import { db } from "@/db";
 import { tickets, comments, ticketViews, ticketCategories, attentionAreas } from "@/db/schema";
 import { eq, desc, sql, and, not, count } from "drizzle-orm";
-import { TicketsList } from "@/components/tickets/tickets-list";
+import dynamic from "next/dynamic";
 import { Breadcrumb } from "@/components/shared/breadcrumb";
+
+const TicketsList = dynamic(
+    () => import("@/components/tickets/tickets-list").then(mod => ({ default: mod.TicketsList })),
+    {
+        loading: () => <div className="h-64 animate-pulse rounded-lg bg-muted" />,
+    }
+);
 import Link from "next/link";
 import {
     Card,
