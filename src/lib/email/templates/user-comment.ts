@@ -1,4 +1,5 @@
 import { getBaseTemplate } from './base-template';
+import { escapeHtml } from '../escape-html';
 
 export interface UserCommentTemplateParams {
     ticketCode: string;
@@ -15,24 +16,35 @@ export interface UserCommentTemplateParams {
 }
 
 export function getUserCommentTemplate(params: UserCommentTemplateParams): string {
+    const ticketCode = escapeHtml(params.ticketCode);
+    const userName = escapeHtml(params.userName);
+    const userEmail = escapeHtml(params.userEmail);
+    const title = escapeHtml(params.title);
+    const category = escapeHtml(params.category);
+    const subcategory = escapeHtml(params.subcategory);
+    const status = escapeHtml(params.status);
+    const priority = escapeHtml(params.priority);
+    // comment es HTML de TipTap (rich text), no se escapa
+    const comment = params.comment;
+
     const content = `
-        <h2 style="color: #333; font-size: 20px; margin-top: 0; text-align: center;">Nuevo comentario en ticket #${params.ticketCode}</h2>
+        <h2 style="color: #333; font-size: 20px; margin-top: 0; text-align: center;">Nuevo comentario en ticket #${ticketCode}</h2>
         
-        <p style="margin: 15px 0;">El usuario <strong>${params.userName}</strong> (${params.userEmail}) ha añadido un comentario al ticket:</p>
+        <p style="margin: 15px 0;">El usuario <strong>${userName}</strong> (${userEmail}) ha añadido un comentario al ticket:</p>
         
         <div style="background-color: #F9FAFB; border-left: 4px solid #4F46E5; padding: 15px; margin: 20px 0;">
-            <p style="margin: 0; color: #4B5563; white-space: pre-wrap;">${params.comment}</p>
+            <div style="color: #4B5563;">${comment}</div>
         </div>
         
         <div style="background-color: #F9FAFB; border-left: 4px solid #4F46E5; padding: 15px; margin: 20px 0;">
             <strong>Detalles del ticket:</strong>
             <ul style="margin: 10px 0; padding-left: 20px;">
-                <li style="margin: 8px 0;"><strong>Código:</strong> ${params.ticketCode}</li>
-                <li style="margin: 8px 0;"><strong>Título:</strong> ${params.title}</li>
-                <li style="margin: 8px 0;"><strong>Categoría:</strong> ${params.category}</li>
-                <li style="margin: 8px 0;"><strong>Subcategoría:</strong> ${params.subcategory}</li>
-                <li style="margin: 8px 0;"><strong>Estado:</strong> ${params.status}</li>
-                <li style="margin: 8px 0;"><strong>Prioridad:</strong> ${params.priority}</li>
+                <li style="margin: 8px 0;"><strong>Código:</strong> ${ticketCode}</li>
+                <li style="margin: 8px 0;"><strong>Título:</strong> ${title}</li>
+                <li style="margin: 8px 0;"><strong>Categoría:</strong> ${category}</li>
+                <li style="margin: 8px 0;"><strong>Subcategoría:</strong> ${subcategory}</li>
+                <li style="margin: 8px 0;"><strong>Estado:</strong> ${status}</li>
+                <li style="margin: 8px 0;"><strong>Prioridad:</strong> ${priority}</li>
             </ul>
         </div>
         

@@ -36,7 +36,12 @@ export default function TicketDetailError({
                     {error.message && (
                         <div className="mt-4 rounded-md bg-gray-100 dark:bg-gray-800 p-3 text-sm text-left">
                             <p className="font-mono text-xs text-muted-foreground break-all">
-                                {error.message}
+                                {process.env.NODE_ENV === 'development'
+                                    ? error.message
+                                    : error.digest
+                                        ? `Código de error: ${error.digest}`
+                                        : 'Error interno del servidor'
+                                }
                             </p>
                         </div>
                     )}

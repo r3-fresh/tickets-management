@@ -1,4 +1,5 @@
 import { getBaseTemplate } from './base-template';
+import { escapeHtml } from '../escape-html';
 
 export interface TicketCreatedTemplateParams {
     userName: string;
@@ -14,10 +15,19 @@ export interface TicketCreatedTemplateParams {
 }
 
 export function getTicketCreatedTemplate(params: TicketCreatedTemplateParams): string {
+    const userName = escapeHtml(params.userName);
+    const ticketCode = escapeHtml(params.ticketCode);
+    const category = escapeHtml(params.category);
+    const subcategory = escapeHtml(params.subcategory);
+    const title = escapeHtml(params.title);
+    const description = escapeHtml(params.description);
+    const priority = escapeHtml(params.priority);
+    const createdAt = escapeHtml(params.createdAt);
+
     const content = `
         <h2 style="color: #333; font-size: 20px; margin-top: 0; text-align: center;">Nueva solicitud de atención</h2>
         
-        <p style="margin: 15px 0;">Estimado <strong>${params.userName}</strong>:</p>
+        <p style="margin: 15px 0;">Estimado <strong>${userName}</strong>:</p>
         
         <p style="margin: 15px 0;">Gracias por registrar tu requerimiento a través de nuestro formulario. 
         En breve estaremos atendiendo tu pedido, el cual detallamos a continuación.</p>
@@ -25,16 +35,16 @@ export function getTicketCreatedTemplate(params: TicketCreatedTemplateParams): s
         <div style="background-color: #F9FAFB; border-left: 4px solid #4F46E5; padding: 15px; margin: 20px 0;">
             <strong>Detalles del requerimiento:</strong>
             <ul style="margin: 10px 0; padding-left: 20px;">
-                <li style="margin: 8px 0;"><strong>Código:</strong> ${params.ticketCode}</li>
-                <li style="margin: 8px 0;"><strong>Categoría:</strong> ${params.category}</li>
-                <li style="margin: 8px 0;"><strong>Subcategoría:</strong> ${params.subcategory}</li>
-                <li style="margin: 8px 0;"><strong>Título:</strong> ${params.title}</li>
-                <li style="margin: 8px 0;"><strong>Prioridad:</strong> ${params.priority}</li>
+                <li style="margin: 8px 0;"><strong>Código:</strong> ${ticketCode}</li>
+                <li style="margin: 8px 0;"><strong>Categoría:</strong> ${category}</li>
+                <li style="margin: 8px 0;"><strong>Subcategoría:</strong> ${subcategory}</li>
+                <li style="margin: 8px 0;"><strong>Título:</strong> ${title}</li>
+                <li style="margin: 8px 0;"><strong>Prioridad:</strong> ${priority}</li>
                 <li style="margin: 8px 0;">
                     <strong>Descripción:</strong> 
-                    <div style="white-space: pre-wrap; word-break: break-word; margin-top: 5px;">${params.description}</div>
+                    <div style="white-space: pre-wrap; word-break: break-word; margin-top: 5px;">${description}</div>
                 </li>
-                <li style="margin: 8px 0;"><strong>Fecha de solicitud:</strong> ${params.createdAt}</li>
+                <li style="margin: 8px 0;"><strong>Fecha de solicitud:</strong> ${createdAt}</li>
             </ul>
         </div>
         

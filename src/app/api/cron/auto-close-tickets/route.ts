@@ -12,9 +12,11 @@ export const dynamic = 'force-dynamic';
  */
 export async function GET(request: Request) {
     try {
-        // Verify request is from Vercel Cron
-        const userAgent = request.headers.get('user-agent');
-        if (userAgent !== 'vercel-cron/1.0') {
+        // Verificar que la solicitud viene de Vercel Cron usando CRON_SECRET
+        const authHeader = request.headers.get('authorization');
+        const cronSecret = process.env.CRON_SECRET;
+
+        if (!cronSecret || authHeader !== `Bearer ${cronSecret}`) {
             return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
         }
 
