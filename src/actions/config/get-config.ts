@@ -2,8 +2,11 @@
 
 import { db } from "@/db";
 import { ticketCategories, ticketSubcategories, campusLocations, workAreas, attentionAreas } from "@/db/schema";
+import { requireAuth } from "@/lib/auth/helpers";
 
 export async function getActiveCategories() {
+    await requireAuth();
+
     try {
         const categories = await db.query.ticketCategories.findMany({
             where: (categories, { eq }) => eq(categories.isActive, true),
@@ -24,6 +27,8 @@ export async function getActiveCategories() {
 }
 
 export async function getActiveCampuses() {
+    await requireAuth();
+
     try {
         const campuses = await db.query.campusLocations.findMany({
             where: (campus, { eq }) => eq(campus.isActive, true),
@@ -38,6 +43,8 @@ export async function getActiveCampuses() {
 }
 
 export async function getActiveWorkAreas() {
+    await requireAuth();
+
     try {
         const areas = await db.query.workAreas.findMany({
             where: (areas, { eq }) => eq(areas.isActive, true),
@@ -52,6 +59,8 @@ export async function getActiveWorkAreas() {
 }
 
 export async function getActiveAttentionAreas() {
+    await requireAuth();
+
     try {
         const areas = await db.query.attentionAreas.findMany({
             where: (areas, { eq }) => eq(areas.isActive, true),
