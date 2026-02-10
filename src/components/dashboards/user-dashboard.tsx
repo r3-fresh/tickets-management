@@ -60,7 +60,6 @@ export async function UserDashboard({ userId }: UserDashboardProps) {
             id: tickets.id,
             ticketCode: tickets.ticketCode,
             title: tickets.title,
-            description: tickets.description,
             status: tickets.status,
             priority: tickets.priority,
             categoryId: tickets.categoryId,
@@ -102,6 +101,7 @@ export async function UserDashboard({ userId }: UserDashboardProps) {
         // User tickets with assigned
         db.query.tickets.findMany({
             where: eq(tickets.createdById, userId),
+            columns: { id: true },
             with: {
                 assignedTo: true,
             },
@@ -113,7 +113,6 @@ export async function UserDashboard({ userId }: UserDashboardProps) {
             id: tickets.id,
             ticketCode: tickets.ticketCode,
             title: tickets.title,
-            description: tickets.description,
             status: tickets.status,
             priority: tickets.priority,
             categoryId: tickets.categoryId,
@@ -163,6 +162,7 @@ export async function UserDashboard({ userId }: UserDashboardProps) {
                 not(eq(tickets.createdById, userId)),
                 sql`${userId} = ANY(${tickets.watchers})`
             ),
+            columns: { id: true },
             with: {
                 assignedTo: true,
                 createdBy: true,

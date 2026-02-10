@@ -42,7 +42,6 @@ export default async function () {
             id: tickets.id,
             ticketCode: tickets.ticketCode,
             title: tickets.title,
-            description: tickets.description,
             status: tickets.status,
             priority: tickets.priority,
             categoryId: tickets.categoryId,
@@ -83,6 +82,7 @@ export default async function () {
         // Fetch assigned users
         db.query.tickets.findMany({
             where: eq(tickets.attentionAreaId, attentionAreaId),
+            columns: { id: true },
             with: {
                 assignedTo: true,
             },

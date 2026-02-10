@@ -1,18 +1,21 @@
 import { auth } from "@/lib/auth/server";
 import { headers } from "next/headers";
 import { redirect } from "next/navigation";
+import { cache } from "react";
 import type { AppSession } from "@/types";
 
 /**
- * Gets the current session if it exists
+ * Gets the current session if it exists.
+ * Wrapped with React.cache() to deduplicate multiple calls
+ * within the same server request (e.g. layout + page + server action).
  * @returns Session object or null if not authenticated
  */
-export async function getSession(): Promise<AppSession | null> {
+export const getSession = cache(async (): Promise<AppSession | null> => {
     const session = await auth.api.getSession({
         headers: await headers(),
     });
     return session as AppSession | null;
-}
+});
 
 /**
  * Requires authentication. Redirects if user is not authenticated or is inactive.

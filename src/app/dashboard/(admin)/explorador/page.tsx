@@ -24,7 +24,6 @@ export default async function () {
             id: tickets.id,
             ticketCode: tickets.ticketCode,
             title: tickets.title,
-            description: tickets.description,
             status: tickets.status,
             priority: tickets.priority,
             categoryId: tickets.categoryId,
@@ -63,6 +62,7 @@ export default async function () {
             .orderBy(desc(tickets.createdAt)),
         // Fetch relations separately
         db.query.tickets.findMany({
+            columns: { id: true },
             with: {
                 createdBy: true,
                 assignedTo: true,

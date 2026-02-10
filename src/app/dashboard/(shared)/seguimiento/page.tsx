@@ -22,7 +22,6 @@ export default async function () {
             id: tickets.id,
             ticketCode: tickets.ticketCode,
             title: tickets.title,
-            description: tickets.description,
             status: tickets.status,
             priority: tickets.priority,
             categoryId: tickets.categoryId,
@@ -71,6 +70,7 @@ export default async function () {
                 not(eq(tickets.createdById, session.user.id)),
                 sql`${session.user.id} = ANY(${tickets.watchers})`
             ),
+            columns: { id: true },
             with: {
                 assignedTo: true,
                 createdBy: true,

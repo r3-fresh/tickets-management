@@ -71,7 +71,6 @@ export async function AgentDashboard({ userId, attentionAreaId }: AgentDashboard
                 id: tickets.id,
                 ticketCode: tickets.ticketCode,
                 title: tickets.title,
-                description: tickets.description,
                 status: tickets.status,
                 priority: tickets.priority,
                 categoryId: tickets.categoryId,
@@ -107,6 +106,7 @@ export async function AgentDashboard({ userId, attentionAreaId }: AgentDashboard
         // Area tickets with assigned
         db.query.tickets.findMany({
             where: eq(tickets.attentionAreaId, attentionAreaId),
+            columns: { id: true },
             with: { assignedTo: true },
             orderBy: [desc(tickets.createdAt)],
             limit: 5,
@@ -116,7 +116,6 @@ export async function AgentDashboard({ userId, attentionAreaId }: AgentDashboard
                 id: tickets.id,
                 ticketCode: tickets.ticketCode,
                 title: tickets.title,
-                description: tickets.description,
                 status: tickets.status,
                 priority: tickets.priority,
                 categoryId: tickets.categoryId,
@@ -152,6 +151,7 @@ export async function AgentDashboard({ userId, attentionAreaId }: AgentDashboard
         // User tickets with assigned
         db.query.tickets.findMany({
             where: eq(tickets.createdById, userId),
+            columns: { id: true },
             with: { assignedTo: true },
             orderBy: [desc(tickets.createdAt)],
             limit: 3,
@@ -161,7 +161,6 @@ export async function AgentDashboard({ userId, attentionAreaId }: AgentDashboard
                 id: tickets.id,
                 ticketCode: tickets.ticketCode,
                 title: tickets.title,
-                description: tickets.description,
                 status: tickets.status,
                 priority: tickets.priority,
                 categoryId: tickets.categoryId,
@@ -197,6 +196,7 @@ export async function AgentDashboard({ userId, attentionAreaId }: AgentDashboard
         // Watched tickets with relations
         db.query.tickets.findMany({
             where: and(not(eq(tickets.createdById, userId)), sql`${userId} = ANY(${tickets.watchers})`),
+            columns: { id: true },
             with: { assignedTo: true, createdBy: true },
             orderBy: [desc(tickets.createdAt)],
             limit: 3,
