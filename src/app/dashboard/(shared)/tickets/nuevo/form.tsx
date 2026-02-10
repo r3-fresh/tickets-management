@@ -216,11 +216,11 @@ export function NewTicketForm({
                                                 field.onChange(areaId);
                                                 setSelectedAttentionArea(areaId);
                                                 // Reset category/subcategory if area changes
-                                                form.resetField("categoryId");
-                                                form.resetField("subcategoryId");
+                                                form.setValue("categoryId", undefined as unknown as number);
+                                                form.setValue("subcategoryId", undefined as unknown as number);
                                                 setSelectedCategory(null);
                                             }}
-                                            value={field.value?.toString()}
+                                            value={field.value?.toString() ?? ""}
                                         >
                                             <FormControl>
                                                 <SelectTrigger>
@@ -255,9 +255,9 @@ export function NewTicketForm({
                                                 onValueChange={(val) => {
                                                     field.onChange(Number(val));
                                                     setSelectedCategory(Number(val));
-                                                    form.resetField("subcategoryId");
+                                                    form.setValue("subcategoryId", undefined as unknown as number);
                                                 }}
-                                                value={field.value?.toString()}
+                                                value={field.value?.toString() ?? ""}
                                                 disabled={!selectedAttentionArea || filteredCategories.length === 0}
                                             >
                                                 <FormControl>
@@ -286,7 +286,7 @@ export function NewTicketForm({
                                             <FormLabel>Subcategoría <span className="text-red-500">*</span></FormLabel>
                                             <Select
                                                 onValueChange={(val) => field.onChange(Number(val))}
-                                                value={field.value?.toString()}
+                                                value={field.value?.toString() ?? ""}
                                                 disabled={!selectedCategory || currentSubcategories.length === 0}
                                             >
                                                 <FormControl>
@@ -322,7 +322,7 @@ export function NewTicketForm({
                                             <FormLabel>Su área de procedencia</FormLabel>
                                             <Select
                                                 onValueChange={(val) => field.onChange(val ? Number(val) : undefined)}
-                                                value={field.value?.toString()}
+                                                value={field.value?.toString() ?? ""}
                                             >
                                                 <FormControl>
                                                     <SelectTrigger>
@@ -350,7 +350,7 @@ export function NewTicketForm({
                                             <FormLabel>Su campus procedencia</FormLabel>
                                             <Select
                                                 onValueChange={(val) => field.onChange(val ? Number(val) : undefined)}
-                                                value={field.value?.toString()}
+                                                value={field.value?.toString() ?? ""}
                                             >
                                                 <FormControl>
                                                     <SelectTrigger>
