@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import {
     Table,
     TableBody,
@@ -149,7 +149,7 @@ export function TicketsList({ tickets, isAdmin, isWatchedView = false, isAgent =
     }, [filteredTickets, currentPage, itemsPerPage]);
 
     // Reset to page 1 when filters change
-    useMemo(() => {
+    useEffect(() => {
         setCurrentPage(1);
     }, [filters, searchQuery]);
 
