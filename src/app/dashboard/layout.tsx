@@ -65,7 +65,7 @@ export default function DashboardLayout({
     const router = useRouter();
 
     // Use auth hook to get session data
-    const { data: session } = authClient.useSession();
+    const { data: session, isPending } = authClient.useSession();
 
     const handleSignOut = async () => {
         await authClient.signOut({
@@ -123,30 +123,65 @@ export default function DashboardLayout({
                         </div>
                     )}
 
-                    <Avatar className={cn("transition-all duration-300 ring-2 ring-sidebar-ring shrink-0", isCollapsed ? "h-8 w-8" : "h-12 w-12")}>
-                        <AvatarImage src={session?.user?.image || undefined} referrerPolicy="no-referrer" />
-                        <AvatarFallback className="bg-primary text-primary-foreground font-bold">
-                            {session?.user?.name?.charAt(0) || "U"}
-                        </AvatarFallback>
-                    </Avatar>
+                    {isPending ? (
+                        <>
+                            <div className={cn("animate-pulse rounded-full bg-muted shrink-0", isCollapsed ? "h-8 w-8" : "h-12 w-12")} />
+                            {!isCollapsed && (
+                                <div className="flex flex-col items-start w-full min-w-0 space-y-2">
+                                    <div className="h-4 w-32 animate-pulse rounded bg-muted" />
+                                    <div className="h-3 w-40 animate-pulse rounded bg-muted" />
+                                    <div className="h-5 w-20 animate-pulse rounded bg-muted mt-1" />
+                                </div>
+                            )}
+                        </>
+                    ) : (
+                        <>
+                            <Avatar className={cn("transition-all duration-300 ring-2 ring-sidebar-ring shrink-0", isCollapsed ? "h-8 w-8" : "h-12 w-12")}>
+                                <AvatarImage src={session?.user?.image || undefined} referrerPolicy="no-referrer" />
+                                <AvatarFallback className="bg-primary text-primary-foreground font-bold">
+                                    {session?.user?.name?.charAt(0) || "U"}
+                                </AvatarFallback>
+                            </Avatar>
 
-                    {!isCollapsed && (
-                        <div className="flex flex-col items-start w-full min-w-0 space-y-1">
-                            <h2 className="font-semibold text-sm w-full wrap-break-word leading-tight" title={session?.user?.name || ""}>
-                                {session?.user?.name || "Usuario"}
-                            </h2>
-                            <p className="text-xs text-muted-foreground w-full break-all" title={session?.user?.email || ""}>
-                                {session?.user?.email || ""}
-                            </p>
-                            <div className="pt-2">
-                                <SidebarUserInfo role={userRole || "user"} />
-                            </div>
-                        </div>
+                            {!isCollapsed && (
+                                <div className="flex flex-col items-start w-full min-w-0 space-y-1">
+                                    <h2 className="font-semibold text-sm w-full wrap-break-word leading-tight" title={session?.user?.name || ""}>
+                                        {session?.user?.name || "Usuario"}
+                                    </h2>
+                                    <p className="text-xs text-muted-foreground w-full break-all" title={session?.user?.email || ""}>
+                                        {session?.user?.email || ""}
+                                    </p>
+                                    <div className="pt-2">
+                                        <SidebarUserInfo role={userRole || "user"} />
+                                    </div>
+                                </div>
+                            )}
+                        </>
                     )}
                 </div>
 
                 {/* 2. MIDDLE: Navigation */}
                 <div className="flex-1 overflow-y-auto py-6 space-y-6">
+                    {isPending ? (
+                        <div className="px-3 space-y-3">
+                            {!isCollapsed && <div className="h-3 w-16 animate-pulse rounded bg-muted px-3 mb-3" />}
+                            {Array.from({ length: 3 }).map((_, i) => (
+                                <div key={i} className={cn("flex items-center px-3 py-2 rounded-md", isCollapsed ? "justify-center" : "")}>
+                                    <div className="h-5 w-5 animate-pulse rounded bg-muted shrink-0" />
+                                    {!isCollapsed && <div className="h-4 w-24 animate-pulse rounded bg-muted ml-3" />}
+                                </div>
+                            ))}
+                            <div className="mx-1 border-t border-sidebar-border my-4" />
+                            {!isCollapsed && <div className="h-3 w-14 animate-pulse rounded bg-muted px-3 mb-3" />}
+                            {Array.from({ length: 2 }).map((_, i) => (
+                                <div key={i} className={cn("flex items-center px-3 py-2 rounded-md", isCollapsed ? "justify-center" : "")}>
+                                    <div className="h-5 w-5 animate-pulse rounded bg-muted shrink-0" />
+                                    {!isCollapsed && <div className="h-4 w-28 animate-pulse rounded bg-muted ml-3" />}
+                                </div>
+                            ))}
+                        </div>
+                    ) : (
+                    <>
                     {/* Navigation Section */}
                     <div className="px-3">
                         {!isCollapsed && (
@@ -214,6 +249,8 @@ export default function DashboardLayout({
                             })}
                         </nav>
                     </div>
+                    </>
+                    )}
                 </div>
 
                 {/* 3. BOTTOM: Controls & Logout */}
@@ -269,19 +306,42 @@ export default function DashboardLayout({
                         <div className="absolute top-4 right-4">
                             <ModeToggle />
                         </div>
-                        <Avatar className="h-16 w-16 mb-3 ring-2 ring-sidebar-ring">
-                            <AvatarImage src={session?.user?.image || undefined} referrerPolicy="no-referrer" />
-                            <AvatarFallback className="bg-primary text-primary-foreground font-bold">
-                                {session?.user?.name?.charAt(0) || "U"}
-                            </AvatarFallback>
-                        </Avatar>
-                        <h2 className="font-semibold text-lg">{session?.user?.name || "Usuario"}</h2>
-                        <p className="text-sm text-muted-foreground mb-2">{session?.user?.email || ""}</p>
-                        <SidebarUserInfo role={userRole || "user"} />
+                        {isPending ? (
+                            <>
+                                <div className="h-16 w-16 mb-3 animate-pulse rounded-full bg-muted" />
+                                <div className="h-5 w-32 animate-pulse rounded bg-muted mb-2" />
+                                <div className="h-4 w-40 animate-pulse rounded bg-muted mb-2" />
+                                <div className="h-5 w-20 animate-pulse rounded bg-muted" />
+                            </>
+                        ) : (
+                            <>
+                                <Avatar className="h-16 w-16 mb-3 ring-2 ring-sidebar-ring">
+                                    <AvatarImage src={session?.user?.image || undefined} referrerPolicy="no-referrer" />
+                                    <AvatarFallback className="bg-primary text-primary-foreground font-bold">
+                                        {session?.user?.name?.charAt(0) || "U"}
+                                    </AvatarFallback>
+                                </Avatar>
+                                <h2 className="font-semibold text-lg">{session?.user?.name || "Usuario"}</h2>
+                                <p className="text-sm text-muted-foreground mb-2">{session?.user?.email || ""}</p>
+                                <SidebarUserInfo role={userRole || "user"} />
+                            </>
+                        )}
                     </div>
 
                     {/* Mobile Navigation */}
                     <nav className="flex-1 px-4 py-6 space-y-6">
+                        {isPending ? (
+                            <div className="space-y-3">
+                                <div className="h-3 w-16 animate-pulse rounded bg-muted px-2 mb-3" />
+                                {Array.from({ length: 3 }).map((_, i) => (
+                                    <div key={i} className="flex items-center px-3 py-3 rounded-lg">
+                                        <div className="h-6 w-6 animate-pulse rounded bg-muted mr-4 shrink-0" />
+                                        <div className="h-4 w-28 animate-pulse rounded bg-muted" />
+                                    </div>
+                                ))}
+                            </div>
+                        ) : (
+                        <>
                         <div>
                             <h3 className="px-2 mb-2 text-xs font-semibold text-muted-foreground uppercase tracking-wider">
                                 Navegación
@@ -325,6 +385,8 @@ export default function DashboardLayout({
                                 ))}
                             </div>
                         </div>
+                        </>
+                        )}
                     </nav>
 
                     <div className="p-4 border-t border-sidebar-border">
