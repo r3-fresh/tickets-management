@@ -23,49 +23,34 @@ import { Breadcrumb } from "@/components/shared/breadcrumb";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 
 export async function AdminDashboard() {
-    // --- Statistics Gathering ---
+    // --- Statistics Gathering (parallelized) ---
 
-    // Total Tickets
-    const [totalTicketsRes] = await db.select({ count: count() }).from(tickets);
-
-    // Tickets by Status
-    const statusStats = await db.select({
-        status: tickets.status,
-        count: count()
-    }).from(tickets).groupBy(tickets.status);
+    const [
+        [totalTicketsRes],
+        statusStats,
+        usersByRole,
+        [totalAreasRes],
+        [totalCommentsRes],
+        recentUsers,
+        ticketsByArea,
+    ] = await Promise.all([
+        db.select({ count: count() }).from(tickets),
+        db.select({ status: tickets.status, count: count() }).from(tickets).groupBy(tickets.status),
+        db.select({ role: users.role, count: count() }).from(users).groupBy(users.role),
+        db.select({ count: count() }).from(attentionAreas),
+        db.select({ count: count() }).from(comments),
+        db.query.users.findMany({ limit: 5, orderBy: (users, { desc }) => [desc(users.createdAt)] }),
+        db.select({ areaId: tickets.attentionAreaId, count: count() })
+            .from(tickets)
+            .where(sql`${tickets.attentionAreaId} IS NOT NULL`)
+            .groupBy(tickets.attentionAreaId)
+            .limit(5),
+    ]);
 
     const getStat = (status: string) => statusStats.find(s => s.status === status)?.count || 0;
-
-    // Total Users by Role
-    const usersByRole = await db.select({
-        role: users.role,
-        count: count()
-    }).from(users).groupBy(users.role);
-
     const getUsersStat = (role: string) => usersByRole.find(r => r.role === role)?.count || 0;
 
-    // Total Areas
-    const [totalAreasRes] = await db.select({ count: count() }).from(attentionAreas);
-
-    // Total Comments
-    const [totalCommentsRes] = await db.select({ count: count() }).from(comments);
-
-    // Recent Users (Last 5)
-    const recentUsers = await db.query.users.findMany({
-        limit: 5,
-        orderBy: (users, { desc }) => [desc(users.createdAt)]
-    });
-
-    // Tickets by area
-    const ticketsByArea = await db.select({
-        areaId: tickets.attentionAreaId,
-        count: count()
-    })
-        .from(tickets)
-        .where(sql`${tickets.attentionAreaId} IS NOT NULL`)
-        .groupBy(tickets.attentionAreaId)
-        .limit(5);
-
+    // This depends on ticketsByArea result, so it runs after Promise.all
     const areasWithTickets = await db.query.attentionAreas.findMany({
         where: (areas, { inArray }) => inArray(areas.id, ticketsByArea.map(t => t.areaId!)),
     });

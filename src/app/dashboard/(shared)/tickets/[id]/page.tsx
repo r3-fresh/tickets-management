@@ -67,13 +67,13 @@ export default async function ({ params }: { params: Promise<{ id: string }> }) 
         redirect("/dashboard");
     }
 
-    const allUsers = await db.select().from(users);
-
-    // Fetch watchers details
-    let watchersList: typeof users.$inferSelect[] = [];
-    if (ticket.watchers && ticket.watchers.length > 0) {
-        watchersList = await db.select().from(users).where(inArray(users.id, ticket.watchers));
-    }
+    // allUsers and watchersList are independent — run in parallel
+    const [allUsers, watchersList] = await Promise.all([
+        db.select().from(users),
+        ticket.watchers && ticket.watchers.length > 0
+            ? db.select().from(users).where(inArray(users.id, ticket.watchers))
+            : Promise.resolve([] as typeof users.$inferSelect[]),
+    ]);
 
     const isTicketClosed = ticket.status === 'resolved' || ticket.status === 'voided';
     const canComment = !isTicketClosed;

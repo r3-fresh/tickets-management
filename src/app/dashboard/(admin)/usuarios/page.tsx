@@ -10,12 +10,14 @@ export default async function () {
     const session = await getSession();
     if (!session?.user) return null;
 
-    const allUsers = await db.select()
-        .from(users)
-        .orderBy(desc(users.createdAt));
-
+    // Both queries are independent — run in parallel
     const { getActiveAttentionAreas } = await import("@/actions/config/get-config");
-    const attentionAreas = await getActiveAttentionAreas();
+    const [allUsers, attentionAreas] = await Promise.all([
+        db.select()
+            .from(users)
+            .orderBy(desc(users.createdAt)),
+        getActiveAttentionAreas(),
+    ]);
 
     return (
         <div className="space-y-6">

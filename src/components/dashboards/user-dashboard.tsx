@@ -27,24 +27,164 @@ interface UserDashboardProps {
 }
 
 export async function UserDashboard({ userId }: UserDashboardProps) {
-    // --- Statistics Gathering ---
-
-    // Tickets by Status for this user
-    const statusStats = await db.select({
-        status: tickets.status,
-        count: count()
-    })
-        .from(tickets)
-        .where(eq(tickets.createdById, userId))
-        .groupBy(tickets.status);
+    // --- All independent queries in parallel ---
+    const [
+        statusStats,
+        [watcherCountResult],
+        recentUserTickets,
+        ticketsWithAssigned,
+        recentWatchedTickets,
+        watchedTicketsWithRelations,
+    ] = await Promise.all([
+        // Tickets by Status for this user
+        db.select({
+            status: tickets.status,
+            count: count()
+        })
+            .from(tickets)
+            .where(eq(tickets.createdById, userId))
+            .groupBy(tickets.status),
+        // Count tickets where user is a watcher
+        db.select({ count: count() })
+            .from(tickets)
+            .where(sql`${userId} = ANY(${tickets.watchers})`),
+        // Recent user tickets (last 5)
+        db.select({
+            id: tickets.id,
+            ticketCode: tickets.ticketCode,
+            title: tickets.title,
+            description: tickets.description,
+            status: tickets.status,
+            priority: tickets.priority,
+            categoryId: tickets.categoryId,
+            categoryName: ticketCategories.name,
+            subcategoryId: tickets.subcategoryId,
+            areaId: tickets.areaId,
+            campusId: tickets.campusId,
+            createdById: tickets.createdById,
+            assignedToId: tickets.assignedToId,
+            createdAt: tickets.createdAt,
+            updatedAt: tickets.updatedAt,
+            unreadCommentCount: sql<number>`
+                cast(
+                    count(
+                        case 
+                            when ${comments.createdAt} > coalesce(${ticketViews.lastViewedAt}, ${tickets.createdAt})
+                            and ${comments.userId} != ${userId}
+                            then 1 
+                        end
+                    ) as integer
+                )
+            `,
+            commentCount: sql<number>`cast(count(${comments.id}) as integer)`,
+        })
+            .from(tickets)
+            .leftJoin(ticketCategories, eq(tickets.categoryId, ticketCategories.id))
+            .leftJoin(comments, eq(tickets.id, comments.ticketId))
+            .leftJoin(
+                ticketViews,
+                and(
+                    eq(tickets.id, ticketViews.ticketId),
+                    eq(ticketViews.userId, userId)
+                )
+            )
+            .where(eq(tickets.createdById, userId))
+            .groupBy(tickets.id, ticketCategories.name, ticketViews.lastViewedAt)
+            .orderBy(desc(tickets.createdAt))
+            .limit(5),
+        // User tickets with assigned
+        db.query.tickets.findMany({
+            where: eq(tickets.createdById, userId),
+            with: {
+                assignedTo: true,
+            },
+            orderBy: [desc(tickets.createdAt)],
+            limit: 5,
+        }),
+        // Recent watched tickets (last 3)
+        db.select({
+            id: tickets.id,
+            ticketCode: tickets.ticketCode,
+            title: tickets.title,
+            description: tickets.description,
+            status: tickets.status,
+            priority: tickets.priority,
+            categoryId: tickets.categoryId,
+            categoryName: ticketCategories.name,
+            subcategoryId: tickets.subcategoryId,
+            areaId: tickets.areaId,
+            campusId: tickets.campusId,
+            createdById: tickets.createdById,
+            assignedToId: tickets.assignedToId,
+            createdAt: tickets.createdAt,
+            updatedAt: tickets.updatedAt,
+            unreadCommentCount: sql<number>`
+                cast(
+                    count(
+                        case 
+                            when ${comments.createdAt} > coalesce(${ticketViews.lastViewedAt}, ${tickets.createdAt})
+                            and ${comments.userId} != ${userId}
+                            then 1 
+                        end
+                    ) as integer
+                )
+            `,
+            commentCount: sql<number>`cast(count(${comments.id}) as integer)`,
+        })
+            .from(tickets)
+            .leftJoin(ticketCategories, eq(tickets.categoryId, ticketCategories.id))
+            .leftJoin(comments, eq(tickets.id, comments.ticketId))
+            .leftJoin(
+                ticketViews,
+                and(
+                    eq(tickets.id, ticketViews.ticketId),
+                    eq(ticketViews.userId, userId)
+                )
+            )
+            .where(
+                and(
+                    not(eq(tickets.createdById, userId)),
+                    sql`${userId} = ANY(${tickets.watchers})`
+                )
+            )
+            .groupBy(tickets.id, ticketCategories.name, ticketViews.lastViewedAt)
+            .orderBy(desc(tickets.createdAt))
+            .limit(3),
+        // Watched tickets with relations
+        db.query.tickets.findMany({
+            where: and(
+                not(eq(tickets.createdById, userId)),
+                sql`${userId} = ANY(${tickets.watchers})`
+            ),
+            with: {
+                assignedTo: true,
+                createdBy: true,
+            },
+            orderBy: [desc(tickets.createdAt)],
+            limit: 3,
+        }),
+    ]);
 
     const getStat = (status: string) => statusStats.find(s => s.status === status)?.count || 0;
 
-    // Count tickets where user is a watcher
-    const [watcherCountResult] = await db
-        .select({ count: count() })
-        .from(tickets)
-        .where(sql`${userId} = ANY(${tickets.watchers})`);
+    const mergedRecentTickets = recentUserTickets.map((ticket) => {
+        const withAssigned = ticketsWithAssigned.find((t) => t.id === ticket.id);
+        return {
+            ...ticket,
+            assignedTo: withAssigned?.assignedTo || null,
+            commentCount: ticket.commentCount,
+        };
+    });
+
+    const mergedWatchedTickets = recentWatchedTickets.map((ticket) => {
+        const withRelations = watchedTicketsWithRelations.find((t) => t.id === ticket.id);
+        return {
+            ...ticket,
+            assignedTo: withRelations?.assignedTo || null,
+            createdBy: withRelations?.createdBy || null,
+            commentCount: ticket.commentCount,
+        };
+    });
 
     const statsCards = [
         {
@@ -80,145 +220,6 @@ export async function UserDashboard({ userId }: UserDashboardProps) {
             change: null
         }
     ];
-
-    // --- Fetch RECENT tickets created by user (last 5 for quick view) ---
-    const recentUserTickets = await db
-        .select({
-            id: tickets.id,
-            ticketCode: tickets.ticketCode,
-            title: tickets.title,
-            description: tickets.description,
-            status: tickets.status,
-            priority: tickets.priority,
-            categoryId: tickets.categoryId,
-            categoryName: ticketCategories.name,
-            subcategoryId: tickets.subcategoryId,
-            areaId: tickets.areaId,
-            campusId: tickets.campusId,
-            createdById: tickets.createdById,
-            assignedToId: tickets.assignedToId,
-            createdAt: tickets.createdAt,
-            updatedAt: tickets.updatedAt,
-            unreadCommentCount: sql<number>`
-                cast(
-                    count(
-                        case 
-                            when ${comments.createdAt} > coalesce(${ticketViews.lastViewedAt}, ${tickets.createdAt})
-                            and ${comments.userId} != ${userId}
-                            then 1 
-                        end
-                    ) as integer
-                )
-            `,
-            commentCount: sql<number>`cast(count(${comments.id}) as integer)`,
-        })
-        .from(tickets)
-        .leftJoin(ticketCategories, eq(tickets.categoryId, ticketCategories.id))
-        .leftJoin(comments, eq(tickets.id, comments.ticketId))
-        .leftJoin(
-            ticketViews,
-            and(
-                eq(tickets.id, ticketViews.ticketId),
-                eq(ticketViews.userId, userId)
-            )
-        )
-        .where(eq(tickets.createdById, userId))
-        .groupBy(tickets.id, ticketCategories.name, ticketViews.lastViewedAt)
-        .orderBy(desc(tickets.createdAt))
-        .limit(5);
-
-    // Fetch assigned users for recent tickets
-    const ticketsWithAssigned = await db.query.tickets.findMany({
-        where: eq(tickets.createdById, userId),
-        with: {
-            assignedTo: true,
-        },
-        orderBy: [desc(tickets.createdAt)],
-        limit: 5,
-    });
-
-    const mergedRecentTickets = recentUserTickets.map((ticket) => {
-        const withAssigned = ticketsWithAssigned.find((t) => t.id === ticket.id);
-        return {
-            ...ticket,
-            assignedTo: withAssigned?.assignedTo || null,
-            commentCount: ticket.commentCount,
-        };
-    });
-
-    // --- Fetch RECENT watched tickets (last 3 for quick view) ---
-    const recentWatchedTickets = await db
-        .select({
-            id: tickets.id,
-            ticketCode: tickets.ticketCode,
-            title: tickets.title,
-            description: tickets.description,
-            status: tickets.status,
-            priority: tickets.priority,
-            categoryId: tickets.categoryId,
-            categoryName: ticketCategories.name,
-            subcategoryId: tickets.subcategoryId,
-            areaId: tickets.areaId,
-            campusId: tickets.campusId,
-            createdById: tickets.createdById,
-            assignedToId: tickets.assignedToId,
-            createdAt: tickets.createdAt,
-            updatedAt: tickets.updatedAt,
-            unreadCommentCount: sql<number>`
-                cast(
-                    count(
-                        case 
-                            when ${comments.createdAt} > coalesce(${ticketViews.lastViewedAt}, ${tickets.createdAt})
-                            and ${comments.userId} != ${userId}
-                            then 1 
-                        end
-                    ) as integer
-                )
-            `,
-            commentCount: sql<number>`cast(count(${comments.id}) as integer)`,
-        })
-        .from(tickets)
-        .leftJoin(ticketCategories, eq(tickets.categoryId, ticketCategories.id))
-        .leftJoin(comments, eq(tickets.id, comments.ticketId))
-        .leftJoin(
-            ticketViews,
-            and(
-                eq(tickets.id, ticketViews.ticketId),
-                eq(ticketViews.userId, userId)
-            )
-        )
-        .where(
-            and(
-                not(eq(tickets.createdById, userId)),
-                sql`${userId} = ANY(${tickets.watchers})`
-            )
-        )
-        .groupBy(tickets.id, ticketCategories.name, ticketViews.lastViewedAt)
-        .orderBy(desc(tickets.createdAt))
-        .limit(3);
-
-    const watchedTicketsWithRelations = await db.query.tickets.findMany({
-        where: and(
-            not(eq(tickets.createdById, userId)),
-            sql`${userId} = ANY(${tickets.watchers})`
-        ),
-        with: {
-            assignedTo: true,
-            createdBy: true,
-        },
-        orderBy: [desc(tickets.createdAt)],
-        limit: 3,
-    });
-
-    const mergedWatchedTickets = recentWatchedTickets.map((ticket) => {
-        const withRelations = watchedTicketsWithRelations.find((t) => t.id === ticket.id);
-        return {
-            ...ticket,
-            assignedTo: withRelations?.assignedTo || null,
-            createdBy: withRelations?.createdBy || null,
-            commentCount: ticket.commentCount,
-        };
-    });
 
     return (
         <div className="space-y-6">

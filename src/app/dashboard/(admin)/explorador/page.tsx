@@ -10,9 +10,10 @@ export default async function () {
     const session = await getSession();
     if (!session?.user) return null;
 
-    // Fetch ALL tickets with unread count for current admin
-    const allTicketsWithUnread = await db
-        .select({
+    // Both queries are independent — run in parallel
+    const [allTicketsWithUnread, ticketsWithRelations] = await Promise.all([
+        // Fetch ALL tickets with unread count for current admin
+        db.select({
             id: tickets.id,
             ticketCode: tickets.ticketCode,
             title: tickets.title,
@@ -41,27 +42,27 @@ export default async function () {
             `,
             commentCount: sql<number>`cast(count(${comments.id}) as integer)`,
         })
-        .from(tickets)
-        .leftJoin(ticketCategories, eq(tickets.categoryId, ticketCategories.id))
-        .leftJoin(comments, eq(tickets.id, comments.ticketId))
-        .leftJoin(
-            ticketViews,
-            and(
-                eq(tickets.id, ticketViews.ticketId),
-                eq(ticketViews.userId, session.user.id)
+            .from(tickets)
+            .leftJoin(ticketCategories, eq(tickets.categoryId, ticketCategories.id))
+            .leftJoin(comments, eq(tickets.id, comments.ticketId))
+            .leftJoin(
+                ticketViews,
+                and(
+                    eq(tickets.id, ticketViews.ticketId),
+                    eq(ticketViews.userId, session.user.id)
+                )
             )
-        )
-        .groupBy(tickets.id, ticketCategories.name, ticketViews.lastViewedAt)
-        .orderBy(desc(tickets.createdAt));
-
-    // Fetch relations separately
-    const ticketsWithRelations = await db.query.tickets.findMany({
-        with: {
-            createdBy: true,
-            assignedTo: true,
-        },
-        orderBy: [desc(tickets.createdAt)],
-    });
+            .groupBy(tickets.id, ticketCategories.name, ticketViews.lastViewedAt)
+            .orderBy(desc(tickets.createdAt)),
+        // Fetch relations separately
+        db.query.tickets.findMany({
+            with: {
+                createdBy: true,
+                assignedTo: true,
+            },
+            orderBy: [desc(tickets.createdAt)],
+        }),
+    ]);
 
     // Merge
     const mergedTickets = allTicketsWithUnread.map((ticket) => {

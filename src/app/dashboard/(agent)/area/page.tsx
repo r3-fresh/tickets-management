@@ -24,14 +24,14 @@ export default async function () {
 
     const { attentionAreaId } = session.user;
 
-    // Fetch details of the attention area
-    const areaDetails = await db.query.attentionAreas.findFirst({
-        where: eq(attentionAreas.id, attentionAreaId),
-    });
-
-    // Fetch tickets for this attention area
-    const areaTickets = await db
-        .select({
+    // All three queries are independent — run in parallel
+    const [areaDetails, areaTickets, ticketsWithAssigned] = await Promise.all([
+        // Fetch details of the attention area
+        db.query.attentionAreas.findFirst({
+            where: eq(attentionAreas.id, attentionAreaId),
+        }),
+        // Fetch tickets for this attention area
+        db.select({
             id: tickets.id,
             ticketCode: tickets.ticketCode,
             title: tickets.title,
@@ -60,28 +60,28 @@ export default async function () {
             `,
             commentCount: sql<number>`cast(count(${comments.id}) as integer)`,
         })
-        .from(tickets)
-        .leftJoin(ticketCategories, eq(tickets.categoryId, ticketCategories.id))
-        .leftJoin(comments, eq(tickets.id, comments.ticketId))
-        .leftJoin(
-            ticketViews,
-            and(
-                eq(tickets.id, ticketViews.ticketId),
-                eq(ticketViews.userId, session.user.id)
+            .from(tickets)
+            .leftJoin(ticketCategories, eq(tickets.categoryId, ticketCategories.id))
+            .leftJoin(comments, eq(tickets.id, comments.ticketId))
+            .leftJoin(
+                ticketViews,
+                and(
+                    eq(tickets.id, ticketViews.ticketId),
+                    eq(ticketViews.userId, session.user.id)
+                )
             )
-        )
-        .where(eq(tickets.attentionAreaId, attentionAreaId))
-        .groupBy(tickets.id, ticketCategories.name, ticketViews.lastViewedAt)
-        .orderBy(desc(tickets.createdAt));
-
-    // Fetch assigned users
-    const ticketsWithAssigned = await db.query.tickets.findMany({
-        where: eq(tickets.attentionAreaId, attentionAreaId),
-        with: {
-            assignedTo: true,
-        },
-        orderBy: [desc(tickets.createdAt)],
-    });
+            .where(eq(tickets.attentionAreaId, attentionAreaId))
+            .groupBy(tickets.id, ticketCategories.name, ticketViews.lastViewedAt)
+            .orderBy(desc(tickets.createdAt)),
+        // Fetch assigned users
+        db.query.tickets.findMany({
+            where: eq(tickets.attentionAreaId, attentionAreaId),
+            with: {
+                assignedTo: true,
+            },
+            orderBy: [desc(tickets.createdAt)],
+        }),
+    ]);
 
     const mergedTickets = areaTickets.map((ticket) => {
         const withAssigned = ticketsWithAssigned.find((t) => t.id === ticket.id);

@@ -52,22 +52,22 @@ export async function approveTicketValidation(ticketId: number) {
         // Send Email: Ticket Resolved
         if (ticket.attentionAreaId) {
             try {
-                // Get agents
-                const agentData = await db.select({ email: users.email })
-                    .from(users)
-                    .where(and(
-                        eq(users.role, 'agent'),
-                        eq(users.attentionAreaId, ticket.attentionAreaId)
-                    ));
-
-                // Get watchers
-                let watcherEmails: string[] = [];
-                if (ticket.watchers && ticket.watchers.length > 0) {
-                    const watcherData = await db.select({ email: users.email })
+                // Get agents and watchers in parallel
+                const [agentData, watcherData] = await Promise.all([
+                    db.select({ email: users.email })
                         .from(users)
-                        .where(inArray(users.id, ticket.watchers));
-                    watcherEmails = watcherData.map(w => w.email);
-                }
+                        .where(and(
+                            eq(users.role, 'agent'),
+                            eq(users.attentionAreaId, ticket.attentionAreaId)
+                        )),
+                    ticket.watchers && ticket.watchers.length > 0
+                        ? db.select({ email: users.email })
+                            .from(users)
+                            .where(inArray(users.id, ticket.watchers))
+                        : Promise.resolve([] as { email: string }[]),
+                ]);
+
+                const watcherEmails = watcherData.map(w => w.email);
 
                 await sendTicketResolvedEmail({
                     ticketCode: ticket.ticketCode,
@@ -140,22 +140,22 @@ export async function rejectTicketValidation(ticketId: number) {
         // Send Email: Ticket Rejected
         if (ticket.attentionAreaId) {
             try {
-                // Get agents
-                const agentData = await db.select({ email: users.email })
-                    .from(users)
-                    .where(and(
-                        eq(users.role, 'agent'),
-                        eq(users.attentionAreaId, ticket.attentionAreaId)
-                    ));
-
-                // Get watchers
-                let watcherEmails: string[] = [];
-                if (ticket.watchers && ticket.watchers.length > 0) {
-                    const watcherData = await db.select({ email: users.email })
+                // Get agents and watchers in parallel
+                const [agentData, watcherData] = await Promise.all([
+                    db.select({ email: users.email })
                         .from(users)
-                        .where(inArray(users.id, ticket.watchers));
-                    watcherEmails = watcherData.map(w => w.email);
-                }
+                        .where(and(
+                            eq(users.role, 'agent'),
+                            eq(users.attentionAreaId, ticket.attentionAreaId)
+                        )),
+                    ticket.watchers && ticket.watchers.length > 0
+                        ? db.select({ email: users.email })
+                            .from(users)
+                            .where(inArray(users.id, ticket.watchers))
+                        : Promise.resolve([] as { email: string }[]),
+                ]);
+
+                const watcherEmails = watcherData.map(w => w.email);
 
                 await sendTicketRejectedEmail({
                     ticketCode: ticket.ticketCode,
@@ -199,6 +199,9 @@ export async function requestValidation(ticketId: number, message?: string) {
             where: eq(tickets.id, ticketId),
             with: {
                 createdBy: true,
+                category: true,
+                subcategory: true,
+                attentionArea: true,
             }
         });
 
@@ -233,47 +236,36 @@ export async function requestValidation(ticketId: number, message?: string) {
 
         // Send email notification
         try {
-            // Get ticket details again (with relations)
-            const ticketWithDetails = await db.query.tickets.findFirst({
-                where: eq(tickets.id, ticketId),
-                with: {
-                    category: true,
-                    subcategory: true,
-                    attentionArea: true,
-                    createdBy: true,
-                },
-            });
-
-            if (ticketWithDetails?.attentionAreaId) {
-                // Get agents
-                const agentData = await db.select({ email: users.email })
-                    .from(users)
-                    .where(and(
-                        eq(users.role, 'agent'),
-                        eq(users.attentionAreaId, ticketWithDetails.attentionAreaId)
-                    ));
-
-                // Get watchers
-                let watcherEmails: string[] = [];
-                if (ticketWithDetails.watchers && ticketWithDetails.watchers.length > 0) {
-                    const watcherData = await db.select({ email: users.email })
+            if (ticket.attentionAreaId) {
+                // Get agents and watchers in parallel
+                const [agentData, watcherData] = await Promise.all([
+                    db.select({ email: users.email })
                         .from(users)
-                        .where(inArray(users.id, ticketWithDetails.watchers));
-                    watcherEmails = watcherData.map(w => w.email);
-                }
+                        .where(and(
+                            eq(users.role, 'agent'),
+                            eq(users.attentionAreaId, ticket.attentionAreaId)
+                        )),
+                    ticket.watchers && ticket.watchers.length > 0
+                        ? db.select({ email: users.email })
+                            .from(users)
+                            .where(inArray(users.id, ticket.watchers))
+                        : Promise.resolve([] as { email: string }[]),
+                ]);
+
+                const watcherEmails = watcherData.map(w => w.email);
 
                 await sendValidationRequestEmail({
                     ticketCode: ticket.ticketCode,
                     title: ticket.title,
-                    categoryName: ticketWithDetails?.category?.name || 'Sin categoría',
-                    subcategoryName: ticketWithDetails?.subcategory?.name || 'Sin subcategoría',
+                    categoryName: ticket.category?.name || 'Sin categoría',
+                    subcategoryName: ticket.subcategory?.name || 'Sin subcategoría',
                     ticketId: ticket.id,
                     creatorEmail: ticket.createdBy.email,
                     creatorName: ticket.createdBy.name,
                     // Unified Context
                     agentEmails: agentData.map(a => a.email),
                     watcherEmails: watcherEmails,
-                    attentionAreaName: ticketWithDetails?.attentionArea?.name || 'Hub de Información',
+                    attentionAreaName: ticket.attentionArea?.name || 'Hub de Información',
                     emailThreadId: ticket.emailThreadId,
                     initialMessageId: ticket.initialMessageId,
                     message,

@@ -98,14 +98,16 @@ export async function updateAgentSubcategory(formData: FormData) {
     }
 
     try {
-        // Verify subcategory belongs to agent's area
-        const hasAccess = await verifySubcategoryOwnership(id, session.user.attentionAreaId);
+        // Both verifications are independent — run in parallel
+        const [hasAccess, categoryAccess] = await Promise.all([
+            verifySubcategoryOwnership(id, session.user.attentionAreaId),
+            verifyCategoryOwnership(categoryId, session.user.attentionAreaId),
+        ]);
+
         if (!hasAccess) {
             return { error: "No autorizado para esta subcategoría" };
         }
 
-        // Verify new category also belongs to agent's area
-        const categoryAccess = await verifyCategoryOwnership(categoryId, session.user.attentionAreaId);
         if (!categoryAccess) {
             return { error: "No autorizado para la categoría destino" };
         }
