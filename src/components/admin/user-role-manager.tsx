@@ -89,21 +89,21 @@ export function UserRoleManager({
                             <SelectContent>
                                 <SelectItem value="user">
                                     <div className="flex items-center">
-                                        <User className="mr-2 h-4 w-4 text-gray-500" />
+                                        <User className="mr-2 h-4 w-4 text-muted-foreground" />
                                         Usuario
                                         <span className="ml-2 text-xs text-muted-foreground">(Acceso básico)</span>
                                     </div>
                                 </SelectItem>
                                 <SelectItem value="agent">
                                     <div className="flex items-center">
-                                        <UserCog className="mr-2 h-4 w-4 text-blue-500" />
+                                        <UserCog className="mr-2 h-4 w-4 text-muted-foreground" />
                                         Agente
                                         <span className="ml-2 text-xs text-muted-foreground">(Atención de Tickets)</span>
                                     </div>
                                 </SelectItem>
                                 <SelectItem value="admin">
                                     <div className="flex items-center">
-                                        <Shield className="mr-2 h-4 w-4 text-red-500" />
+                                        <Shield className="mr-2 h-4 w-4 text-muted-foreground" />
                                         Administrador
                                         <span className="ml-2 text-xs text-muted-foreground">(Control total)</span>
                                     </div>

@@ -50,7 +50,7 @@ export function UserActiveToggle({ userId, isActive, disabled }: UserActiveToggl
                         variant="outline"
                         size="sm"
                         disabled={disabled || loading}
-                        className="text-orange-600 hover:text-orange-700 hover:bg-orange-50"
+                        className="text-destructive hover:text-destructive hover:bg-destructive/10"
                     >
                         <ShieldAlert className="mr-2 h-4 w-4" />
                         Desactivar
@@ -80,7 +80,7 @@ export function UserActiveToggle({ userId, isActive, disabled }: UserActiveToggl
             size="sm"
             onClick={handleToggle}
             disabled={disabled || loading}
-            className="text-green-600 hover:text-green-700 hover:bg-green-50"
+            className="text-foreground hover:text-foreground hover:bg-muted"
         >
             <Shield className="mr-2 h-4 w-4" />
             {loading ? "Activando..." : "Activar"}

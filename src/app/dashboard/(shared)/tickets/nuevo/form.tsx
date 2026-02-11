@@ -15,6 +15,9 @@ import { UserSelector } from "@/components/ui/user-selector";
 import Link from "next/link";
 import { RichTextEditor } from "@/components/shared/rich-text-editor";
 import { cn } from "@/lib/utils/cn";
+import { PRIORITY_STYLES } from "@/lib/constants/ticket-display";
+import { PRIORITY_LABELS } from "@/lib/constants/tickets";
+import type { TicketPriority } from "@/types";
 
 
 interface User {
@@ -60,12 +63,15 @@ interface NewTicketFormProps {
     disabledMessage?: string | null;
 }
 
-const PRIORITIES = [
-    { value: "low", label: "Baja", activeColor: "bg-green-500 hover:bg-green-600 text-white border-green-500", inactiveColor: "bg-muted hover:bg-muted/80 text-muted-foreground border-muted" },
-    { value: "medium", label: "Media", activeColor: "bg-yellow-500 hover:bg-yellow-600 text-white border-yellow-500", inactiveColor: "bg-muted hover:bg-muted/80 text-muted-foreground border-muted" },
-    { value: "high", label: "Alta", activeColor: "bg-orange-500 hover:bg-orange-600 text-white border-orange-500", inactiveColor: "bg-muted hover:bg-muted/80 text-muted-foreground border-muted" },
-    { value: "critical", label: "Cr\u00edtica", activeColor: "bg-red-500 hover:bg-red-600 text-white border-red-500", inactiveColor: "bg-muted hover:bg-muted/80 text-muted-foreground border-muted" },
-] as const;
+const PRIORITIES = (Object.keys(PRIORITY_STYLES) as TicketPriority[]).map((value) => {
+    const style = PRIORITY_STYLES[value];
+    return {
+        value,
+        label: PRIORITY_LABELS[value],
+        activeColor: `${style.bg} ${style.text} ${style.border}`,
+        inactiveColor: "bg-muted hover:bg-muted/80 text-muted-foreground border-muted",
+    };
+});
 
 export function NewTicketForm({
     availableUsers,
@@ -94,11 +100,11 @@ export function NewTicketForm({
     if (!allowNewTickets) {
         return (
             <div className="max-w-4xl mx-auto">
-                <div className="bg-yellow-50 dark:bg-yellow-900/10 border border-yellow-200 dark:border-yellow-900/50 rounded-lg p-6 text-center">
-                    <h2 className="text-xl font-semibold text-yellow-800 dark:text-yellow-200 mb-2">
+                <div className="bg-muted border border-border rounded-lg p-6 text-center">
+                    <h2 className="text-xl font-semibold text-foreground mb-2">
                         Creación de tickets temporalmente deshabilitada
                     </h2>
-                    <p className="text-yellow-700 dark:text-yellow-300">
+                    <p className="text-muted-foreground">
                         {disabledMessage || "Actualmente no se pueden crear nuevos tickets. Por favor, intenta más tarde o contacta al administrador."}
                     </p>
                     <div className="mt-6">
@@ -164,7 +170,7 @@ export function NewTicketForm({
                                 name="title"
                                 render={({ field }) => (
                                     <FormItem>
-                                        <FormLabel>Asunto del ticket <span className="text-red-500">*</span></FormLabel>
+                                        <FormLabel>Asunto del ticket <span className="text-destructive">*</span></FormLabel>
                                         <FormControl>
                                             <Input placeholder="Ej: No funciona la conexión VPN en el portal" {...field} />
                                         </FormControl>
@@ -178,7 +184,7 @@ export function NewTicketForm({
                                 name="priority"
                                 render={({ field }) => (
                                     <FormItem>
-                                        <FormLabel>Nivel de prioridad <span className="text-red-500">*</span></FormLabel>
+                                        <FormLabel>Nivel de prioridad <span className="text-destructive">*</span></FormLabel>
                                         <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
                                             {PRIORITIES.map((priority) => (
                                                 <button
@@ -209,7 +215,7 @@ export function NewTicketForm({
                                 name="attentionAreaId"
                                 render={({ field }) => (
                                     <FormItem>
-                                        <FormLabel>Área de atención <span className="text-red-500">*</span></FormLabel>
+                                        <FormLabel>Área de atención <span className="text-destructive">*</span></FormLabel>
                                         <Select
                                             onValueChange={(val) => {
                                                 const areaId = Number(val);
@@ -250,7 +256,7 @@ export function NewTicketForm({
                                     name="categoryId"
                                     render={({ field }) => (
                                         <FormItem>
-                                            <FormLabel>Categoría <span className="text-red-500">*</span></FormLabel>
+                                            <FormLabel>Categoría <span className="text-destructive">*</span></FormLabel>
                                             <Select
                                                 onValueChange={(val) => {
                                                     field.onChange(Number(val));
@@ -283,7 +289,7 @@ export function NewTicketForm({
                                     name="subcategoryId"
                                     render={({ field }) => (
                                         <FormItem>
-                                            <FormLabel>Subcategoría <span className="text-red-500">*</span></FormLabel>
+                                            <FormLabel>Subcategoría <span className="text-destructive">*</span></FormLabel>
                                             <Select
                                                 onValueChange={(val) => field.onChange(Number(val))}
                                                 value={field.value?.toString() ?? ""}
@@ -379,7 +385,7 @@ export function NewTicketForm({
                                 name="description"
                                 render={({ field }) => (
                                     <FormItem>
-                                        <FormLabel>Descripción detallada <span className="text-red-500">*</span></FormLabel>
+                                        <FormLabel>Descripción detallada <span className="text-destructive">*</span></FormLabel>
                                         <FormControl>
                                             <RichTextEditor
                                                 value={field.value}
@@ -423,11 +429,11 @@ export function NewTicketForm({
             </div>
 
             {/* Emergency Notice */}
-            <div className="flex items-start gap-3 rounded-lg bg-amber-50 dark:bg-amber-900/10 border border-amber-200 dark:border-amber-900/50 p-4">
-                <AlertTriangle className="h-5 w-5 text-amber-600 dark:text-amber-500 shrink-0 mt-0.5" />
+            <div className="flex items-start gap-3 rounded-lg bg-muted border border-border p-4">
+                <AlertTriangle className="h-5 w-5 text-muted-foreground shrink-0 mt-0.5" />
                 <div className="text-sm">
-                    <p className="font-semibold text-amber-900 dark:text-amber-200">¿Es una emergencia crítica?</p>
-                    <p className="text-amber-800 dark:text-amber-300 mt-1">
+                    <p className="font-semibold text-foreground">¿Es una emergencia crítica?</p>
+                    <p className="text-muted-foreground mt-1">
                         Por favor, contáctanos directamente a los chats grupales correspondientes después de crear este ticket.
                     </p>
                 </div>

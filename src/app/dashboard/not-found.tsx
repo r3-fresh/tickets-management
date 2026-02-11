@@ -4,11 +4,11 @@ import Link from 'next/link';
 
 export default function NotFound() {
     return (
-        <div className="flex min-h-screen items-center justify-center bg-gray-50 dark:bg-background px-4">
+        <div className="flex min-h-screen items-center justify-center bg-muted px-4">
             <div className="w-full max-w-md space-y-8 text-center">
                 <div className="flex justify-center">
-                    <div className="rounded-full bg-blue-100 dark:bg-blue-900/20 p-3">
-                        <FileQuestion className="h-12 w-12 text-blue-600 dark:text-blue-400" />
+                    <div className="rounded-full bg-muted p-3">
+                        <FileQuestion className="h-12 w-12 text-muted-foreground" />
                     </div>
                 </div>
 

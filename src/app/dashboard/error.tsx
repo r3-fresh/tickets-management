@@ -17,11 +17,11 @@ export default function DashboardError({
     }, [error]);
 
     return (
-        <div className="flex min-h-screen items-center justify-center bg-gray-50 dark:bg-background px-4">
+        <div className="flex min-h-screen items-center justify-center bg-muted px-4">
             <div className="w-full max-w-md space-y-8 text-center">
                 <div className="flex justify-center">
-                    <div className="rounded-full bg-red-100 dark:bg-red-900/20 p-3">
-                        <AlertCircle className="h-12 w-12 text-red-600 dark:text-red-400" />
+                    <div className="rounded-full bg-destructive/10 p-3">
+                        <AlertCircle className="h-12 w-12 text-destructive" />
                     </div>
                 </div>
 
@@ -34,7 +34,7 @@ export default function DashboardError({
                         Por favor, intenta de nuevo.
                     </p>
                     {error.message && (
-                        <div className="mt-4 rounded-md bg-gray-100 dark:bg-gray-800 p-3 text-sm text-left">
+                        <div className="mt-4 rounded-md bg-muted p-3 text-sm text-left">
                             <p className="font-mono text-xs text-muted-foreground break-all">
                                 {process.env.NODE_ENV === 'development'
                                     ? error.message

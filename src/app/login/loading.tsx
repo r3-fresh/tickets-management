@@ -1,6 +1,6 @@
 export default function LoginLoading() {
     return (
-        <div className="flex min-h-screen items-center justify-center bg-gray-50 dark:bg-background px-4">
+        <div className="flex min-h-screen items-center justify-center bg-muted px-4">
             <div className="w-full max-w-md space-y-8">
                 {/* Logo / Header */}
                 <div className="flex flex-col items-center space-y-4">
