@@ -10,15 +10,16 @@ import {
     TableHeader,
     TableRow,
 } from "@/components/ui/table";
-import { Badge } from "@/components/ui/badge";
 import Link from "next/link";
 import { differenceInDays } from "date-fns";
 import { MessageCircle } from "lucide-react";
 import { CopyLinkButton } from "@/components/tickets/copy-link-button";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { StatusBadge } from "@/components/shared/status-badge";
+import { PriorityBadge } from "@/components/shared/priority-badge";
+import { UserAvatar } from "@/components/shared/user-avatar";
 import { TicketFilters } from "@/components/tickets/ticket-filters";
 import { Pagination } from "@/components/shared/pagination";
-import { formatDate, translateStatus, translatePriority } from "@/lib/utils/format";
+import { formatDate } from "@/lib/utils/format";
 import { Input } from "@/components/ui/input";
 import { useDebounce } from "@/lib/hooks/use-debounce";
 
@@ -124,51 +125,35 @@ export function AdminTicketsTable({ tickets, totalCount, assignedUsers, categori
                                 const daysOpen = differenceInDays(new Date(), new Date(ticket.createdAt));
                                 return (
                                     <TableRow key={ticket.id}>
-                                        <TableCell className="font-medium text-xs text-gray-500">
+                                        <TableCell className="font-medium text-xs text-muted-foreground">
                                             {ticket.ticketCode}
                                         </TableCell>
                                         <TableCell>
-                                            <Link href={`/dashboard/tickets/${ticket.id}`} className="hover:underline font-medium text-blue-600">
+                                            <Link href={`/dashboard/tickets/${ticket.id}`} className="hover:underline font-medium text-foreground">
                                                 {ticket.title}
                                             </Link>
                                             {ticket.categoryName && (
-                                                <div className="text-xs text-gray-500">{ticket.categoryName}</div>
+                                                <div className="text-xs text-muted-foreground">{ticket.categoryName}</div>
                                             )}
                                         </TableCell>
                                         <TableCell>
                                             <div className="flex items-center space-x-2">
-                                                <Avatar className="h-6 w-6">
-                                                    <AvatarImage src={ticket.createdBy?.image || undefined} />
-                                                    <AvatarFallback className="bg-cyan-600 text-white text-[10px] font-bold">
-                                                        {ticket.createdBy?.name.charAt(0) || "U"}
-                                                    </AvatarFallback>
-                                                </Avatar>
+                                                <UserAvatar name={ticket.createdBy?.name} image={ticket.createdBy?.image} size="sm" />
                                                 <span className="text-sm truncate max-w-[100px]" title={ticket.createdBy?.name}>
                                                     {ticket.createdBy?.name}
                                                 </span>
                                             </div>
                                         </TableCell>
                                         <TableCell>
-                                            <Badge variant="outline">{translatePriority(ticket.priority)}</Badge>
+                                            <PriorityBadge priority={ticket.priority} />
                                         </TableCell>
                                         <TableCell>
-                                            <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${ticket.status === 'open' ? 'bg-green-100 text-green-800' :
-                                                ticket.status === 'in_progress' ? 'bg-blue-100 text-blue-800' :
-                                                    ticket.status === 'resolved' ? 'bg-gray-100 text-gray-800' :
-                                                        'bg-red-100 text-red-800'
-                                                }`}>
-                                                {translateStatus(ticket.status)}
-                                            </span>
+                                            <StatusBadge status={ticket.status} />
                                         </TableCell>
                                         <TableCell>
                                             {ticket.assignedTo ? (
                                                 <div className="flex items-center space-x-2">
-                                                    <Avatar className="h-6 w-6">
-                                                        <AvatarImage src={ticket.assignedTo.image || undefined} />
-                                                        <AvatarFallback className="bg-indigo-600 text-white text-[10px] font-bold">
-                                                            {ticket.assignedTo.name.charAt(0)}
-                                                        </AvatarFallback>
-                                                    </Avatar>
+                                                    <UserAvatar name={ticket.assignedTo.name} image={ticket.assignedTo.image} size="sm" />
                                                     <span className="text-sm truncate max-w-[100px]" title={ticket.assignedTo.name}>
                                                         {ticket.assignedTo.name}
                                                     </span>
@@ -184,7 +169,7 @@ export function AdminTicketsTable({ tickets, totalCount, assignedUsers, categori
                                                     <span className="text-xs">{ticket.commentCount || 0}</span>
                                                 </div>
                                                 {ticket.unreadCommentCount !== undefined && ticket.unreadCommentCount > 0 && (
-                                                    <span className="text-[10px] bg-blue-500 text-white px-1.5 py-0.5 rounded-full font-medium">
+                                                    <span className="text-[10px] bg-foreground text-background px-1.5 py-0.5 rounded-full font-medium">
                                                         {ticket.unreadCommentCount} nuevo{ticket.unreadCommentCount > 1 ? 's' : ''}
                                                     </span>
                                                 )}

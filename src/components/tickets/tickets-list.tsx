@@ -11,15 +11,16 @@ import {
     TableRow,
 } from "@/components/ui/table";
 import { Input } from "@/components/ui/input";
-import { Badge } from "@/components/ui/badge";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Plus, MessageCircle } from "lucide-react";
 import { CopyLinkButton } from "./copy-link-button";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { StatusBadge } from "@/components/shared/status-badge";
+import { PriorityBadge } from "@/components/shared/priority-badge";
+import { UserAvatar } from "@/components/shared/user-avatar";
 import { TicketFilters } from "./ticket-filters";
 import { Pagination } from "@/components/shared/pagination";
-import { formatDate, translateStatus, translatePriority } from "@/lib/utils/format";
+import { formatDate } from "@/lib/utils/format";
 import { useDebounce } from "@/lib/hooks/use-debounce";
 
 interface Ticket {
@@ -141,7 +142,7 @@ export function TicketsList({
                             <TableHead>Título</TableHead>
                             <TableHead>Prioridad</TableHead>
                             <TableHead>Estado</TableHead>
-                            {isWatchedView && <TableHead>Solicitante</TableHead>}
+                            <TableHead>Solicitante</TableHead>
                             <TableHead>Asignado a</TableHead>
                             <TableHead className="text-center w-[120px]">Comentarios</TableHead>
                             <TableHead className="text-right">Fecha de creación</TableHead>
@@ -162,11 +163,11 @@ export function TicketsList({
                         ) : (
                             tickets.map((ticket) => (
                                 <TableRow key={ticket.id}>
-                                    <TableCell className="font-medium text-xs text-gray-500">
+                                    <TableCell className="font-medium text-xs text-muted-foreground">
                                         {ticket.ticketCode || `#${ticket.id}`}
                                     </TableCell>
                                     <TableCell>
-                                        <Link href={`/dashboard/tickets/${ticket.id}`} className="hover:underline font-medium text-blue-600 block">
+                                        <Link href={`/dashboard/tickets/${ticket.id}`} className="hover:underline font-medium text-foreground block">
                                             {ticket.title}
                                         </Link>
                                         {ticket.categoryName && (
@@ -174,47 +175,29 @@ export function TicketsList({
                                         )}
                                     </TableCell>
                                     <TableCell>
-                                        <Badge variant="outline">{translatePriority(ticket.priority)}</Badge>
+                                        <PriorityBadge priority={ticket.priority} />
                                     </TableCell>
                                     <TableCell>
-                                        <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${ticket.status === 'open' ? 'bg-green-100 text-green-800' :
-                                            ticket.status === 'in_progress' ? 'bg-blue-100 text-blue-800' :
-                                                ticket.status === 'resolved' ? 'bg-gray-100 text-gray-800' :
-                                                    'bg-red-100 text-red-800'
-                                            }`}>
-                                            {translateStatus(ticket.status)}
-                                        </span>
+                                        <StatusBadge status={ticket.status} />
                                     </TableCell>
-                                    {isWatchedView && (
-                                        <TableCell>
-                                            {ticket.createdBy ? (
-                                                <div className="flex items-center space-x-2">
-                                                    <Avatar className="h-6 w-6">
-                                                        <AvatarImage src={ticket.createdBy.image || undefined} referrerPolicy="no-referrer" />
-                                                        <AvatarFallback className="bg-cyan-600 text-white text-[10px] font-bold">
-                                                            {ticket.createdBy.name.charAt(0)}
-                                                        </AvatarFallback>
-                                                    </Avatar>
-                                                    <span className="text-sm truncate max-w-[120px]">{ticket.createdBy.name}</span>
-                                                </div>
-                                            ) : (
-                                                <span className="text-sm text-gray-400">Desconocido</span>
-                                            )}
-                                        </TableCell>
-                                    )}
+                                    <TableCell>
+                                        {ticket.createdBy ? (
+                                            <div className="flex items-center space-x-2">
+                                                <UserAvatar name={ticket.createdBy.name} image={ticket.createdBy.image} size="sm" />
+                                                <span className="text-sm truncate max-w-[120px]">{ticket.createdBy.name}</span>
+                                            </div>
+                                        ) : (
+                                            <span className="text-sm text-muted-foreground">Desconocido</span>
+                                        )}
+                                    </TableCell>
                                     <TableCell>
                                         {ticket.assignedTo ? (
                                             <div className="flex items-center space-x-2">
-                                                <Avatar className="h-6 w-6">
-                                                    <AvatarImage src={ticket.assignedTo.image || undefined} referrerPolicy="no-referrer" />
-                                                    <AvatarFallback className="bg-indigo-600 text-white text-[10px] font-bold">
-                                                        {ticket.assignedTo.name.charAt(0)}
-                                                    </AvatarFallback>
-                                                </Avatar>
+                                                <UserAvatar name={ticket.assignedTo.name} image={ticket.assignedTo.image} size="sm" />
                                                 <span className="text-sm truncate max-w-[120px]">{ticket.assignedTo.name}</span>
                                             </div>
                                         ) : (
-                                            <span className="text-sm text-gray-400">Sin asignar</span>
+                                            <span className="text-sm text-muted-foreground">Sin asignar</span>
                                         )}
                                     </TableCell>
                                     <TableCell className="text-center">
@@ -224,7 +207,7 @@ export function TicketsList({
                                                 <span className="text-xs">{ticket.commentCount || 0}</span>
                                             </div>
                                             {ticket.unreadCommentCount !== undefined && ticket.unreadCommentCount > 0 && (
-                                                <span className="text-[10px] bg-blue-500 text-white px-1.5 py-0.5 rounded-full font-medium">
+                                                <span className="text-[10px] bg-foreground text-background px-1.5 py-0.5 rounded-full font-medium">
                                                     {ticket.unreadCommentCount} nuevo{ticket.unreadCommentCount > 1 ? 's' : ''}
                                                 </span>
                                             )}

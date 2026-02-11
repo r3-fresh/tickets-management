@@ -58,6 +58,7 @@ export default async function MisTicketsPage({ searchParams }: PageProps) {
             columns: { id: true },
             with: {
                 assignedTo: true,
+                createdBy: true,
             },
         })
         : [];
@@ -68,6 +69,7 @@ export default async function MisTicketsPage({ searchParams }: PageProps) {
         return {
             ...ticket,
             assignedTo: withAssigned?.assignedTo || null,
+            createdBy: withAssigned?.createdBy || null,
         };
     });
 

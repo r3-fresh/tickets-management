@@ -75,7 +75,7 @@ export async function AgentDashboard({ userId, attentionAreaId }: AgentDashboard
         db.query.tickets.findMany({
             where: and(eq(tickets.attentionAreaId, attentionAreaId), inArray(tickets.status, [...ACTIVE_STATUSES])),
             columns: { id: true },
-            with: { assignedTo: true },
+            with: { assignedTo: true, createdBy: true },
             orderBy: [desc(tickets.createdAt)],
             limit: 5,
         }),
@@ -85,7 +85,7 @@ export async function AgentDashboard({ userId, attentionAreaId }: AgentDashboard
         db.query.tickets.findMany({
             where: and(eq(tickets.createdById, userId), inArray(tickets.status, [...ACTIVE_STATUSES])),
             columns: { id: true },
-            with: { assignedTo: true },
+            with: { assignedTo: true, createdBy: true },
             orderBy: [desc(tickets.createdAt)],
             limit: 3,
         }),
@@ -107,12 +107,12 @@ export async function AgentDashboard({ userId, attentionAreaId }: AgentDashboard
     // Merge ticket data with relation data
     const mergedAreaTickets = recentAreaTickets.map((ticket) => {
         const withAssigned = areaTicketsWithAssigned.find((t) => t.id === ticket.id);
-        return { ...ticket, assignedTo: withAssigned?.assignedTo || null, commentCount: ticket.commentCount };
+        return { ...ticket, assignedTo: withAssigned?.assignedTo || null, createdBy: withAssigned?.createdBy || null, commentCount: ticket.commentCount };
     });
 
     const mergedUserTickets = recentUserTickets.map((ticket) => {
         const withAssigned = userTicketsWithAssigned.find((t) => t.id === ticket.id);
-        return { ...ticket, assignedTo: withAssigned?.assignedTo || null, commentCount: ticket.commentCount };
+        return { ...ticket, assignedTo: withAssigned?.assignedTo || null, createdBy: withAssigned?.createdBy || null, commentCount: ticket.commentCount };
     });
 
     const mergedWatchedTickets = recentWatchedTickets.map((ticket) => {

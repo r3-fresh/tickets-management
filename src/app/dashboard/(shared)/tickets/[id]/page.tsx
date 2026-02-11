@@ -5,11 +5,13 @@ import { requireAuth } from "@/lib/auth/helpers";
 import { notFound, redirect } from "next/navigation";
 import { eq, desc } from "drizzle-orm";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Separator } from "@/components/ui/separator";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
-import { formatDate, translateStatus, translatePriority } from "@/lib/utils/format";
+import { formatDate, translatePriority } from "@/lib/utils/format";
+import { StatusBadge } from "@/components/shared/status-badge";
+import { PriorityBadge } from "@/components/shared/priority-badge";
+import { UserAvatar } from "@/components/shared/user-avatar";
 import { Breadcrumb } from "@/components/shared/breadcrumb";
 import { AdminTicketControls } from "./admin-ticket-controls";
 import { MarkAsViewed } from "./mark-as-viewed";
@@ -116,23 +118,11 @@ export default async function TicketDetailPage({ params }: { params: Promise<{ i
                 <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-3 mb-2">
                         <span className="text-sm font-mono text-muted-foreground">{ticket.ticketCode}</span>
-                        <Badge className={
-                            ticket.status === 'open' ? 'bg-green-100 text-green-800 hover:bg-green-100/80' :
-                                ticket.status === 'in_progress' ? 'bg-blue-100 text-blue-800 hover:bg-blue-100/80' :
-                                    ticket.status === 'resolved' ? 'bg-gray-100 text-gray-800 hover:bg-gray-100/80' :
-                                        'bg-red-100 text-red-800 hover:bg-red-100/80'
-                        }>
-                            {translateStatus(ticket.status)}
-                        </Badge>
+                        <StatusBadge status={ticket.status} />
                     </div>
                     <h1 className="text-3xl font-bold tracking-tight mb-3">{ticket.title}</h1>
                     <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                        <Avatar className="h-6 w-6">
-                            <AvatarImage src={ticket.createdBy.image || undefined} />
-                            <AvatarFallback className="bg-cyan-600 text-white text-xs">
-                                {ticket.createdBy.name.charAt(0)}
-                            </AvatarFallback>
-                        </Avatar>
+                        <UserAvatar name={ticket.createdBy.name} image={ticket.createdBy.image} size="sm" />
                         <span className="font-medium text-foreground">{ticket.createdBy.name}</span>
                         <span>•</span>
                         <span>Creado el {formatDate(ticket.createdAt)}</span>
@@ -210,7 +200,7 @@ export default async function TicketDetailPage({ params }: { params: Promise<{ i
                                 <div key={comment.id} className="flex gap-3">
                                     <Avatar className="h-10 w-10 shrink-0">
                                         <AvatarImage src={comment.author.image || undefined} />
-                                        <AvatarFallback className="bg-cyan-600 text-white font-bold text-sm">
+                                        <AvatarFallback className="bg-muted-foreground/80 text-background font-bold text-sm">
                                             {comment.author.name.charAt(0)}
                                         </AvatarFallback>
                                     </Avatar>
@@ -253,12 +243,7 @@ export default async function TicketDetailPage({ params }: { params: Promise<{ i
                             <div>
                                 <span className="block text-xs text-muted-foreground mb-2 uppercase font-medium">Solicitante</span>
                                 <div className="flex items-center gap-2">
-                                    <Avatar className="h-8 w-8">
-                                        <AvatarImage src={ticket.createdBy.image || undefined} />
-                                        <AvatarFallback className="bg-cyan-600 text-white text-xs font-bold">
-                                            {ticket.createdBy.name.charAt(0)}
-                                        </AvatarFallback>
-                                    </Avatar>
+                                    <UserAvatar name={ticket.createdBy.name} image={ticket.createdBy.image} size="md" />
                                     <div className="flex flex-col min-w-0">
                                         <span className="font-medium truncate">{ticket.createdBy.name}</span>
                                         <span className="text-xs text-muted-foreground truncate">{ticket.createdBy.email}</span>
@@ -273,12 +258,7 @@ export default async function TicketDetailPage({ params }: { params: Promise<{ i
                                 <span className="block text-xs text-muted-foreground mb-2 uppercase font-medium">Asignado a</span>
                                 {ticket.assignedTo ? (
                                     <div className="flex items-center gap-2">
-                                        <Avatar className="h-8 w-8">
-                                            <AvatarImage src={ticket.assignedTo.image || undefined} />
-                                            <AvatarFallback className="bg-indigo-600 text-white text-xs font-bold">
-                                                {ticket.assignedTo.name.charAt(0)}
-                                            </AvatarFallback>
-                                        </Avatar>
+                                        <UserAvatar name={ticket.assignedTo.name} image={ticket.assignedTo.image} size="md" />
                                         <span className="font-medium">{ticket.assignedTo.name}</span>
                                     </div>
                                 ) : (
@@ -323,9 +303,7 @@ export default async function TicketDetailPage({ params }: { params: Promise<{ i
                             {/* Prioridad */}
                             <div>
                                 <span className="block text-xs text-muted-foreground mb-2 uppercase font-medium">Prioridad</span>
-                                <Badge variant="outline" className="font-medium">
-                                    {translatePriority(ticket.priority)}
-                                </Badge>
+                                <PriorityBadge priority={ticket.priority} />
                             </div>
                         </CardContent>
                     </Card>

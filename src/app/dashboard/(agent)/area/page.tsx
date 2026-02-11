@@ -31,8 +31,8 @@ export default async function AreaTicketsPage({ searchParams }: PageProps) {
     if (!session.user.attentionAreaId) {
         return (
             <div className="p-8 text-center">
-                <h1 className="text-2xl font-bold text-red-600">Error de configuración</h1>
-                <p className="mt-2 text-gray-600">
+                <h1 className="text-2xl font-bold text-destructive">Error de configuración</h1>
+                <p className="mt-2 text-muted-foreground">
                     Tu usuario tiene rol de agente pero no tiene un área de atención asignada.
                     Contacta al administrador.
                 </p>
@@ -73,6 +73,7 @@ export default async function AreaTicketsPage({ searchParams }: PageProps) {
             columns: { id: true },
             with: {
                 assignedTo: true,
+                createdBy: true,
             },
         })
         : [];
@@ -82,6 +83,7 @@ export default async function AreaTicketsPage({ searchParams }: PageProps) {
         return {
             ...ticket,
             assignedTo: withAssigned?.assignedTo || null,
+            createdBy: withAssigned?.createdBy || null,
         };
     });
 

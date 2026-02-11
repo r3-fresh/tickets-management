@@ -66,6 +66,7 @@ export async function UserDashboard({ userId }: UserDashboardProps) {
             columns: { id: true },
             with: {
                 assignedTo: true,
+                createdBy: true,
             },
             orderBy: [desc(tickets.createdAt)],
             limit: 5,
@@ -96,6 +97,7 @@ export async function UserDashboard({ userId }: UserDashboardProps) {
         return {
             ...ticket,
             assignedTo: withAssigned?.assignedTo || null,
+            createdBy: withAssigned?.createdBy || null,
             commentCount: ticket.commentCount,
         };
     });
