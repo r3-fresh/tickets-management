@@ -8,11 +8,12 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Separator } from "@/components/ui/separator";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
-import { formatDate, translatePriority } from "@/lib/utils/format";
+import { formatDate, translatePriority, formatFileSize } from "@/lib/utils/format";
 import { StatusBadge } from "@/components/shared/status-badge";
 import { PriorityBadge } from "@/components/shared/priority-badge";
 import { UserAvatar } from "@/components/shared/user-avatar";
 import { Breadcrumb } from "@/components/shared/breadcrumb";
+import { FileIcon, ImageIcon, FileTextIcon, FileSpreadsheetIcon, FilmIcon, ExternalLinkIcon, PaperclipIcon } from "lucide-react";
 import { AdminTicketControls } from "./admin-ticket-controls";
 import { MarkAsViewed } from "./mark-as-viewed";
 import { WatchersManager } from "./watchers-manager";
@@ -21,6 +22,17 @@ import { UserValidationControls } from "./user-validation-controls";
 import dynamic from "next/dynamic";
 import { CommentForm } from "./comment-form";
 import type { Metadata } from "next";
+
+function AttachmentIcon({ mimeType }: { mimeType: string }) {
+    const className = "h-5 w-5 text-muted-foreground shrink-0";
+    if (mimeType.startsWith("image/")) return <ImageIcon className={className} />;
+    if (mimeType.startsWith("video/")) return <FilmIcon className={className} />;
+    if (mimeType.includes("spreadsheet") || mimeType.includes("excel") || mimeType === "text/csv")
+        return <FileSpreadsheetIcon className={className} />;
+    if (mimeType.includes("pdf") || mimeType.includes("document") || mimeType.includes("text/"))
+        return <FileTextIcon className={className} />;
+    return <FileIcon className={className} />;
+}
 
 export async function generateMetadata({ params }: { params: Promise<{ id: string }> }): Promise<Metadata> {
     const { id } = await params;
@@ -61,6 +73,7 @@ export default async function TicketDetailPage({ params }: { params: Promise<{ i
             area: true,
             attentionArea: true,
             assignedTo: true,
+            attachments: true,
             comments: {
                 with: {
                     author: true
@@ -189,6 +202,36 @@ export default async function TicketDetailPage({ params }: { params: Promise<{ i
                             </AccordionContent>
                         </AccordionItem>
                     </Accordion>
+
+                    {/* Attachments Section */}
+                    {ticket.attachments && ticket.attachments.length > 0 && (
+                        <div className="space-y-3">
+                            <div className="flex items-center gap-2">
+                                <PaperclipIcon className="h-4 w-4 text-muted-foreground" />
+                                <h3 className="text-sm font-semibold">
+                                    Archivos adjuntos ({ticket.attachments.length})
+                                </h3>
+                            </div>
+                            <div className="grid gap-2">
+                                {ticket.attachments.map((attachment) => (
+                                    <a
+                                        key={attachment.id}
+                                        href={attachment.driveViewLink}
+                                        target="_blank"
+                                        rel="noopener noreferrer"
+                                        className="flex items-center gap-3 rounded-lg border border-border bg-card px-4 py-3 hover:bg-muted/50 transition-colors group"
+                                    >
+                                        <AttachmentIcon mimeType={attachment.mimeType} />
+                                        <div className="flex-1 min-w-0">
+                                            <p className="text-sm font-medium truncate">{attachment.fileName}</p>
+                                            <p className="text-xs text-muted-foreground">{formatFileSize(attachment.fileSize)}</p>
+                                        </div>
+                                        <ExternalLinkIcon className="h-4 w-4 text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity shrink-0" />
+                                    </a>
+                                ))}
+                            </div>
+                        </div>
+                    )}
 
                     {/* Comments Section */}
                     <div className="space-y-4">

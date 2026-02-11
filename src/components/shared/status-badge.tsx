@@ -15,8 +15,8 @@ export function StatusBadge({ status, className }: StatusBadgeProps) {
     if (!styles) {
         return (
             <span className={cn(
-                "inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium",
-                "bg-muted text-muted-foreground",
+                "inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs font-medium",
+                "bg-muted text-muted-foreground border-border",
                 className,
             )}>
                 {label}
@@ -26,9 +26,10 @@ export function StatusBadge({ status, className }: StatusBadgeProps) {
 
     return (
         <span className={cn(
-            "inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium",
+            "inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs font-medium",
             styles.bg,
             styles.text,
+            styles.border,
             className,
         )}>
             {label}

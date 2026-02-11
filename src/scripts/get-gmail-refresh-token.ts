@@ -26,11 +26,12 @@ const oauth2Client = new google.auth.OAuth2(
 
 const SCOPES = [
     'https://www.googleapis.com/auth/gmail.send',
-    'https://www.googleapis.com/auth/gmail.readonly' // Needed for threading (messages.get)
+    'https://www.googleapis.com/auth/gmail.readonly', // Needed for threading (messages.get)
+    'https://www.googleapis.com/auth/drive.file', // Upload files to Google Drive
 ];
 
 console.log('='.repeat(60));
-console.log('📧 Gmail API - Obtener Refresh Token');
+console.log('🔑 Google API - Obtener Refresh Token (Gmail + Drive)');
 console.log('='.repeat(60));
 console.log();
 

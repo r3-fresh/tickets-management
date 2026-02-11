@@ -35,11 +35,12 @@ export type ClosedBy = 'user' | 'admin' | 'system';
 // Database Inference Types
 // ============================================
 
-import type { tickets, users, comments } from "@/db/schema";
+import type { tickets, users, comments, ticketAttachments } from "@/db/schema";
 
 export type Ticket = typeof tickets.$inferSelect;
 export type User = typeof users.$inferSelect;
 export type Comment = typeof comments.$inferSelect;
+export type TicketAttachment = typeof ticketAttachments.$inferSelect;
 
 export type NewTicket = typeof tickets.$inferInsert;
 export type NewComment = typeof comments.$inferInsert;

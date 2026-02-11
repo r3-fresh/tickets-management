@@ -1,14 +1,14 @@
 "use server";
 
 import { db } from "@/db";
-import { tickets, users, attentionAreas, ticketCategories, ticketSubcategories } from "@/db/schema";
+import { tickets, users, attentionAreas, ticketCategories, ticketSubcategories, ticketAttachments } from "@/db/schema";
 import { createTicketSchema } from "@/lib/validation/schemas";
 import { requireAuth } from "@/lib/auth/helpers";
 import { redirect } from "next/navigation";
 import { after } from "next/server";
 import { TICKET_STATUS } from "@/lib/constants/tickets";
 import { sendTicketCreatedEmail } from "@/lib/email/send-emails";
-import { eq, inArray, and } from "drizzle-orm";
+import { eq, inArray, and, isNull } from "drizzle-orm";
 import { createRateLimiter } from "@/lib/utils/rate-limit";
 
 // Rate limiter: 5 tickets por minuto por usuario
@@ -97,6 +97,20 @@ export async function createTicketAction(formData: FormData) {
 
         ticketId = newTicket.id;
         ticketCode = newTicket.ticketCode;
+
+        // Vincular archivos adjuntos al ticket (si se subieron)
+        const uploadToken = formData.get("uploadToken") as string | null;
+        if (uploadToken) {
+            await db.update(ticketAttachments)
+                .set({ ticketId: ticketId, uploadToken: null })
+                .where(
+                    and(
+                        eq(ticketAttachments.uploadToken, uploadToken),
+                        eq(ticketAttachments.uploadedById, session.user.id),
+                        isNull(ticketAttachments.ticketId)
+                    )
+                );
+        }
 
         // Defer email notification after response is sent to user
         after(async () => {

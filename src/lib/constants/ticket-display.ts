@@ -4,26 +4,31 @@ import type { TicketStatus, TicketPriority } from "@/types";
 // Mapeo de estados a clases de Tailwind (tokens del design system)
 // ============================================
 
-export const STATUS_STYLES: Record<TicketStatus, { bg: string; text: string }> = {
+export const STATUS_STYLES: Record<TicketStatus, { bg: string; text: string; border: string }> = {
     open: {
         bg: "bg-status-open",
         text: "text-status-open-foreground",
+        border: "border-status-open-foreground/20",
     },
     in_progress: {
         bg: "bg-status-in-progress",
         text: "text-status-in-progress-foreground",
+        border: "border-status-in-progress-foreground/20",
     },
     pending_validation: {
         bg: "bg-status-pending-validation",
         text: "text-status-pending-validation-foreground",
+        border: "border-status-pending-validation-foreground/20",
     },
     resolved: {
         bg: "bg-status-resolved",
         text: "text-status-resolved-foreground",
+        border: "border-status-resolved-foreground/20",
     },
     voided: {
         bg: "bg-status-voided",
         text: "text-status-voided-foreground",
+        border: "border-status-voided-foreground/20",
     },
 };
 

@@ -161,6 +161,21 @@ export const comments = pgTable("comment", {
     createdAt: timestamp("created_at").defaultNow().notNull(),
 });
 
+// --- TICKET ATTACHMENTS ---
+
+export const ticketAttachments = pgTable("ticket_attachment", {
+    id: uuid("id").primaryKey().defaultRandom(),
+    ticketId: integer("ticket_id").references(() => tickets.id, { onDelete: "cascade" }),
+    fileName: text("file_name").notNull(),
+    fileSize: integer("file_size").notNull(), // bytes
+    mimeType: text("mime_type").notNull(),
+    driveFileId: text("drive_file_id").notNull(),
+    driveViewLink: text("drive_view_link").notNull(),
+    uploadToken: text("upload_token"), // null after linked to ticket
+    uploadedById: text("uploaded_by_id").notNull().references(() => users.id),
+    createdAt: timestamp("created_at").defaultNow().notNull(),
+});
+
 // Track when users last viewed tickets (for unread comments)
 export const ticketViews = pgTable("ticket_view", {
     id: serial("id").primaryKey(),
@@ -206,6 +221,7 @@ export const ticketsRelations = relations(tickets, ({ one, many }) => ({
         references: [workAreas.id],
     }),
     comments: many(comments),
+    attachments: many(ticketAttachments),
 }));
 
 export const commentsRelations = relations(comments, ({ one }) => ({
@@ -215,6 +231,17 @@ export const commentsRelations = relations(comments, ({ one }) => ({
     }),
     author: one(users, {
         fields: [comments.userId],
+        references: [users.id],
+    }),
+}));
+
+export const ticketAttachmentsRelations = relations(ticketAttachments, ({ one }) => ({
+    ticket: one(tickets, {
+        fields: [ticketAttachments.ticketId],
+        references: [tickets.id],
+    }),
+    uploadedBy: one(users, {
+        fields: [ticketAttachments.uploadedById],
         references: [users.id],
     }),
 }));
