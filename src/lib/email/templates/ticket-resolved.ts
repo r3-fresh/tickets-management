@@ -1,4 +1,5 @@
 import { getBaseTemplate } from './base-template';
+import { escapeHtml } from '../escape-html';
 
 export interface TicketResolvedTemplateParams {
     userName: string;
@@ -11,12 +12,18 @@ export interface TicketResolvedTemplateParams {
 }
 
 export function getTicketResolvedTemplate(params: TicketResolvedTemplateParams): string {
+    const userName = escapeHtml(params.userName);
+    const ticketCode = escapeHtml(params.ticketCode);
+    const title = escapeHtml(params.title);
+    const category = escapeHtml(params.category);
+    const subcategory = escapeHtml(params.subcategory);
+
     const content = `
         <h2 style="color: #333; font-size: 20px; margin-top: 0; text-align: center;">Ticket resuelto</h2>
         
-        <p style="margin: 15px 0;">Hola <strong>${params.userName}</strong>,</p>
+        <p style="margin: 15px 0;">Hola <strong>${userName}</strong>,</p>
         
-        <p style="margin: 15px 0;">Nos alegra informarte que tu ticket <strong>#${params.ticketCode}</strong> ha sido marcado como <strong>RESUELTO</strong> y cerrado tras tu validación.</p>
+        <p style="margin: 15px 0;">Nos alegra informarte que tu ticket <strong>#${ticketCode}</strong> ha sido marcado como <strong>RESUELTO</strong> y cerrado tras tu validación.</p>
         
         <div style="background-color: #ECFDF5; border-left: 4px solid #10B981; padding: 15px; margin: 20px 0; border-radius: 4px;">
             <p style="margin: 0; color: #065F46;">
@@ -27,9 +34,9 @@ export function getTicketResolvedTemplate(params: TicketResolvedTemplateParams):
         <div style="background-color: #F9FAFB; padding: 15px; margin: 20px 0;">
             <strong>Resumen:</strong>
             <ul style="margin: 10px 0; padding-left: 20px;">
-                <li style="margin: 8px 0;"><strong>Título:</strong> ${params.title}</li>
-                <li style="margin: 8px 0;"><strong>Categoría:</strong> ${params.category}</li>
-                <li style="margin: 8px 0;"><strong>Subcategoría:</strong> ${params.subcategory}</li>
+                <li style="margin: 8px 0;"><strong>Título:</strong> ${title}</li>
+                <li style="margin: 8px 0;"><strong>Categoría:</strong> ${category}</li>
+                <li style="margin: 8px 0;"><strong>Subcategoría:</strong> ${subcategory}</li>
             </ul>
         </div>
         

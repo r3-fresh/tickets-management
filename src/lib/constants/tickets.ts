@@ -63,3 +63,15 @@ export const CLOSURE_TYPE_LABELS: Record<ClosedBy, string> = {
     admin: "Administrador",
     system: "Sistema (48hrs)",
 };
+
+// ============================================
+// Valid Status Transitions
+// ============================================
+
+export const VALID_STATUS_TRANSITIONS: Record<TicketStatus, readonly TicketStatus[]> = {
+    open: ['in_progress', 'voided'],
+    in_progress: ['open', 'pending_validation', 'resolved', 'voided'],
+    pending_validation: ['resolved', 'in_progress'],
+    resolved: ['in_progress'],
+    voided: [],
+};

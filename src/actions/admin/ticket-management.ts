@@ -6,7 +6,7 @@ import { requireAgent } from "@/lib/auth/helpers";
 import { eq, inArray, and } from "drizzle-orm";
 import { revalidatePath } from "next/cache";
 import { after } from "next/server";
-import { TICKET_STATUS } from "@/lib/constants/tickets";
+import { TICKET_STATUS, VALID_STATUS_TRANSITIONS, STATUS_LABELS } from "@/lib/constants/tickets";
 import { sendTicketAssignedEmail } from "@/lib/email/send-emails";
 import type { TicketStatus } from "@/types";
 
@@ -112,6 +112,25 @@ export async function updateTicketStatus(ticketId: number, newStatus: TicketStat
     const session = await requireAgent();
 
     try {
+        // Obtener el estado actual del ticket para validar la transición
+        const ticket = await db.query.tickets.findFirst({
+            where: eq(tickets.id, ticketId),
+            columns: { status: true },
+        });
+
+        if (!ticket) {
+            return { error: "Ticket no encontrado" };
+        }
+
+        const currentStatus = ticket.status as TicketStatus;
+        const allowedTransitions = VALID_STATUS_TRANSITIONS[currentStatus];
+
+        if (!allowedTransitions.includes(newStatus)) {
+            return {
+                error: `No se puede cambiar de "${STATUS_LABELS[currentStatus]}" a "${STATUS_LABELS[newStatus]}"`
+            };
+        }
+
         await db.update(tickets)
             .set({
                 status: newStatus,

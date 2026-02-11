@@ -1,4 +1,5 @@
 import { getBaseTemplate } from './base-template';
+import { escapeHtml } from '../escape-html';
 
 export interface ValidationRequestTemplateParams {
     userName: string;
@@ -12,29 +13,36 @@ export interface ValidationRequestTemplateParams {
 }
 
 export function getValidationRequestTemplate(params: ValidationRequestTemplateParams): string {
+    const userName = escapeHtml(params.userName);
+    const ticketCode = escapeHtml(params.ticketCode);
+    const title = escapeHtml(params.title);
+    const category = escapeHtml(params.category);
+    const subcategory = escapeHtml(params.subcategory);
+    // message es HTML de TipTap (rich text), no se escapa
+    const message = params.message;
+
     const content = `
         <h2 style="color: #333; font-size: 20px; margin-top: 0; text-align: center;">Validación de ticket requerida</h2>
         
-        <p style="margin: 15px 0;">Estimado <strong>${params.userName}</strong>:</p>
+        <p style="margin: 15px 0;">Estimado <strong>${userName}</strong>:</p>
         
-        <p style="margin: 15px 0;">El agente encargado ha culminado la atención del ticket <strong>${params.ticketCode}</strong> 
+        <p style="margin: 15px 0;">El agente encargado ha culminado la atención del ticket <strong>${ticketCode}</strong> 
         y requiere tu validación.</p>
         
         <div style="background-color: #F9FAFB; border-left: 4px solid #4F46E5; padding: 15px; margin: 20px 0;">
             <strong>Detalles del ticket:</strong>
             <ul style="margin: 10px 0; padding-left: 20px;">
-                <li style="margin: 8px 0;"><strong>Código:</strong> ${params.ticketCode}</li>
-                <li style="margin: 8px 0;"><strong>Título:</strong> ${params.title}</li>
-                <li style="margin: 8px 0;"><strong>Categoría:</strong> ${params.category}</li>
-                <li style="margin: 8px 0;"><strong>Subcategoría:</strong> ${params.subcategory}</li>
-            </ul>
+                <li style="margin: 8px 0;"><strong>Código:</strong> ${ticketCode}</li>
+                <li style="margin: 8px 0;"><strong>Título:</strong> ${title}</li>
+                <li style="margin: 8px 0;"><strong>Categoría:</strong> ${category}</li>
+                <li style="margin: 8px 0;"><strong>Subcategoría:</strong> ${subcategory}</li>
             </ul>
         </div>
         
-        ${params.message ? `
+        ${message ? `
         <div style="margin: 20px 0; padding: 15px; background-color: #f3f4f6; border-radius: 4px; border: 1px solid #e5e7eb;">
             <strong style="display: block; margin-bottom: 10px; color: #374151;">Mensaje del agente:</strong>
-            <div style="color: #4b5563;">${params.message}</div>
+            <div style="color: #4b5563;">${message}</div>
         </div>
         ` : ''}
 
