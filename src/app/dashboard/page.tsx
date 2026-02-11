@@ -4,6 +4,11 @@ import { redirect } from "next/navigation";
 import { AdminDashboard } from "@/components/dashboards/admin-dashboard";
 import { AgentDashboard } from "@/components/dashboards/agent-dashboard";
 import { UserDashboard } from "@/components/dashboards/user-dashboard";
+import type { Metadata } from "next";
+
+export const metadata: Metadata = {
+    title: "Mi panel",
+};
 
 function DashboardSkeleton() {
     return (

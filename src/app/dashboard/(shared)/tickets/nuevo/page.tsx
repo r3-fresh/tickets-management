@@ -1,9 +1,14 @@
 import { db } from "@/db";
 import { users } from "@/db/schema";
 import { requireAuth } from "@/lib/auth/helpers";
-import { eq } from "drizzle-orm";
+import { getAppSetting } from "@/db/queries";
 import dynamic from "next/dynamic";
 import { getActiveCategories, getActiveCampuses, getActiveWorkAreas, getActiveAttentionAreas } from "@/actions/config/get-config";
+import type { Metadata } from "next";
+
+export const metadata: Metadata = {
+    title: "Nuevo ticket",
+};
 
 const NewTicketForm = dynamic(
     () => import("./form").then(mod => ({ default: mod.NewTicketForm })),
@@ -11,16 +16,6 @@ const NewTicketForm = dynamic(
         loading: () => <div className="h-96 animate-pulse rounded-lg bg-muted" />,
     }
 );
-
-async function getAppSetting(key: string): Promise<string | null> {
-    try {
-        const { appSettings } = await import("@/db/schema");
-        const setting = await db.select().from(appSettings).where(eq(appSettings.key, key)).limit(1);
-        return setting[0]?.value || null;
-    } catch {
-        return null;
-    }
-}
 
 export default async function NuevoTicketPage() {
     const session = await requireAuth();

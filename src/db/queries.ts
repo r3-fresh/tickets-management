@@ -1,5 +1,5 @@
 import { db } from "@/db";
-import { tickets, comments, ticketViews, ticketCategories } from "@/db/schema";
+import { tickets, comments, ticketViews, ticketCategories, appSettings } from "@/db/schema";
 import { eq, desc, sql, and, SQL } from "drizzle-orm";
 
 /**
@@ -71,4 +71,17 @@ export function queryTicketsWithUnread(
     }
 
     return query;
+}
+
+/**
+ * Obtiene el valor de una configuración de la aplicación.
+ *
+ * @param key - Clave de la configuración (ej: "allow_new_tickets")
+ * @returns El valor como string, o null si no existe
+ */
+export async function getAppSetting(key: string): Promise<string | null> {
+    const setting = await db.query.appSettings.findFirst({
+        where: eq(appSettings.key, key),
+    });
+    return setting?.value ?? null;
 }

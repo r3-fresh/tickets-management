@@ -4,8 +4,13 @@ import { getSession } from "@/lib/auth/helpers";
 import { eq, asc } from "drizzle-orm";
 import { SettingsTabs } from "./settings-tabs";
 import { Breadcrumb } from "@/components/shared/breadcrumb";
+import type { Metadata } from "next";
 
-export default async function () {
+export const metadata: Metadata = {
+    title: "Configuración del área",
+};
+
+export default async function ConfiguracionAgentePage() {
     // Authorization handled by (agent) layout
     const session = await getSession();
     if (!session?.user) return null;

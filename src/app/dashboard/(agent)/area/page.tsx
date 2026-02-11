@@ -5,6 +5,11 @@ import { getSession } from "@/lib/auth/helpers";
 import { eq, desc } from "drizzle-orm";
 import dynamic from "next/dynamic";
 import { Breadcrumb } from "@/components/shared/breadcrumb";
+import type { Metadata } from "next";
+
+export const metadata: Metadata = {
+    title: "Tickets del área",
+};
 
 const TicketsList = dynamic(
     () => import("@/components/tickets/tickets-list").then(mod => ({ default: mod.TicketsList })),
@@ -13,7 +18,7 @@ const TicketsList = dynamic(
     }
 );
 
-export default async function () {
+export default async function AreaTicketsPage() {
     // Authorization handled by (agent) layout
     const session = await getSession();
     if (!session?.user) return null;

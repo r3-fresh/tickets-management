@@ -3,7 +3,7 @@
 import { db } from "@/db";
 import { campusLocations } from "@/db/schema";
 import { requireAdmin } from "@/lib/auth/helpers";
-import { eq } from "drizzle-orm";
+import { eq, sql } from "drizzle-orm";
 import { revalidatePath } from "next/cache";
 
 export async function createCampus(name: string, code: string, isActive: boolean) {
@@ -67,21 +67,18 @@ export async function toggleCampusActive(id: number) {
     await requireAdmin();
 
     try {
-        const campusItem = await db.query.campusLocations.findFirst({
-            where: eq(campusLocations.id, id),
-        });
-
-        if (!campusItem) {
-            return { error: "Campus no encontrado" };
-        }
-
-        await db
+        const [updated] = await db
             .update(campusLocations)
             .set({
-                isActive: !campusItem.isActive,
+                isActive: sql`NOT ${campusLocations.isActive}`,
                 updatedAt: new Date(),
             })
-            .where(eq(campusLocations.id, id));
+            .where(eq(campusLocations.id, id))
+            .returning({ id: campusLocations.id });
+
+        if (!updated) {
+            return { error: "Campus no encontrado" };
+        }
 
         revalidatePath("/dashboard/admin/configuracion");
         revalidatePath("/dashboard/tickets/nuevo");

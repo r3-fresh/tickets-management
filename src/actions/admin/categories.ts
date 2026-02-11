@@ -88,21 +88,18 @@ export async function toggleCategoryActive(id: number) {
     await requireAdmin();
 
     try {
-        const category = await db.query.ticketCategories.findFirst({
-            where: eq(ticketCategories.id, id),
-        });
-
-        if (!category) {
-            return { error: "Categoría no encontrada" };
-        }
-
-        await db
+        const [updated] = await db
             .update(ticketCategories)
             .set({
-                isActive: !category.isActive,
+                isActive: sql`NOT ${ticketCategories.isActive}`,
                 updatedAt: new Date(),
             })
-            .where(eq(ticketCategories.id, id));
+            .where(eq(ticketCategories.id, id))
+            .returning({ id: ticketCategories.id });
+
+        if (!updated) {
+            return { error: "Categoría no encontrada" };
+        }
 
         revalidatePath("/dashboard/admin/configuracion");
         revalidatePath("/dashboard/tickets/nuevo");

@@ -5,6 +5,11 @@ import { requireAuth } from "@/lib/auth/helpers";
 import { desc, sql, and, not, eq } from "drizzle-orm";
 import dynamic from "next/dynamic";
 import { Breadcrumb } from "@/components/shared/breadcrumb";
+import type { Metadata } from "next";
+
+export const metadata: Metadata = {
+    title: "En seguimiento",
+};
 
 const TicketsList = dynamic(
     () => import("@/components/tickets/tickets-list").then(mod => ({ default: mod.TicketsList })),
@@ -13,7 +18,7 @@ const TicketsList = dynamic(
     }
 );
 
-export default async function () {
+export default async function SeguimientoPage() {
     const session = await requireAuth();
 
     const watchedWhere = and(

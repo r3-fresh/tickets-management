@@ -6,6 +6,11 @@ import { eq, desc } from "drizzle-orm";
 import dynamic from "next/dynamic";
 import { Breadcrumb } from "@/components/shared/breadcrumb";
 import Link from "next/link";
+import type { Metadata } from "next";
+
+export const metadata: Metadata = {
+    title: "Mis tickets",
+};
 
 const TicketsList = dynamic(
     () => import("@/components/tickets/tickets-list").then(mod => ({ default: mod.TicketsList })),
@@ -16,7 +21,7 @@ const TicketsList = dynamic(
 import { Button } from "@/components/ui/button";
 import { Plus } from "lucide-react";
 
-export default async function () {
+export default async function MisTicketsPage() {
     const session = await requireAuth();
 
     // Both queries are independent — run in parallel
