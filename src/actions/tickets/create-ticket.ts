@@ -76,14 +76,12 @@ export async function createTicketAction(formData: FormData) {
     }
 
     let ticketId: number;
+    let ticketCode: string;
 
     try {
-        // Generate ticket code with year (YYYY-####)
-        const { generateNextTicketCode } = await import("@/lib/utils/ticket-code");
-        const ticketCode = await generateNextTicketCode();
-
-        const [newTicket] = await db.insert(tickets).values({
-            ticketCode,
+        // Inserción atómica: genera el código y crea el ticket en una sola transacción
+        const { insertTicketWithCode } = await import("@/lib/utils/ticket-code");
+        const newTicket = await insertTicketWithCode({
             title,
             description,
             priority,
@@ -95,9 +93,10 @@ export async function createTicketAction(formData: FormData) {
             areaId: areaId || null,
             attentionAreaId,
             watchers: watcherList,
-        }).returning({ id: tickets.id });
+        });
 
         ticketId = newTicket.id;
+        ticketCode = newTicket.ticketCode;
 
         // Defer email notification after response is sent to user
         after(async () => {
@@ -133,7 +132,7 @@ export async function createTicketAction(formData: FormData) {
                     categoryName: category?.name || 'Sin categoría',
                     subcategoryName: subcategory?.name || 'Sin subcategoría',
                     createdAt: new Date(),
-                    ticketId: newTicket.id,
+                    ticketId,
                     creatorEmail: session.user.email,
                     creatorName: session.user.name,
                     agentEmails: agentData.map(a => a.email),
@@ -150,7 +149,7 @@ export async function createTicketAction(formData: FormData) {
                             emailThreadId: emailResult.data?.threadId,
                             initialMessageId: emailResult.data?.rfcMessageId // Captured from actual sent email
                         })
-                        .where(eq(tickets.id, newTicket.id));
+                        .where(eq(tickets.id, ticketId));
                 }
             } catch (emailError) {
                 // Log error but don't fail ticket creation
