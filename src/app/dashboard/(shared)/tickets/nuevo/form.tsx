@@ -444,7 +444,7 @@ export function NewTicketForm({
                             </div>
 
                             {/* ── Card 2: Ubicación ── */}
-                            <div className="mt-3 rounded-xl border border-border bg-card p-5">
+                            <div className="mt-5 rounded-xl border border-border bg-card p-5">
                                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                                     <FormField
                                         control={form.control}
@@ -463,13 +463,13 @@ export function NewTicketForm({
                                                     required
                                                 >
                                                     <FormControl>
-                                                        <SelectTrigger>
+                                                        <SelectTrigger className="text-xs">
                                                             <SelectValue placeholder="¿De qué departamento eres?" />
                                                         </SelectTrigger>
                                                     </FormControl>
                                                     <SelectContent>
                                                         {workAreas.map((area) => (
-                                                            <SelectItem key={area.id} value={area.id.toString()}>
+                                                            <SelectItem key={area.id} value={area.id.toString()} className="text-xs">
                                                                 {area.name}
                                                             </SelectItem>
                                                         ))}
@@ -497,13 +497,13 @@ export function NewTicketForm({
                                                     required
                                                 >
                                                     <FormControl>
-                                                        <SelectTrigger>
+                                                        <SelectTrigger className="text-xs">
                                                             <SelectValue placeholder="¿En qué sede te encuentras?" />
                                                         </SelectTrigger>
                                                     </FormControl>
                                                     <SelectContent>
                                                         {campuses.map((campus) => (
-                                                            <SelectItem key={campus.id} value={campus.id.toString()}>
+                                                            <SelectItem key={campus.id} value={campus.id.toString()} className="text-xs">
                                                                 {campus.name}
                                                             </SelectItem>
                                                         ))}
@@ -517,7 +517,7 @@ export function NewTicketForm({
                             </div>
 
                             {/* ── Card 3: Descripción + Archivos adjuntos (juntos al final) ── */}
-                            <div className="mt-3 rounded-xl border border-border bg-card">
+                            <div className="mt-5 rounded-xl border border-border bg-card">
                                 {/* Descripción */}
                                 <div className="px-6 pt-5 pb-4">
                                     <FormField
