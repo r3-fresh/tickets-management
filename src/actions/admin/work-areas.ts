@@ -3,7 +3,7 @@
 import { db } from "@/db";
 import { workAreas } from "@/db/schema";
 import { requireAdmin } from "@/lib/auth/helpers";
-import { eq } from "drizzle-orm";
+import { eq, sql } from "drizzle-orm";
 import { revalidatePath } from "next/cache";
 
 export async function createWorkArea(name: string, description: string, isActive: boolean) {
@@ -67,21 +67,18 @@ export async function toggleWorkAreaActive(id: number) {
     await requireAdmin();
 
     try {
-        const area = await db.query.workAreas.findFirst({
-            where: eq(workAreas.id, id),
-        });
-
-        if (!area) {
-            return { error: "Área de trabajo no encontrada" };
-        }
-
-        await db
+        const [updated] = await db
             .update(workAreas)
             .set({
-                isActive: !area.isActive,
+                isActive: sql`NOT ${workAreas.isActive}`,
                 updatedAt: new Date(),
             })
-            .where(eq(workAreas.id, id));
+            .where(eq(workAreas.id, id))
+            .returning({ id: workAreas.id });
+
+        if (!updated) {
+            return { error: "Área de trabajo no encontrada" };
+        }
 
         revalidatePath("/dashboard/admin/configuracion");
         revalidatePath("/dashboard/tickets/nuevo");

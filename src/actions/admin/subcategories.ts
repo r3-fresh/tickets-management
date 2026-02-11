@@ -89,21 +89,18 @@ export async function toggleSubcategoryActive(id: number) {
     await requireAdmin();
 
     try {
-        const subcategory = await db.query.ticketSubcategories.findFirst({
-            where: eq(ticketSubcategories.id, id),
-        });
-
-        if (!subcategory) {
-            return { error: "Subcategoría no encontrada" };
-        }
-
-        await db
+        const [updated] = await db
             .update(ticketSubcategories)
             .set({
-                isActive: !subcategory.isActive,
+                isActive: sql`NOT ${ticketSubcategories.isActive}`,
                 updatedAt: new Date(),
             })
-            .where(eq(ticketSubcategories.id, id));
+            .where(eq(ticketSubcategories.id, id))
+            .returning({ id: ticketSubcategories.id });
+
+        if (!updated) {
+            return { error: "Subcategoría no encontrada" };
+        }
 
         revalidatePath("/dashboard/admin/configuracion");
         revalidatePath("/dashboard/tickets/nuevo");

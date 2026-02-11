@@ -5,6 +5,11 @@ import { getSession } from "@/lib/auth/helpers";
 import { desc } from "drizzle-orm";
 import dynamic from "next/dynamic";
 import { Breadcrumb } from "@/components/shared/breadcrumb";
+import type { Metadata } from "next";
+
+export const metadata: Metadata = {
+    title: "Explorador de tickets",
+};
 
 const AdminTicketsTable = dynamic(
     () => import("@/components/admin/admin-tickets-table").then(mod => ({ default: mod.AdminTicketsTable })),
@@ -13,7 +18,7 @@ const AdminTicketsTable = dynamic(
     }
 );
 
-export default async function () {
+export default async function ExploradorPage() {
     // Authorization handled by (admin) layout
     const session = await getSession();
     if (!session?.user) return null;

@@ -3,7 +3,7 @@ import { db } from "@/db";
 import { tickets, comments, users } from "@/db/schema";
 import { requireAuth } from "@/lib/auth/helpers";
 import { notFound, redirect } from "next/navigation";
-import { eq, desc, inArray } from "drizzle-orm";
+import { eq, desc } from "drizzle-orm";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -18,6 +18,22 @@ import { CancelTicketButton } from "./cancel-ticket-button";
 import { UserValidationControls } from "./user-validation-controls";
 import dynamic from "next/dynamic";
 import { CommentForm } from "./comment-form";
+import type { Metadata } from "next";
+
+export async function generateMetadata({ params }: { params: Promise<{ id: string }> }): Promise<Metadata> {
+    const { id } = await params;
+    const ticketId = Number(id);
+    if (isNaN(ticketId)) return { title: "Ticket no encontrado" };
+
+    const ticket = await db.query.tickets.findFirst({
+        where: eq(tickets.id, ticketId),
+        columns: { ticketCode: true, title: true },
+    });
+
+    if (!ticket) return { title: "Ticket no encontrado" };
+
+    return { title: `${ticket.ticketCode} - ${ticket.title}` };
+}
 
 const RichTextEditor = dynamic(
     () => import("@/components/shared/rich-text-editor").then(mod => ({ default: mod.RichTextEditor })),
@@ -67,13 +83,18 @@ export default async function TicketDetailPage({ params }: { params: Promise<{ i
         redirect("/dashboard");
     }
 
-    // allUsers and watchersList are independent — run in parallel
-    const [allUsers, watchersList] = await Promise.all([
-        db.select().from(users),
-        ticket.watchers && ticket.watchers.length > 0
-            ? db.select().from(users).where(inArray(users.id, ticket.watchers))
-            : Promise.resolve([] as typeof users.$inferSelect[]),
-    ]);
+    // Fetch only the columns needed for display
+    const allUsers = await db.select({
+        id: users.id,
+        name: users.name,
+        email: users.email,
+        image: users.image,
+    }).from(users);
+
+    // Derive watchers from allUsers instead of a separate query
+    const watchersList = ticket.watchers?.length
+        ? allUsers.filter(u => ticket.watchers!.includes(u.id))
+        : [];
 
     const isTicketClosed = ticket.status === 'resolved' || ticket.status === 'voided';
     const canComment = !isTicketClosed;
@@ -291,12 +312,7 @@ export default async function TicketDetailPage({ params }: { params: Promise<{ i
                                             ticketId={ticketId}
                                             currentWatchers={ticket.watchers || []}
                                             currentUserId={session.user.id}
-                                            allUsers={allUsers.map(u => ({
-                                                id: u.id,
-                                                name: u.name,
-                                                email: u.email,
-                                                image: u.image
-                                            }))}
+                                            allUsers={allUsers}
                                         />
                                     </div>
                                 )}

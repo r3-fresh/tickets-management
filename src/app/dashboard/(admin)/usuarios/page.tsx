@@ -4,8 +4,13 @@ import { getSession } from "@/lib/auth/helpers";
 import { desc } from "drizzle-orm";
 import { RolesTable } from "@/components/admin/roles-table";
 import { Breadcrumb } from "@/components/shared/breadcrumb";
+import type { Metadata } from "next";
 
-export default async function () {
+export const metadata: Metadata = {
+    title: "Gestión de usuarios",
+};
+
+export default async function UsuariosPage() {
     // Authorization handled by (admin) layout
     const session = await getSession();
     if (!session?.user) return null;

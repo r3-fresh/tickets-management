@@ -1,8 +1,14 @@
 import { db } from "@/db";
-import { appSettings, ticketCategories, campusLocations, workAreas, ticketSubcategories, attentionAreas } from "@/db/schema";
-import { eq, asc } from "drizzle-orm";
+import { ticketCategories, campusLocations, workAreas, ticketSubcategories, attentionAreas } from "@/db/schema";
+import { asc } from "drizzle-orm";
+import { getAppSetting } from "@/db/queries";
 import dynamic from "next/dynamic";
 import { Breadcrumb } from "@/components/shared/breadcrumb";
+import type { Metadata } from "next";
+
+export const metadata: Metadata = {
+    title: "Configuración del sistema",
+};
 
 const AdminSettingsTabs = dynamic(
     () => import("@/components/admin/admin-settings-tabs").then(mod => ({ default: mod.AdminSettingsTabs })),
@@ -11,12 +17,12 @@ const AdminSettingsTabs = dynamic(
     }
 );
 
-export default async function () {
+export default async function SistemaPage() {
     // Authorization handled by (admin) layout
 
     // All queries are independent — run in parallel
     const [
-        setting,
+        allowNewTicketsSetting,
         disabledMessageSetting,
         categories,
         subcategories,
@@ -24,12 +30,8 @@ export default async function () {
         areas,
         attentionAreasList,
     ] = await Promise.all([
-        db.query.appSettings.findFirst({
-            where: eq(appSettings.key, "allow_new_tickets"),
-        }),
-        db.query.appSettings.findFirst({
-            where: eq(appSettings.key, "ticket_disabled_message"),
-        }),
+        getAppSetting("allow_new_tickets"),
+        getAppSetting("ticket_disabled_message"),
         db.query.ticketCategories.findMany({
             orderBy: [asc(ticketCategories.displayOrder)],
             with: {
@@ -53,8 +55,8 @@ export default async function () {
         }),
     ]);
 
-    const allowNewTickets = setting ? setting.value === "true" : true;
-    const disabledMessage = disabledMessageSetting?.value || "";
+    const allowNewTickets = allowNewTicketsSetting === null || allowNewTicketsSetting === "true";
+    const disabledMessage = disabledMessageSetting || "";
 
     return (
         <div className="space-y-6">
