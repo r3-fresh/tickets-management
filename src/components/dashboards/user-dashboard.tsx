@@ -1,6 +1,6 @@
 import { db } from "@/db";
 import { tickets } from "@/db/schema";
-import { eq, desc, sql, and, not, count } from "drizzle-orm";
+import { eq, desc, sql, and, not, count, inArray } from "drizzle-orm";
 import { queryTicketsWithUnread } from "@/db/queries";
 import dynamic from "next/dynamic";
 import { Breadcrumb } from "@/components/shared/breadcrumb";
@@ -34,6 +34,8 @@ interface UserDashboardProps {
     userId: string;
 }
 
+const ACTIVE_STATUSES = ["open", "in_progress", "pending_validation"] as const;
+
 export async function UserDashboard({ userId }: UserDashboardProps) {
     // --- All independent queries in parallel ---
     const [
@@ -56,11 +58,11 @@ export async function UserDashboard({ userId }: UserDashboardProps) {
         db.select({ count: count() })
             .from(tickets)
             .where(sql`${userId} = ANY(${tickets.watchers})`),
-        // Recent user tickets (last 5)
-        queryTicketsWithUnread(userId, eq(tickets.createdById, userId), 5),
-        // User tickets with assigned
+        // Recent user tickets (last 5, active only)
+        queryTicketsWithUnread(userId, and(eq(tickets.createdById, userId), inArray(tickets.status, [...ACTIVE_STATUSES])), 5),
+        // User tickets with assigned (active only)
         db.query.tickets.findMany({
-            where: eq(tickets.createdById, userId),
+            where: and(eq(tickets.createdById, userId), inArray(tickets.status, [...ACTIVE_STATUSES])),
             columns: { id: true },
             with: {
                 assignedTo: true,
@@ -68,13 +70,14 @@ export async function UserDashboard({ userId }: UserDashboardProps) {
             orderBy: [desc(tickets.createdAt)],
             limit: 5,
         }),
-        // Recent watched tickets (last 3)
-        queryTicketsWithUnread(userId, and(not(eq(tickets.createdById, userId)), sql`${userId} = ANY(${tickets.watchers})`), 3),
-        // Watched tickets with relations
+        // Recent watched tickets (last 3, active only)
+        queryTicketsWithUnread(userId, and(not(eq(tickets.createdById, userId)), sql`${userId} = ANY(${tickets.watchers})`, inArray(tickets.status, [...ACTIVE_STATUSES])), 3),
+        // Watched tickets with relations (active only)
         db.query.tickets.findMany({
             where: and(
                 not(eq(tickets.createdById, userId)),
-                sql`${userId} = ANY(${tickets.watchers})`
+                sql`${userId} = ANY(${tickets.watchers})`,
+                inArray(tickets.status, [...ACTIVE_STATUSES])
             ),
             columns: { id: true },
             with: {
@@ -112,32 +115,24 @@ export async function UserDashboard({ userId }: UserDashboardProps) {
             title: "Tickets abiertos",
             value: getStat("open"),
             icon: AlertCircle,
-            color: "text-amber-600",
-            bg: "bg-amber-100 dark:bg-amber-900/20",
             change: null
         },
         {
             title: "En progreso",
             value: getStat("in_progress"),
             icon: Clock,
-            color: "text-indigo-600",
-            bg: "bg-indigo-100 dark:bg-indigo-900/20",
             change: null
         },
         {
             title: "Pendientes de validación",
             value: getStat("pending_validation"),
             icon: HourglassIcon,
-            color: "text-yellow-600",
-            bg: "bg-yellow-100 dark:bg-yellow-900/20",
             change: null
         },
         {
             title: "Asignado como observador",
             value: watcherCountResult?.count || 0,
             icon: Eye,
-            color: "text-purple-600",
-            bg: "bg-purple-100 dark:bg-purple-900/20",
             change: null
         }
     ];
@@ -171,8 +166,8 @@ export async function UserDashboard({ userId }: UserDashboardProps) {
                             <CardTitle className="text-sm font-medium uppercase text-muted-foreground">
                                 {stat.title}
                             </CardTitle>
-                            <div className={`p-2 rounded-full ${stat.bg}`}>
-                                <stat.icon className={`h-4 w-4 ${stat.color}`} />
+                            <div className="p-2 rounded-full bg-muted">
+                                <stat.icon className="h-4 w-4 text-muted-foreground" />
                             </div>
                         </CardHeader>
                         <CardContent>

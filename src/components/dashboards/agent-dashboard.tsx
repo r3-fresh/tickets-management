@@ -1,6 +1,6 @@
 import { db } from "@/db";
 import { tickets, attentionAreas } from "@/db/schema";
-import { eq, desc, sql, and, not, count } from "drizzle-orm";
+import { eq, desc, sql, and, not, count, inArray } from "drizzle-orm";
 import { queryTicketsWithUnread } from "@/db/queries";
 import dynamic from "next/dynamic";
 import { Breadcrumb } from "@/components/shared/breadcrumb";
@@ -35,6 +35,8 @@ interface AgentDashboardProps {
     attentionAreaId: number;
 }
 
+const ACTIVE_STATUSES = ["open", "in_progress", "pending_validation"] as const;
+
 export async function AgentDashboard({ userId, attentionAreaId }: AgentDashboardProps) {
     // All queries are independent — run in parallel
     const [
@@ -67,31 +69,31 @@ export async function AgentDashboard({ userId, attentionAreaId }: AgentDashboard
         db.select({ count: count() })
             .from(tickets)
             .where(sql`${userId} = ANY(${tickets.watchers})`),
-        // Recent area tickets (last 5)
-        queryTicketsWithUnread(userId, eq(tickets.attentionAreaId, attentionAreaId), 5),
-        // Area tickets with assigned
+        // Recent area tickets (last 5, active only)
+        queryTicketsWithUnread(userId, and(eq(tickets.attentionAreaId, attentionAreaId), inArray(tickets.status, [...ACTIVE_STATUSES])), 5),
+        // Area tickets with assigned (active only)
         db.query.tickets.findMany({
-            where: eq(tickets.attentionAreaId, attentionAreaId),
+            where: and(eq(tickets.attentionAreaId, attentionAreaId), inArray(tickets.status, [...ACTIVE_STATUSES])),
             columns: { id: true },
             with: { assignedTo: true },
             orderBy: [desc(tickets.createdAt)],
             limit: 5,
         }),
-        // Recent user tickets (last 3)
-        queryTicketsWithUnread(userId, eq(tickets.createdById, userId), 3),
-        // User tickets with assigned
+        // Recent user tickets (last 3, active only)
+        queryTicketsWithUnread(userId, and(eq(tickets.createdById, userId), inArray(tickets.status, [...ACTIVE_STATUSES])), 3),
+        // User tickets with assigned (active only)
         db.query.tickets.findMany({
-            where: eq(tickets.createdById, userId),
+            where: and(eq(tickets.createdById, userId), inArray(tickets.status, [...ACTIVE_STATUSES])),
             columns: { id: true },
             with: { assignedTo: true },
             orderBy: [desc(tickets.createdAt)],
             limit: 3,
         }),
-        // Recent watched tickets (last 3)
-        queryTicketsWithUnread(userId, and(not(eq(tickets.createdById, userId)), sql`${userId} = ANY(${tickets.watchers})`), 3),
-        // Watched tickets with relations
+        // Recent watched tickets (last 3, active only)
+        queryTicketsWithUnread(userId, and(not(eq(tickets.createdById, userId)), sql`${userId} = ANY(${tickets.watchers})`, inArray(tickets.status, [...ACTIVE_STATUSES])), 3),
+        // Watched tickets with relations (active only)
         db.query.tickets.findMany({
-            where: and(not(eq(tickets.createdById, userId)), sql`${userId} = ANY(${tickets.watchers})`),
+            where: and(not(eq(tickets.createdById, userId)), sql`${userId} = ANY(${tickets.watchers})`, inArray(tickets.status, [...ACTIVE_STATUSES])),
             columns: { id: true },
             with: { assignedTo: true, createdBy: true },
             orderBy: [desc(tickets.createdAt)],
@@ -153,8 +155,8 @@ export async function AgentDashboard({ userId, attentionAreaId }: AgentDashboard
                                 <CardTitle className="text-sm font-medium">
                                     Abiertos
                                 </CardTitle>
-                                <div className="p-2 rounded-full bg-amber-100 dark:bg-amber-900/20">
-                                    <AlertCircle className="h-4 w-4 text-amber-600" />
+                                <div className="p-2 rounded-full bg-muted">
+                                    <AlertCircle className="h-4 w-4 text-muted-foreground" />
                                 </div>
                             </CardHeader>
                             <CardContent>
@@ -166,8 +168,8 @@ export async function AgentDashboard({ userId, attentionAreaId }: AgentDashboard
                                 <CardTitle className="text-sm font-medium">
                                     En proceso
                                 </CardTitle>
-                                <div className="p-2 rounded-full bg-indigo-100 dark:bg-indigo-900/20">
-                                    <Clock className="h-4 w-4 text-indigo-600" />
+                                <div className="p-2 rounded-full bg-muted">
+                                    <Clock className="h-4 w-4 text-muted-foreground" />
                                 </div>
                             </CardHeader>
                             <CardContent>
@@ -189,8 +191,8 @@ export async function AgentDashboard({ userId, attentionAreaId }: AgentDashboard
                                 <CardTitle className="text-sm font-medium">
                                     Abiertos
                                 </CardTitle>
-                                <div className="p-2 rounded-full bg-amber-100 dark:bg-amber-900/20">
-                                    <AlertCircle className="h-4 w-4 text-amber-600" />
+                                <div className="p-2 rounded-full bg-muted">
+                                    <AlertCircle className="h-4 w-4 text-muted-foreground" />
                                 </div>
                             </CardHeader>
                             <CardContent>
@@ -202,8 +204,8 @@ export async function AgentDashboard({ userId, attentionAreaId }: AgentDashboard
                                 <CardTitle className="text-sm font-medium">
                                     Pendientes
                                 </CardTitle>
-                                <div className="p-2 rounded-full bg-yellow-100 dark:bg-yellow-900/20">
-                                    <HourglassIcon className="h-4 w-4 text-yellow-600" />
+                                <div className="p-2 rounded-full bg-muted">
+                                    <HourglassIcon className="h-4 w-4 text-muted-foreground" />
                                 </div>
                             </CardHeader>
                             <CardContent>

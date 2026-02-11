@@ -68,29 +68,21 @@ export async function AdminDashboard() {
             title: "Total de tickets",
             value: totalTicketsRes.count,
             icon: Ticket,
-            color: "text-blue-600",
-            bg: "bg-blue-100 dark:bg-blue-900/20"
         },
         {
             title: "Abiertos",
             value: getStat("open"),
             icon: AlertCircle,
-            color: "text-amber-600",
-            bg: "bg-amber-100 dark:bg-amber-900/20"
         },
         {
             title: "En proceso",
             value: getStat("in_progress"),
             icon: Clock,
-            color: "text-indigo-600",
-            bg: "bg-indigo-100 dark:bg-indigo-900/20"
         },
         {
             title: "Resueltos",
             value: getStat("resolved"),
             icon: CheckCircle2,
-            color: "text-emerald-600",
-            bg: "bg-emerald-100 dark:bg-emerald-900/20"
         }
     ];
 
@@ -113,8 +105,8 @@ export async function AdminDashboard() {
                             <CardTitle className="text-sm font-medium uppercase text-muted-foreground">
                                 {stat.title}
                             </CardTitle>
-                            <div className={`p-2 rounded-full ${stat.bg}`}>
-                                <stat.icon className={`h-4 w-4 ${stat.color}`} />
+                            <div className="p-2 rounded-full bg-muted">
+                                <stat.icon className="h-4 w-4 text-muted-foreground" />
                             </div>
                         </CardHeader>
                         <CardContent>
@@ -133,8 +125,8 @@ export async function AdminDashboard() {
                     </CardHeader>
                     <CardContent className="grid gap-6">
                         <div className="flex items-center">
-                            <div className="bg-purple-100 dark:bg-purple-900/20 p-3 rounded-full mr-4">
-                                <UsersIcon className="h-6 w-6 text-purple-600" />
+                            <div className="bg-muted p-3 rounded-full mr-4">
+                                <UsersIcon className="h-6 w-6 text-muted-foreground" />
                             </div>
                             <div className="flex-1 space-y-1">
                                 <p className="text-sm font-medium leading-none">Usuarios totales</p>
@@ -146,8 +138,8 @@ export async function AdminDashboard() {
                         </div>
 
                         <div className="flex items-center">
-                            <div className="bg-cyan-100 dark:bg-cyan-900/20 p-3 rounded-full mr-4">
-                                <MessageSquare className="h-6 w-6 text-cyan-600" />
+                            <div className="bg-muted p-3 rounded-full mr-4">
+                                <MessageSquare className="h-6 w-6 text-muted-foreground" />
                             </div>
                             <div className="flex-1 space-y-1">
                                 <p className="text-sm font-medium leading-none">Comentarios totales</p>
@@ -157,8 +149,8 @@ export async function AdminDashboard() {
                         </div>
 
                         <div className="flex items-center">
-                            <div className="bg-blue-100 dark:bg-blue-900/20 p-3 rounded-full mr-4">
-                                <Building2 className="h-6 w-6 text-blue-600" />
+                            <div className="bg-muted p-3 rounded-full mr-4">
+                                <Building2 className="h-6 w-6 text-muted-foreground" />
                             </div>
                             <div className="flex-1 space-y-1">
                                 <p className="text-sm font-medium leading-none">Áreas de atención</p>
@@ -168,8 +160,8 @@ export async function AdminDashboard() {
                         </div>
 
                         <div className="flex items-center">
-                            <div className="bg-rose-100 dark:bg-rose-900/20 p-3 rounded-full mr-4">
-                                <Activity className="h-6 w-6 text-rose-600" />
+                            <div className="bg-muted p-3 rounded-full mr-4">
+                                <Activity className="h-6 w-6 text-muted-foreground" />
                             </div>
                             <div className="flex-1 space-y-1">
                                 <p className="text-sm font-medium leading-none">Tickets anulados</p>
@@ -192,7 +184,7 @@ export async function AdminDashboard() {
                                 <div key={user.id} className="flex items-center">
                                     <Avatar className="h-9 w-9">
                                         <AvatarImage src={user.image || undefined} alt={user.name || "User"} referrerPolicy="no-referrer" />
-                                        <AvatarFallback className="bg-linear-to-br from-purple-500 to-pink-500 text-white">
+                                        <AvatarFallback className="bg-muted-foreground/80 text-background font-bold">
                                             {user.name?.charAt(0) || "U"}
                                         </AvatarFallback>
                                     </Avatar>
