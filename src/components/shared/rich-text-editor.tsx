@@ -31,7 +31,7 @@ const EDITOR_EXTENSIONS = [
     Link.configure({
         openOnClick: false,
         HTMLAttributes: {
-            class: 'text-blue-600 underline cursor-pointer hover:text-blue-800',
+            class: 'text-foreground underline cursor-pointer hover:text-foreground/80',
         },
     }),
 ];

@@ -99,7 +99,7 @@ export function WatchersManager({ ticketId, currentWatchers, allUsers, currentUs
                                     </Avatar>
                                     {user.name}
                                     <X
-                                        className="h-3 w-3 cursor-pointer ml-1 hover:text-red-500"
+                                        className="h-3 w-3 cursor-pointer ml-1 hover:text-destructive"
                                         onClick={() => handleToggleWatcher(watcherId)}
                                     />
                                 </Badge>

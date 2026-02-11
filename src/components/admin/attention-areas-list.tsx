@@ -58,7 +58,7 @@ export function AttentionAreasList({ areas }: AttentionAreasListProps) {
                                     <TableCell className="font-medium">{area.name}</TableCell>
                                     <TableCell className="text-muted-foreground">{area.slug}</TableCell>
                                     <TableCell>
-                                        <div className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${area.isAcceptingTickets ? "bg-green-100 text-green-800" : "bg-red-100 text-red-800"
+                                        <div className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${area.isAcceptingTickets ? "bg-foreground/10 text-foreground" : "bg-muted text-muted-foreground"
                                             }`}>
                                             {area.isAcceptingTickets ? "Activo" : "Cerrado"}
                                         </div>

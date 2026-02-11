@@ -44,13 +44,13 @@ export function UserValidationControls({ ticketId }: { ticketId: number }) {
     };
 
     return (
-        <Card className="border-orange-200 bg-orange-50 dark:border-orange-900 dark:bg-orange-950">
+        <Card className="border-border bg-muted">
             <CardHeader>
-                <CardTitle className="flex items-center gap-2 text-orange-900 dark:text-orange-100">
+                <CardTitle className="flex items-center gap-2 text-foreground">
                     <AlertCircle className="h-5 w-5" />
                     Validación requerida
                 </CardTitle>
-                <CardDescription className="text-orange-700 dark:text-orange-300">
+                <CardDescription className="text-muted-foreground">
                     El agente ha culminado la atención. Por favor revisa y valida si el ticket puede cerrarse.
                 </CardDescription>
             </CardHeader>
@@ -59,7 +59,7 @@ export function UserValidationControls({ ticketId }: { ticketId: number }) {
                     <AlertDialogTrigger asChild>
                         <Button
                             variant="default"
-                            className="flex-1 bg-green-600 hover:bg-green-700"
+                            className="flex-1"
                             disabled={isPending}
                         >
                             <CheckCircle2 className="mr-2 h-4 w-4" />
@@ -76,7 +76,7 @@ export function UserValidationControls({ ticketId }: { ticketId: number }) {
                         </AlertDialogHeader>
                         <AlertDialogFooter>
                             <AlertDialogCancel>Cancelar</AlertDialogCancel>
-                            <AlertDialogAction onClick={handleApprove} className="bg-green-600 hover:bg-green-700">
+                            <AlertDialogAction onClick={handleApprove}>
                                 Sí, aprobar cierre
                             </AlertDialogAction>
                         </AlertDialogFooter>
@@ -87,7 +87,7 @@ export function UserValidationControls({ ticketId }: { ticketId: number }) {
                     <AlertDialogTrigger asChild>
                         <Button
                             variant="outline"
-                            className="flex-1 border-orange-300 hover:bg-orange-100"
+                            className="flex-1 border-border hover:bg-muted"
                             disabled={isPending}
                         >
                             <XCircle className="mr-2 h-4 w-4" />
@@ -104,7 +104,7 @@ export function UserValidationControls({ ticketId }: { ticketId: number }) {
                         </AlertDialogHeader>
                         <AlertDialogFooter>
                             <AlertDialogCancel>Cancelar</AlertDialogCancel>
-                            <AlertDialogAction onClick={handleReject} className="bg-orange-600 hover:bg-orange-700">
+                            <AlertDialogAction onClick={handleReject} className="bg-destructive hover:bg-destructive/90 text-destructive-foreground">
                                 Sí, necesita ajustes
                             </AlertDialogAction>
                         </AlertDialogFooter>
