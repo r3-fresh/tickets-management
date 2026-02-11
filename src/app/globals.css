@@ -53,8 +53,8 @@
   --color-status-in-progress-foreground: var(--status-in-progress-foreground);
   --color-status-resolved: var(--status-resolved);
   --color-status-resolved-foreground: var(--status-resolved-foreground);
-  --color-status-pending: var(--status-pending);
-  --color-status-pending-foreground: var(--status-pending-foreground);
+  --color-status-pending-validation: var(--status-pending-validation);
+  --color-status-pending-validation-foreground: var(--status-pending-validation-foreground);
   --color-status-closed: var(--status-closed);
   --color-status-closed-foreground: var(--status-closed-foreground);
   --color-status-voided: var(--status-voided);
@@ -67,8 +67,8 @@
   --color-priority-medium-foreground: var(--priority-medium-foreground);
   --color-priority-high: var(--priority-high);
   --color-priority-high-foreground: var(--priority-high-foreground);
-  --color-priority-urgent: var(--priority-urgent);
-  --color-priority-urgent-foreground: var(--priority-urgent-foreground);
+  --color-priority-critical: var(--priority-critical);
+  --color-priority-critical-foreground: var(--priority-critical-foreground);
 }
 
 :root {
@@ -112,8 +112,8 @@
   --status-in-progress-foreground: oklch(0.40 0.06 250);
   --status-resolved: oklch(0.92 0.03 155);
   --status-resolved-foreground: oklch(0.38 0.06 155);
-  --status-pending: oklch(0.92 0.04 95);
-  --status-pending-foreground: oklch(0.40 0.06 95);
+  --status-pending-validation: oklch(0.92 0.04 95);
+  --status-pending-validation-foreground: oklch(0.40 0.06 95);
   --status-closed: oklch(0.94 0 0);
   --status-closed-foreground: oklch(0.50 0 0);
   --status-voided: oklch(0.93 0.03 25);
@@ -126,8 +126,8 @@
   --priority-medium-foreground: oklch(0.38 0.08 85);
   --priority-high: oklch(0.88 0.08 55);
   --priority-high-foreground: oklch(0.35 0.10 55);
-  --priority-urgent: oklch(0.88 0.10 25);
-  --priority-urgent-foreground: oklch(0.35 0.14 25);
+  --priority-critical: oklch(0.88 0.10 25);
+  --priority-critical-foreground: oklch(0.35 0.14 25);
 }
 
 .dark {
@@ -170,8 +170,8 @@
   --status-in-progress-foreground: oklch(0.82 0.04 250);
   --status-resolved: oklch(0.28 0.03 155);
   --status-resolved-foreground: oklch(0.80 0.04 155);
-  --status-pending: oklch(0.28 0.03 95);
-  --status-pending-foreground: oklch(0.82 0.05 95);
+  --status-pending-validation: oklch(0.28 0.03 95);
+  --status-pending-validation-foreground: oklch(0.82 0.05 95);
   --status-closed: oklch(0.25 0 0);
   --status-closed-foreground: oklch(0.60 0 0);
   --status-voided: oklch(0.25 0.03 25);
@@ -184,8 +184,8 @@
   --priority-medium-foreground: oklch(0.84 0.06 85);
   --priority-high: oklch(0.27 0.06 55);
   --priority-high-foreground: oklch(0.82 0.08 55);
-  --priority-urgent: oklch(0.26 0.08 25);
-  --priority-urgent-foreground: oklch(0.84 0.10 25);
+  --priority-critical: oklch(0.26 0.08 25);
+  --priority-critical-foreground: oklch(0.84 0.10 25);
 }
 
 @layer base {
