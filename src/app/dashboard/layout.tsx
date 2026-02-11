@@ -114,7 +114,7 @@ export default function DashboardLayout({
     }
 
     return (
-        <div className="flex h-screen bg-gray-100 dark:bg-background">
+        <div className="flex h-screen bg-muted">
             {/* --- DESKTOP SIDEBAR --- */}
             <aside
                 aria-label="Menú principal"
@@ -286,11 +286,11 @@ export default function DashboardLayout({
                             {isCollapsed ? <ChevronRight className="h-4 w-4" /> : <ChevronLeft className="h-4 w-4" />}
                         </Button>
 
-                        <button
+                            <button
                             onClick={handleSignOut}
                             className={cn(
-                                "flex items-center text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground rounded-md transition-colors cursor-pointer",
-                                isCollapsed ? "justify-center p-3 text-red-500 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-950/20 order-1" : "flex-1 px-3 py-2 text-red-500 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-950/20 order-1"
+                                "flex items-center text-muted-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground rounded-md transition-colors cursor-pointer",
+                                isCollapsed ? "justify-center p-3 order-1" : "flex-1 px-3 py-2 order-1"
                             )}
                             aria-label="Cerrar sesión"
                         >
@@ -320,7 +320,7 @@ export default function DashboardLayout({
                 )}
             >
                 <div className="flex h-16 items-center justify-between px-6 border-b border-sidebar-border">
-                    <span className="text-lg font-bold">Menu</span>
+                    <span className="text-base font-semibold">Menú</span>
                     <button
                         onClick={() => setIsSidebarOpen(false)}
                         className="text-muted-foreground hover:text-foreground"
@@ -424,7 +424,7 @@ export default function DashboardLayout({
                     <div className="p-4 border-t border-sidebar-border">
                         <button
                             onClick={handleSignOut}
-                            className="flex w-full items-center justify-center px-4 py-3 text-red-500 bg-red-50 dark:bg-red-950/20 rounded-lg hover:bg-red-100 dark:hover:bg-red-900/30 transition-colors"
+                            className="flex w-full items-center justify-center px-4 py-3 text-muted-foreground bg-muted rounded-lg hover:bg-accent hover:text-accent-foreground transition-colors"
                             aria-label="Cerrar sesión"
                         >
                             <LogOut className="mr-2 h-5 w-5" aria-hidden="true" />
@@ -436,7 +436,7 @@ export default function DashboardLayout({
 
             {/* --- MAIN HEADER (Mobile Only) & CONTENT --- */}
             <div className="flex flex-1 flex-col overflow-hidden">
-                <header className="flex h-16 items-center justify-between border-b border-border bg-white dark:bg-card px-4 shadow-sm md:hidden">
+                <header className="flex h-16 items-center justify-between border-b border-border bg-card px-4 shadow-sm md:hidden">
                     <button
                         onClick={() => setIsSidebarOpen(true)}
                         className="text-muted-foreground focus:outline-none"
@@ -445,7 +445,7 @@ export default function DashboardLayout({
                     >
                         <Menu className="h-6 w-6" />
                     </button>
-                    <span className="text-lg font-bold">Gestión de tickets</span>
+                    <span className="text-base font-semibold">Gestión de tickets</span>
                     <div className="w-6" />
                 </header>
 
