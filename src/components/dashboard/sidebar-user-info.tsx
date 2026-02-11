@@ -25,7 +25,7 @@ export function SidebarUserInfo({ role }: SidebarUserInfoProps) {
                 {roleLabel}
             </Badge>
             {role === "agent" && areaName && (
-                <span className="text-[9.5px] text-muted-foreground font-normal leading-tight">
+                <span className="text-[11px] text-muted-foreground font-normal leading-tight">
                     {areaName}
                 </span>
             )}

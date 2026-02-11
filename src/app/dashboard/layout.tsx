@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect, useCallback } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { Button } from "@/components/ui/button";
@@ -64,6 +64,18 @@ export default function DashboardLayout({
     const pathname = usePathname();
     const router = useRouter();
 
+    // Close mobile sidebar on Escape key
+    const handleEscape = useCallback((e: KeyboardEvent) => {
+        if (e.key === "Escape") setIsSidebarOpen(false);
+    }, []);
+
+    useEffect(() => {
+        if (isSidebarOpen) {
+            document.addEventListener("keydown", handleEscape);
+            return () => document.removeEventListener("keydown", handleEscape);
+        }
+    }, [isSidebarOpen, handleEscape]);
+
     // Use auth hook to get session data
     const { data: session, isPending } = authClient.useSession();
 
@@ -104,7 +116,8 @@ export default function DashboardLayout({
     return (
         <div className="flex h-screen bg-gray-100 dark:bg-background">
             {/* --- DESKTOP SIDEBAR --- */}
-            <div
+            <aside
+                aria-label="Menú principal"
                 className={cn(
                     "hidden md:flex flex-col transition-all duration-300 ease-in-out z-20 border-r border-sidebar-border",
                     "bg-sidebar text-sidebar-foreground",
@@ -197,6 +210,7 @@ export default function DashboardLayout({
                                     <Link
                                         key={item.href}
                                         href={item.href}
+                                        aria-current={isActive ? "page" : undefined}
                                         className={cn(
                                             "group flex items-center px-3 py-2 text-sm font-medium rounded-md transition-colors",
                                             isCollapsed ? "justify-center" : "",
@@ -206,7 +220,7 @@ export default function DashboardLayout({
                                         )}
                                         title={isCollapsed ? item.label : undefined}
                                     >
-                                        <Icon className={cn("h-5 w-5 shrink-0", !isCollapsed && "mr-3", isActive && "text-primary")} />
+                                        <Icon className={cn("h-5 w-5 shrink-0", !isCollapsed && "mr-3", isActive && "text-primary")} aria-hidden="true" />
                                         {!isCollapsed && <span>{item.label}</span>}
                                     </Link>
                                 );
@@ -233,6 +247,8 @@ export default function DashboardLayout({
                                         key={item.href}
                                         href={item.href}
                                         target={item.external ? "_blank" : undefined}
+                                        rel={item.external ? "noopener noreferrer" : undefined}
+                                        aria-current={isActive ? "page" : undefined}
                                         className={cn(
                                             "group flex items-center px-3 py-2 text-sm font-medium rounded-md transition-colors",
                                             isCollapsed ? "justify-center" : "",
@@ -242,7 +258,7 @@ export default function DashboardLayout({
                                         )}
                                         title={isCollapsed ? item.label : undefined}
                                     >
-                                        <Icon className={cn("h-5 w-5 shrink-0", !isCollapsed && "mr-3")} />
+                                        <Icon className={cn("h-5 w-5 shrink-0", !isCollapsed && "mr-3")} aria-hidden="true" />
                                         {!isCollapsed && <span>{item.label}</span>}
                                     </Link>
                                 );
@@ -265,7 +281,7 @@ export default function DashboardLayout({
                                 "text-muted-foreground hover:text-foreground hover:bg-sidebar-accent h-9 w-9 border border-sidebar-border transition-all",
                                 isCollapsed ? "order-2" : "order-2"
                             )}
-                            title={isCollapsed ? "Expandir" : "Colapsar"}
+                            aria-label={isCollapsed ? "Expandir menú" : "Colapsar menú"}
                         >
                             {isCollapsed ? <ChevronRight className="h-4 w-4" /> : <ChevronLeft className="h-4 w-4" />}
                         </Button>
@@ -276,18 +292,28 @@ export default function DashboardLayout({
                                 "flex items-center text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground rounded-md transition-colors cursor-pointer",
                                 isCollapsed ? "justify-center p-3 text-red-500 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-950/20 order-1" : "flex-1 px-3 py-2 text-red-500 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-950/20 order-1"
                             )}
-                            title="Cerrar sesión"
+                            aria-label="Cerrar sesión"
                         >
-                            <LogOut className={cn("h-5 w-5", !isCollapsed && "mr-3")} />
+                            <LogOut className={cn("h-5 w-5", !isCollapsed && "mr-3")} aria-hidden="true" />
                             {!isCollapsed && <span className="text-sm font-medium">Cerrar sesión</span>}
                         </button>
                     </div>
                 </div>
-            </div>
+            </aside>
 
+
+            {/* --- MOBILE SIDEBAR OVERLAY --- */}
+            {isSidebarOpen && (
+                <div
+                    className="fixed inset-0 z-40 bg-black/50 md:hidden"
+                    onClick={() => setIsSidebarOpen(false)}
+                    aria-hidden="true"
+                />
+            )}
 
             {/* --- MOBILE SIDEBAR --- */}
             <aside
+                aria-label="Menú principal"
                 className={cn(
                     "fixed inset-y-0 left-0 z-50 w-72 transform bg-sidebar text-sidebar-foreground shadow-2xl transition-transform duration-300 ease-in-out md:hidden",
                     isSidebarOpen ? "translate-x-0" : "-translate-x-full"
@@ -295,7 +321,11 @@ export default function DashboardLayout({
             >
                 <div className="flex h-16 items-center justify-between px-6 border-b border-sidebar-border">
                     <span className="text-lg font-bold">Menu</span>
-                    <button onClick={() => setIsSidebarOpen(false)} className="text-muted-foreground hover:text-foreground">
+                    <button
+                        onClick={() => setIsSidebarOpen(false)}
+                        className="text-muted-foreground hover:text-foreground"
+                        aria-label="Cerrar menú"
+                    >
                         <X className="h-6 w-6" />
                     </button>
                 </div>
@@ -352,6 +382,7 @@ export default function DashboardLayout({
                                         key={item.href}
                                         href={item.href}
                                         onClick={() => setIsSidebarOpen(false)}
+                                        aria-current={pathname === item.href ? "page" : undefined}
                                         className={cn(
                                             "group flex items-center px-3 py-3 text-base font-medium rounded-lg",
                                             pathname === item.href
@@ -359,7 +390,7 @@ export default function DashboardLayout({
                                                 : "text-muted-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"
                                         )}
                                     >
-                                        <item.icon className="mr-4 h-6 w-6 shrink-0" />
+                                        <item.icon className="mr-4 h-6 w-6 shrink-0" aria-hidden="true" />
                                         {item.label}
                                     </Link>
                                 ))}
@@ -376,10 +407,11 @@ export default function DashboardLayout({
                                         key={item.href}
                                         href={item.href}
                                         target={item.external ? "_blank" : undefined}
+                                        rel={item.external ? "noopener noreferrer" : undefined}
                                         onClick={() => setIsSidebarOpen(false)}
                                         className="group flex items-center px-3 py-3 text-base font-medium rounded-lg text-muted-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"
                                     >
-                                        <item.icon className="mr-4 h-6 w-6 shrink-0" />
+                                        <item.icon className="mr-4 h-6 w-6 shrink-0" aria-hidden="true" />
                                         {item.label}
                                     </Link>
                                 ))}
@@ -393,8 +425,9 @@ export default function DashboardLayout({
                         <button
                             onClick={handleSignOut}
                             className="flex w-full items-center justify-center px-4 py-3 text-red-500 bg-red-50 dark:bg-red-950/20 rounded-lg hover:bg-red-100 dark:hover:bg-red-900/30 transition-colors"
+                            aria-label="Cerrar sesión"
                         >
-                            <LogOut className="mr-2 h-5 w-5" />
+                            <LogOut className="mr-2 h-5 w-5" aria-hidden="true" />
                             Cerrar sesión
                         </button>
                     </div>
@@ -407,6 +440,8 @@ export default function DashboardLayout({
                     <button
                         onClick={() => setIsSidebarOpen(true)}
                         className="text-muted-foreground focus:outline-none"
+                        aria-label="Abrir menú"
+                        aria-expanded={isSidebarOpen}
                     >
                         <Menu className="h-6 w-6" />
                     </button>

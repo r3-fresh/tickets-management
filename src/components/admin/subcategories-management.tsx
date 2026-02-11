@@ -312,6 +312,7 @@ export function SubcategoriesManagement({ initialSubcategories, categories }: Su
                                                     size="sm"
                                                     onClick={() => handleMoveUp(subcategory.id, subcategory.categoryId, subcategory.displayOrder)}
                                                     disabled={indexInCategory === 0 || isPending}
+                                                    aria-label={`Mover arriba ${subcategory.name}`}
                                                 >
                                                     <ArrowUp className="h-3 w-3" />
                                                 </Button>
@@ -320,6 +321,7 @@ export function SubcategoriesManagement({ initialSubcategories, categories }: Su
                                                     size="sm"
                                                     onClick={() => handleMoveDown(subcategory.id, subcategory.categoryId, subcategory.displayOrder)}
                                                     disabled={indexInCategory === categorySubcategories.length - 1 || isPending}
+                                                    aria-label={`Mover abajo ${subcategory.name}`}
                                                 >
                                                     <ArrowDown className="h-3 w-3" />
                                                 </Button>
@@ -337,6 +339,7 @@ export function SubcategoriesManagement({ initialSubcategories, categories }: Su
                                                 checked={subcategory.isActive}
                                                 onCheckedChange={() => handleToggleActive(subcategory.id)}
                                                 disabled={isPending}
+                                                aria-label={`${subcategory.isActive ? "Desactivar" : "Activar"} subcategoría ${subcategory.name}`}
                                             />
                                         </TableCell>
                                         <TableCell className="text-right">
@@ -346,6 +349,7 @@ export function SubcategoriesManagement({ initialSubcategories, categories }: Su
                                                     size="sm"
                                                     onClick={() => handleEdit(subcategory)}
                                                     disabled={isPending}
+                                                    aria-label={`Editar ${subcategory.name}`}
                                                 >
                                                     <Pencil className="h-4 w-4" />
                                                 </Button>
@@ -354,6 +358,7 @@ export function SubcategoriesManagement({ initialSubcategories, categories }: Su
                                                     size="sm"
                                                     onClick={() => handleDelete(subcategory.id)}
                                                     disabled={isPending}
+                                                    aria-label={`Eliminar ${subcategory.name}`}
                                                 >
                                                     <Trash2 className="h-4 w-4 text-destructive" />
                                                 </Button>

@@ -331,6 +331,7 @@ export function AdminCategoriesManagement({
                                             checked={category.isActive}
                                             onCheckedChange={() => handleToggleActive(category.id)}
                                             disabled={isPending}
+                                            aria-label={`${category.isActive ? "Desactivar" : "Activar"} categoría ${category.name}`}
                                         />
                                     </TableCell>
                                     <TableCell className="text-right">
@@ -340,6 +341,7 @@ export function AdminCategoriesManagement({
                                                 size="sm"
                                                 onClick={() => handleMoveUp(category.id, category.displayOrder)}
                                                 disabled={index === 0 || isPending}
+                                                aria-label={`Mover arriba ${category.name}`}
                                             >
                                                 <ArrowUp className="h-3 w-3" />
                                             </Button>
@@ -348,6 +350,7 @@ export function AdminCategoriesManagement({
                                                 size="sm"
                                                 onClick={() => handleMoveDown(category.id, category.displayOrder)}
                                                 disabled={index === initialCategories.length - 1 || isPending}
+                                                aria-label={`Mover abajo ${category.name}`}
                                             >
                                                 <ArrowDown className="h-3 w-3" />
                                             </Button>
@@ -356,6 +359,7 @@ export function AdminCategoriesManagement({
                                                 size="sm"
                                                 onClick={() => handleEdit(category)}
                                                 disabled={isPending}
+                                                aria-label={`Editar ${category.name}`}
                                             >
                                                 <Pencil className="h-4 w-4" />
                                             </Button>
@@ -364,6 +368,7 @@ export function AdminCategoriesManagement({
                                                 size="sm"
                                                 onClick={() => setDeleteId(category.id)}
                                                 disabled={isPending}
+                                                aria-label={`Eliminar ${category.name}`}
                                             >
                                                 <Trash2 className="h-4 w-4 text-destructive" />
                                             </Button>

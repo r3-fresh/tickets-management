@@ -55,7 +55,7 @@ export function LoginForm() {
             <div className="hidden lg:flex lg:w-[45%] xl:w-[40%] bg-foreground text-background flex-col justify-between p-10 xl:p-14">
                 <div className="flex items-center gap-3">
                     <div className="flex size-9 items-center justify-center rounded-lg bg-background/10 border border-background/15">
-                        <Monitor className="size-5" />
+                        <Monitor className="size-5" aria-hidden="true" />
                     </div>
                     <span className="text-sm font-medium tracking-wide uppercase opacity-80">
                         Tecnologías y sistemas de información
@@ -84,7 +84,7 @@ export function LoginForm() {
                     {/* Header con branding - solo mobile */}
                     <div className="flex items-center gap-3 lg:hidden">
                         <div className="flex size-10 items-center justify-center rounded-lg bg-foreground text-background">
-                            <Monitor className="size-5" />
+                            <Monitor className="size-5" aria-hidden="true" />
                         </div>
                         <div>
                             <p className="text-sm font-semibold leading-tight">
@@ -120,6 +120,7 @@ export function LoginForm() {
                                 <svg
                                     className="mr-2.5 size-4"
                                     viewBox="0 0 24 24"
+                                    aria-hidden="true"
                                 >
                                     <path
                                         d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"
@@ -155,7 +156,7 @@ export function LoginForm() {
                                     className="flex items-start gap-3"
                                 >
                                     <div className="flex size-8 shrink-0 items-center justify-center rounded-md bg-muted">
-                                        <feature.icon className="size-4 text-muted-foreground" />
+                                        <feature.icon className="size-4 text-muted-foreground" aria-hidden="true" />
                                     </div>
                                     <div className="space-y-0.5">
                                         <p className="text-sm font-medium leading-tight">

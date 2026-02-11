@@ -196,6 +196,7 @@ export function CampusManagement({ initialCampus }: CampusManagementProps) {
                                             checked={campus.isActive}
                                             onCheckedChange={() => handleToggleActive(campus.id)}
                                             disabled={isPending}
+                                            aria-label={`${campus.isActive ? "Desactivar" : "Activar"} campus ${campus.name}`}
                                         />
                                     </TableCell>
                                     <TableCell className="text-right">
@@ -205,6 +206,7 @@ export function CampusManagement({ initialCampus }: CampusManagementProps) {
                                                 size="sm"
                                                 onClick={() => handleEdit(campus)}
                                                 disabled={isPending}
+                                                aria-label={`Editar ${campus.name}`}
                                             >
                                                 <Pencil className="h-4 w-4" />
                                             </Button>
@@ -213,6 +215,7 @@ export function CampusManagement({ initialCampus }: CampusManagementProps) {
                                                 size="sm"
                                                 onClick={() => handleDelete(campus.id)}
                                                 disabled={isPending}
+                                                aria-label={`Eliminar ${campus.name}`}
                                             >
                                                 <Trash2 className="h-4 w-4 text-destructive" />
                                             </Button>

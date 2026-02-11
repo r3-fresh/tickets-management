@@ -71,6 +71,7 @@ export function AttentionAreasList({ areas }: AttentionAreasListProps) {
                                                 setEditingArea(area);
                                                 setIsDialogOpen(true);
                                             }}
+                                            aria-label={`Editar ${area.name}`}
                                         >
                                             <Pencil className="h-4 w-4" />
                                         </Button>

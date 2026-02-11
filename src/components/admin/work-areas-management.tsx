@@ -200,6 +200,7 @@ export function WorkAreasManagement({ initialAreas }: WorkAreasManagementProps) 
                                             checked={area.isActive}
                                             onCheckedChange={() => handleToggleActive(area.id)}
                                             disabled={isPending}
+                                            aria-label={`${area.isActive ? "Desactivar" : "Activar"} área ${area.name}`}
                                         />
                                     </TableCell>
                                     <TableCell className="text-right">
@@ -209,6 +210,7 @@ export function WorkAreasManagement({ initialAreas }: WorkAreasManagementProps) 
                                                 size="sm"
                                                 onClick={() => handleEdit(area)}
                                                 disabled={isPending}
+                                                aria-label={`Editar ${area.name}`}
                                             >
                                                 <Pencil className="h-4 w-4" />
                                             </Button>
@@ -217,6 +219,7 @@ export function WorkAreasManagement({ initialAreas }: WorkAreasManagementProps) 
                                                 size="sm"
                                                 onClick={() => handleDelete(area.id)}
                                                 disabled={isPending}
+                                                aria-label={`Eliminar ${area.name}`}
                                             >
                                                 <Trash2 className="h-4 w-4 text-destructive" />
                                             </Button>
