@@ -1,7 +1,8 @@
 import { db } from "@/db";
-import { tickets, comments, ticketViews, ticketCategories, attentionAreas } from "@/db/schema";
+import { tickets, attentionAreas } from "@/db/schema";
+import { queryTicketsWithUnread } from "@/db/queries";
 import { getSession } from "@/lib/auth/helpers";
-import { eq, desc, sql, and } from "drizzle-orm";
+import { eq, desc } from "drizzle-orm";
 import dynamic from "next/dynamic";
 import { Breadcrumb } from "@/components/shared/breadcrumb";
 
@@ -37,48 +38,10 @@ export default async function () {
         db.query.attentionAreas.findFirst({
             where: eq(attentionAreas.id, attentionAreaId),
         }),
-        // Fetch tickets for this attention area
-        db.select({
-            id: tickets.id,
-            ticketCode: tickets.ticketCode,
-            title: tickets.title,
-            status: tickets.status,
-            priority: tickets.priority,
-            categoryId: tickets.categoryId,
-            categoryName: ticketCategories.name,
-            subcategoryId: tickets.subcategoryId,
-            areaId: tickets.areaId,
-            campusId: tickets.campusId,
-            createdById: tickets.createdById,
-            assignedToId: tickets.assignedToId,
-            createdAt: tickets.createdAt,
-            updatedAt: tickets.updatedAt,
-            unreadCommentCount: sql<number>`
-                cast(
-                    count(
-                        case 
-                            when ${comments.createdAt} > coalesce(${ticketViews.lastViewedAt}, ${tickets.createdAt})
-                            and ${comments.userId} != ${session.user.id}
-                            then 1 
-                        end
-                    ) as integer
-                )
-            `,
-            commentCount: sql<number>`cast(count(${comments.id}) as integer)`,
-        })
-            .from(tickets)
-            .leftJoin(ticketCategories, eq(tickets.categoryId, ticketCategories.id))
-            .leftJoin(comments, eq(tickets.id, comments.ticketId))
-            .leftJoin(
-                ticketViews,
-                and(
-                    eq(tickets.id, ticketViews.ticketId),
-                    eq(ticketViews.userId, session.user.id)
-                )
-            )
-            .where(eq(tickets.attentionAreaId, attentionAreaId))
-            .groupBy(tickets.id, ticketCategories.name, ticketViews.lastViewedAt)
-            .orderBy(desc(tickets.createdAt)),
+        queryTicketsWithUnread(
+            session.user.id,
+            eq(tickets.attentionAreaId, attentionAreaId),
+        ),
         // Fetch assigned users
         db.query.tickets.findMany({
             where: eq(tickets.attentionAreaId, attentionAreaId),

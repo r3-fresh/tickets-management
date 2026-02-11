@@ -1,6 +1,7 @@
 import { db } from "@/db";
-import { tickets, comments, ticketViews, ticketCategories } from "@/db/schema";
+import { tickets } from "@/db/schema";
 import { eq, desc, sql, and, not, count } from "drizzle-orm";
+import { queryTicketsWithUnread } from "@/db/queries";
 import dynamic from "next/dynamic";
 import { Breadcrumb } from "@/components/shared/breadcrumb";
 
@@ -56,48 +57,7 @@ export async function UserDashboard({ userId }: UserDashboardProps) {
             .from(tickets)
             .where(sql`${userId} = ANY(${tickets.watchers})`),
         // Recent user tickets (last 5)
-        db.select({
-            id: tickets.id,
-            ticketCode: tickets.ticketCode,
-            title: tickets.title,
-            status: tickets.status,
-            priority: tickets.priority,
-            categoryId: tickets.categoryId,
-            categoryName: ticketCategories.name,
-            subcategoryId: tickets.subcategoryId,
-            areaId: tickets.areaId,
-            campusId: tickets.campusId,
-            createdById: tickets.createdById,
-            assignedToId: tickets.assignedToId,
-            createdAt: tickets.createdAt,
-            updatedAt: tickets.updatedAt,
-            unreadCommentCount: sql<number>`
-                cast(
-                    count(
-                        case 
-                            when ${comments.createdAt} > coalesce(${ticketViews.lastViewedAt}, ${tickets.createdAt})
-                            and ${comments.userId} != ${userId}
-                            then 1 
-                        end
-                    ) as integer
-                )
-            `,
-            commentCount: sql<number>`cast(count(${comments.id}) as integer)`,
-        })
-            .from(tickets)
-            .leftJoin(ticketCategories, eq(tickets.categoryId, ticketCategories.id))
-            .leftJoin(comments, eq(tickets.id, comments.ticketId))
-            .leftJoin(
-                ticketViews,
-                and(
-                    eq(tickets.id, ticketViews.ticketId),
-                    eq(ticketViews.userId, userId)
-                )
-            )
-            .where(eq(tickets.createdById, userId))
-            .groupBy(tickets.id, ticketCategories.name, ticketViews.lastViewedAt)
-            .orderBy(desc(tickets.createdAt))
-            .limit(5),
+        queryTicketsWithUnread(userId, eq(tickets.createdById, userId), 5),
         // User tickets with assigned
         db.query.tickets.findMany({
             where: eq(tickets.createdById, userId),
@@ -109,53 +69,7 @@ export async function UserDashboard({ userId }: UserDashboardProps) {
             limit: 5,
         }),
         // Recent watched tickets (last 3)
-        db.select({
-            id: tickets.id,
-            ticketCode: tickets.ticketCode,
-            title: tickets.title,
-            status: tickets.status,
-            priority: tickets.priority,
-            categoryId: tickets.categoryId,
-            categoryName: ticketCategories.name,
-            subcategoryId: tickets.subcategoryId,
-            areaId: tickets.areaId,
-            campusId: tickets.campusId,
-            createdById: tickets.createdById,
-            assignedToId: tickets.assignedToId,
-            createdAt: tickets.createdAt,
-            updatedAt: tickets.updatedAt,
-            unreadCommentCount: sql<number>`
-                cast(
-                    count(
-                        case 
-                            when ${comments.createdAt} > coalesce(${ticketViews.lastViewedAt}, ${tickets.createdAt})
-                            and ${comments.userId} != ${userId}
-                            then 1 
-                        end
-                    ) as integer
-                )
-            `,
-            commentCount: sql<number>`cast(count(${comments.id}) as integer)`,
-        })
-            .from(tickets)
-            .leftJoin(ticketCategories, eq(tickets.categoryId, ticketCategories.id))
-            .leftJoin(comments, eq(tickets.id, comments.ticketId))
-            .leftJoin(
-                ticketViews,
-                and(
-                    eq(tickets.id, ticketViews.ticketId),
-                    eq(ticketViews.userId, userId)
-                )
-            )
-            .where(
-                and(
-                    not(eq(tickets.createdById, userId)),
-                    sql`${userId} = ANY(${tickets.watchers})`
-                )
-            )
-            .groupBy(tickets.id, ticketCategories.name, ticketViews.lastViewedAt)
-            .orderBy(desc(tickets.createdAt))
-            .limit(3),
+        queryTicketsWithUnread(userId, and(not(eq(tickets.createdById, userId)), sql`${userId} = ANY(${tickets.watchers})`), 3),
         // Watched tickets with relations
         db.query.tickets.findMany({
             where: and(

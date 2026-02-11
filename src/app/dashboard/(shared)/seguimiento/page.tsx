@@ -1,5 +1,6 @@
 import { db } from "@/db";
-import { tickets, comments, ticketViews, ticketCategories } from "@/db/schema";
+import { tickets } from "@/db/schema";
+import { queryTicketsWithUnread } from "@/db/queries";
 import { requireAuth } from "@/lib/auth/helpers";
 import { desc, sql, and, not, eq } from "drizzle-orm";
 import dynamic from "next/dynamic";
@@ -15,61 +16,17 @@ const TicketsList = dynamic(
 export default async function () {
     const session = await requireAuth();
 
+    const watchedWhere = and(
+        not(eq(tickets.createdById, session.user.id)),
+        sql`${session.user.id} = ANY(${tickets.watchers})`
+    );
+
     // Both queries are independent — run in parallel
     const [watchedTickets, ticketsWithRelations] = await Promise.all([
-        // Fetch tickets where user is a watcher BUT NOT the creator
-        db.select({
-            id: tickets.id,
-            ticketCode: tickets.ticketCode,
-            title: tickets.title,
-            status: tickets.status,
-            priority: tickets.priority,
-            categoryId: tickets.categoryId,
-            categoryName: ticketCategories.name,
-            subcategoryId: tickets.subcategoryId,
-            areaId: tickets.areaId,
-            campusId: tickets.campusId,
-            createdById: tickets.createdById,
-            assignedToId: tickets.assignedToId,
-            createdAt: tickets.createdAt,
-            updatedAt: tickets.updatedAt,
-            unreadCommentCount: sql<number>`
-                cast(
-                    count(
-                        case 
-                            when ${comments.createdAt} > coalesce(${ticketViews.lastViewedAt}, ${tickets.createdAt})
-                            and ${comments.userId} != ${session.user.id}
-                            then 1 
-                        end
-                    ) as integer
-                )
-            `,
-            commentCount: sql<number>`cast(count(${comments.id}) as integer)`,
-        })
-            .from(tickets)
-            .leftJoin(ticketCategories, eq(tickets.categoryId, ticketCategories.id))
-            .leftJoin(comments, eq(tickets.id, comments.ticketId))
-            .leftJoin(
-                ticketViews,
-                and(
-                    eq(tickets.id, ticketViews.ticketId),
-                    eq(ticketViews.userId, session.user.id)
-                )
-            )
-            .where(
-                and(
-                    not(eq(tickets.createdById, session.user.id)),
-                    sql`${session.user.id} = ANY(${tickets.watchers})`
-                )
-            )
-            .groupBy(tickets.id, ticketCategories.name, ticketViews.lastViewedAt)
-            .orderBy(desc(tickets.createdAt)),
+        queryTicketsWithUnread(session.user.id, watchedWhere),
         // Fetch assigned users and creators separately
         db.query.tickets.findMany({
-            where: and(
-                not(eq(tickets.createdById, session.user.id)),
-                sql`${session.user.id} = ANY(${tickets.watchers})`
-            ),
+            where: watchedWhere,
             columns: { id: true },
             with: {
                 assignedTo: true,
