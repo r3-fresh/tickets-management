@@ -17,7 +17,6 @@ import {
     PopoverTrigger,
 } from "@/components/ui/popover";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Badge } from "@/components/ui/badge";
 
 interface User {
     id: string;
@@ -109,30 +108,29 @@ export function UserSelector({
                 </PopoverContent>
             </Popover>
 
-            {/* Selected users badges */}
+            {/* Selected users */}
             {selectedUsers.length > 0 && (
-                <div className="flex flex-wrap gap-2">
+                <div className="max-h-36 overflow-y-auto rounded-md border border-border p-2 space-y-1">
                     {selectedUsers.map((user) => (
-                        <Badge
+                        <div
                             key={user.id}
-                            variant="secondary"
-                            className="pl-2 pr-1 py-1 flex items-center gap-1"
+                            className="flex items-center gap-2 py-1 px-1.5 rounded-md hover:bg-muted/50 group"
                         >
-                            <Avatar className="h-4 w-4">
+                            <Avatar className="h-5 w-5 shrink-0">
                                 <AvatarImage src={user.image || ""} />
                                 <AvatarFallback className="text-[8px]">
                                     {user.name.charAt(0)}
                                 </AvatarFallback>
                             </Avatar>
-                            <span className="text-xs">{user.name}</span>
+                            <span className="text-xs truncate flex-1 min-w-0">{user.name}</span>
                             <button
                                 type="button"
                                 onClick={() => removeUser(user.id)}
-                                className="ml-1 rounded-full hover:bg-muted-foreground/20"
+                                className="shrink-0 rounded-full p-0.5 text-muted-foreground hover:bg-muted-foreground/20 hover:text-foreground opacity-0 group-hover:opacity-100 transition-opacity"
                             >
                                 <X className="h-3 w-3" />
                             </button>
-                        </Badge>
+                        </div>
                     ))}
                 </div>
             )}

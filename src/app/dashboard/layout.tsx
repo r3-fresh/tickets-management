@@ -194,78 +194,78 @@ export default function DashboardLayout({
                             ))}
                         </div>
                     ) : (
-                    <>
-                    {/* Navigation Section */}
-                    <div className="px-3">
-                        {!isCollapsed && (
-                            <h3 className="px-3 mb-2 text-xs font-semibold text-muted-foreground uppercase tracking-wider animate-in fade-in duration-300">
-                                Navegación
-                            </h3>
-                        )}
-                        <nav className="space-y-1">
-                            {navigationSection.map((item) => {
-                                const Icon = item.icon;
-                                const isActive = pathname === item.href;
-                                return (
-                                    <Link
-                                        key={item.href}
-                                        href={item.href}
-                                        aria-current={isActive ? "page" : undefined}
-                                        className={cn(
-                                            "group flex items-center px-3 py-2 text-sm font-medium rounded-md transition-colors",
-                                            isCollapsed ? "justify-center" : "",
-                                            isActive
-                                                ? "bg-sidebar-accent text-sidebar-accent-foreground"
-                                                : "text-muted-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"
-                                        )}
-                                        title={isCollapsed ? item.label : undefined}
-                                    >
-                                        <Icon className={cn("h-5 w-5 shrink-0", !isCollapsed && "mr-3", isActive && "text-primary")} aria-hidden="true" />
-                                        {!isCollapsed && <span>{item.label}</span>}
-                                    </Link>
-                                );
-                            })}
-                        </nav>
-                    </div>
+                        <>
+                            {/* Navigation Section */}
+                            <div className="px-3">
+                                {!isCollapsed && (
+                                    <h3 className="px-3 mb-2 text-xs font-semibold text-muted-foreground uppercase tracking-wider animate-in fade-in duration-300">
+                                        Navegación
+                                    </h3>
+                                )}
+                                <nav className="space-y-1">
+                                    {navigationSection.map((item) => {
+                                        const Icon = item.icon;
+                                        const isActive = pathname === item.href;
+                                        return (
+                                            <Link
+                                                key={item.href}
+                                                href={item.href}
+                                                aria-current={isActive ? "page" : undefined}
+                                                className={cn(
+                                                    "group flex items-center px-3 py-2 text-sm font-medium rounded-md transition-colors",
+                                                    isCollapsed ? "justify-center" : "",
+                                                    isActive
+                                                        ? "bg-sidebar-accent text-sidebar-accent-foreground"
+                                                        : "text-muted-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"
+                                                )}
+                                                title={isCollapsed ? item.label : undefined}
+                                            >
+                                                <Icon className={cn("h-5 w-5 shrink-0", !isCollapsed && "mr-3", isActive && "text-primary")} aria-hidden="true" />
+                                                {!isCollapsed && <span>{item.label}</span>}
+                                            </Link>
+                                        );
+                                    })}
+                                </nav>
+                            </div>
 
-                    {/* Separator */}
-                    <div className="mx-4 border-t border-sidebar-border" />
+                            {/* Separator */}
+                            <div className="mx-4 border-t border-sidebar-border" />
 
-                    {/* Resources Section */}
-                    <div className="px-3">
-                        {!isCollapsed && (
-                            <h3 className="px-3 mb-2 text-xs font-semibold text-muted-foreground uppercase tracking-wider animate-in fade-in duration-300">
-                                Recursos
-                            </h3>
-                        )}
-                        <nav className="space-y-1">
-                            {resourcesSection.map((item) => {
-                                const Icon = item.icon;
-                                const isActive = pathname === item.href;
-                                return (
-                                    <Link
-                                        key={item.href}
-                                        href={item.href}
-                                        target={item.external ? "_blank" : undefined}
-                                        rel={item.external ? "noopener noreferrer" : undefined}
-                                        aria-current={isActive ? "page" : undefined}
-                                        className={cn(
-                                            "group flex items-center px-3 py-2 text-sm font-medium rounded-md transition-colors",
-                                            isCollapsed ? "justify-center" : "",
-                                            isActive
-                                                ? "bg-sidebar-accent text-sidebar-accent-foreground"
-                                                : "text-muted-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"
-                                        )}
-                                        title={isCollapsed ? item.label : undefined}
-                                    >
-                                        <Icon className={cn("h-5 w-5 shrink-0", !isCollapsed && "mr-3")} aria-hidden="true" />
-                                        {!isCollapsed && <span>{item.label}</span>}
-                                    </Link>
-                                );
-                            })}
-                        </nav>
-                    </div>
-                    </>
+                            {/* Resources Section */}
+                            <div className="px-3">
+                                {!isCollapsed && (
+                                    <h3 className="px-3 mb-2 text-xs font-semibold text-muted-foreground uppercase tracking-wider animate-in fade-in duration-300">
+                                        Recursos
+                                    </h3>
+                                )}
+                                <nav className="space-y-1">
+                                    {resourcesSection.map((item) => {
+                                        const Icon = item.icon;
+                                        const isActive = pathname === item.href;
+                                        return (
+                                            <Link
+                                                key={item.href}
+                                                href={item.href}
+                                                target={item.external ? "_blank" : undefined}
+                                                rel={item.external ? "noopener noreferrer" : undefined}
+                                                aria-current={isActive ? "page" : undefined}
+                                                className={cn(
+                                                    "group flex items-center px-3 py-2 text-sm font-medium rounded-md transition-colors",
+                                                    isCollapsed ? "justify-center" : "",
+                                                    isActive
+                                                        ? "bg-sidebar-accent text-sidebar-accent-foreground"
+                                                        : "text-muted-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"
+                                                )}
+                                                title={isCollapsed ? item.label : undefined}
+                                            >
+                                                <Icon className={cn("h-5 w-5 shrink-0", !isCollapsed && "mr-3")} aria-hidden="true" />
+                                                {!isCollapsed && <span>{item.label}</span>}
+                                            </Link>
+                                        );
+                                    })}
+                                </nav>
+                            </div>
+                        </>
                     )}
                 </div>
 
@@ -286,10 +286,10 @@ export default function DashboardLayout({
                             {isCollapsed ? <ChevronRight className="h-4 w-4" /> : <ChevronLeft className="h-4 w-4" />}
                         </Button>
 
-                            <button
+                        <button
                             onClick={handleSignOut}
                             className={cn(
-                                "flex items-center text-muted-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground rounded-md transition-colors cursor-pointer",
+                                "flex items-center text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-950/30 hover:text-red-700 dark:hover:text-red-300 rounded-md transition-colors cursor-pointer",
                                 isCollapsed ? "justify-center p-3 order-1" : "flex-1 px-3 py-2 order-1"
                             )}
                             aria-label="Cerrar sesión"
@@ -371,60 +371,60 @@ export default function DashboardLayout({
                                 ))}
                             </div>
                         ) : (
-                        <>
-                        <div>
-                            <h3 className="px-2 mb-2 text-xs font-semibold text-muted-foreground uppercase tracking-wider">
-                                Navegación
-                            </h3>
-                            <div className="space-y-1">
-                                {navigationSection.map((item) => (
-                                    <Link
-                                        key={item.href}
-                                        href={item.href}
-                                        onClick={() => setIsSidebarOpen(false)}
-                                        aria-current={pathname === item.href ? "page" : undefined}
-                                        className={cn(
-                                            "group flex items-center px-3 py-3 text-base font-medium rounded-lg",
-                                            pathname === item.href
-                                                ? "bg-sidebar-accent text-sidebar-accent-foreground"
-                                                : "text-muted-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"
-                                        )}
-                                    >
-                                        <item.icon className="mr-4 h-6 w-6 shrink-0" aria-hidden="true" />
-                                        {item.label}
-                                    </Link>
-                                ))}
-                            </div>
-                        </div>
+                            <>
+                                <div>
+                                    <h3 className="px-2 mb-2 text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+                                        Navegación
+                                    </h3>
+                                    <div className="space-y-1">
+                                        {navigationSection.map((item) => (
+                                            <Link
+                                                key={item.href}
+                                                href={item.href}
+                                                onClick={() => setIsSidebarOpen(false)}
+                                                aria-current={pathname === item.href ? "page" : undefined}
+                                                className={cn(
+                                                    "group flex items-center px-3 py-3 text-base font-medium rounded-lg",
+                                                    pathname === item.href
+                                                        ? "bg-sidebar-accent text-sidebar-accent-foreground"
+                                                        : "text-muted-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"
+                                                )}
+                                            >
+                                                <item.icon className="mr-4 h-6 w-6 shrink-0" aria-hidden="true" />
+                                                {item.label}
+                                            </Link>
+                                        ))}
+                                    </div>
+                                </div>
 
-                        <div>
-                            <h3 className="px-2 mb-2 text-xs font-semibold text-muted-foreground uppercase tracking-wider">
-                                Recursos
-                            </h3>
-                            <div className="space-y-1">
-                                {resourcesSection.map((item) => (
-                                    <Link
-                                        key={item.href}
-                                        href={item.href}
-                                        target={item.external ? "_blank" : undefined}
-                                        rel={item.external ? "noopener noreferrer" : undefined}
-                                        onClick={() => setIsSidebarOpen(false)}
-                                        className="group flex items-center px-3 py-3 text-base font-medium rounded-lg text-muted-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"
-                                    >
-                                        <item.icon className="mr-4 h-6 w-6 shrink-0" aria-hidden="true" />
-                                        {item.label}
-                                    </Link>
-                                ))}
-                            </div>
-                        </div>
-                        </>
+                                <div>
+                                    <h3 className="px-2 mb-2 text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+                                        Recursos
+                                    </h3>
+                                    <div className="space-y-1">
+                                        {resourcesSection.map((item) => (
+                                            <Link
+                                                key={item.href}
+                                                href={item.href}
+                                                target={item.external ? "_blank" : undefined}
+                                                rel={item.external ? "noopener noreferrer" : undefined}
+                                                onClick={() => setIsSidebarOpen(false)}
+                                                className="group flex items-center px-3 py-3 text-base font-medium rounded-lg text-muted-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"
+                                            >
+                                                <item.icon className="mr-4 h-6 w-6 shrink-0" aria-hidden="true" />
+                                                {item.label}
+                                            </Link>
+                                        ))}
+                                    </div>
+                                </div>
+                            </>
                         )}
                     </nav>
 
                     <div className="p-4 border-t border-sidebar-border">
                         <button
                             onClick={handleSignOut}
-                            className="flex w-full items-center justify-center px-4 py-3 text-muted-foreground bg-muted rounded-lg hover:bg-accent hover:text-accent-foreground transition-colors"
+                            className="flex w-full items-center justify-center px-4 py-3 text-red-600 dark:text-red-400 bg-red-50 dark:bg-red-950/20 rounded-lg hover:bg-red-100 dark:hover:bg-red-950/40 hover:text-red-700 dark:hover:text-red-300 transition-colors"
                             aria-label="Cerrar sesión"
                         >
                             <LogOut className="mr-2 h-5 w-5" aria-hidden="true" />
