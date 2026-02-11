@@ -1,7 +1,5 @@
-import { db } from "@/db";
-import { users } from "@/db/schema";
+import { queryUsersPaginated } from "@/db/queries";
 import { getSession } from "@/lib/auth/helpers";
-import { desc } from "drizzle-orm";
 import { RolesTable } from "@/components/admin/roles-table";
 import { Breadcrumb } from "@/components/shared/breadcrumb";
 import type { Metadata } from "next";
@@ -10,17 +8,23 @@ export const metadata: Metadata = {
     title: "Gestión de usuarios",
 };
 
-export default async function UsuariosPage() {
+interface PageProps {
+    searchParams: Promise<Record<string, string | string[] | undefined>>;
+}
+
+export default async function UsuariosPage({ searchParams }: PageProps) {
     // Authorization handled by (admin) layout
     const session = await getSession();
     if (!session?.user) return null;
 
-    // Both queries are independent — run in parallel
+    const params = await searchParams;
+    const search = typeof params.search === "string" ? params.search : undefined;
+    const page = typeof params.page === "string" ? Number(params.page) : 1;
+    const perPage = typeof params.perPage === "string" ? Number(params.perPage) : 25;
+
     const { getActiveAttentionAreas } = await import("@/actions/config/get-config");
-    const [allUsers, attentionAreas] = await Promise.all([
-        db.select()
-            .from(users)
-            .orderBy(desc(users.createdAt)),
+    const [paginatedUsers, attentionAreas] = await Promise.all([
+        queryUsersPaginated(search, page, perPage),
         getActiveAttentionAreas(),
     ]);
 
@@ -36,7 +40,8 @@ export default async function UsuariosPage() {
             </div>
 
             <RolesTable
-                users={allUsers}
+                users={paginatedUsers.rows}
+                totalCount={paginatedUsers.totalCount}
                 currentUserId={session.user.id}
                 attentionAreas={attentionAreas}
             />

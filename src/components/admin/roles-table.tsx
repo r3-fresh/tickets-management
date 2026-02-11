@@ -1,12 +1,15 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useCallback } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Input } from "@/components/ui/input";
 import { UserRoleManager } from "@/components/admin/user-role-manager";
 import { UserActiveToggle } from "@/components/admin/user-active-toggle";
+import { Pagination } from "@/components/shared/pagination";
+import { useDebounce } from "@/lib/hooks/use-debounce";
 
 interface AttentionArea {
     id: number;
@@ -25,31 +28,54 @@ interface User {
 
 interface RolesTableProps {
     users: User[];
+    totalCount: number;
     currentUserId: string;
     attentionAreas: AttentionArea[];
 }
 
-export function RolesTable({ users, currentUserId, attentionAreas }: RolesTableProps) {
-    const [searchQuery, setSearchQuery] = useState("");
+export function RolesTable({ users, totalCount, currentUserId, attentionAreas }: RolesTableProps) {
+    const router = useRouter();
+    const searchParams = useSearchParams();
 
-    const filteredUsers = useMemo(() => {
-        if (!searchQuery) return users;
+    const currentPage = Number(searchParams.get("page") ?? "1");
+    const itemsPerPage = Number(searchParams.get("perPage") ?? "25");
+    const searchQuery = searchParams.get("search") ?? "";
 
-        const query = searchQuery.toLowerCase();
-        return users.filter(user => {
-            const matchesEmail = user.email.toLowerCase().includes(query);
-            const matchesName = user.name.toLowerCase().includes(query);
-            return matchesEmail || matchesName;
-        });
-    }, [users, searchQuery]);
+    const updateParams = useCallback((updates: Record<string, string>) => {
+        const params = new URLSearchParams(searchParams.toString());
+        for (const [key, value] of Object.entries(updates)) {
+            if (value) {
+                params.set(key, value);
+            } else {
+                params.delete(key);
+            }
+        }
+        router.push(`?${params.toString()}`, { scroll: false });
+    }, [searchParams, router]);
+
+    const handlePageChange = useCallback((page: number) => {
+        updateParams({ page: page.toString() });
+    }, [updateParams]);
+
+    const handleItemsPerPageChange = useCallback((perPage: number) => {
+        updateParams({ perPage: perPage.toString(), page: "" });
+    }, [updateParams]);
+
+    const debouncedSearch = useDebounce((value: string) => {
+        updateParams({ search: value, page: "" });
+    }, 400);
+
+    const handleSearchChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
+        debouncedSearch(e.target.value);
+    }, [debouncedSearch]);
 
     return (
         <div className="space-y-4">
             <div className="mb-4">
                 <Input
                     placeholder="Buscar por correo o nombre..."
-                    value={searchQuery}
-                    onChange={(e) => setSearchQuery(e.target.value)}
+                    defaultValue={searchQuery}
+                    onChange={handleSearchChange}
                     className="max-w-sm"
                 />
             </div>
@@ -66,14 +92,14 @@ export function RolesTable({ users, currentUserId, attentionAreas }: RolesTableP
                         </TableRow>
                     </TableHeader>
                     <TableBody>
-                        {filteredUsers.length === 0 ? (
+                        {users.length === 0 ? (
                             <TableRow>
                                 <TableCell colSpan={5} className="h-24 text-center text-muted-foreground">
                                     {searchQuery ? "No se encontraron usuarios" : "No hay usuarios registrados."}
                                 </TableCell>
                             </TableRow>
                         ) : (
-                            filteredUsers.map((user) => (
+                            users.map((user) => (
                                 <TableRow key={user.id}>
                                     <TableCell>
                                         <div className="flex items-center space-x-3">
@@ -125,6 +151,17 @@ export function RolesTable({ users, currentUserId, attentionAreas }: RolesTableP
                     </TableBody>
                 </Table>
             </div>
+
+            {/* Paginación */}
+            {totalCount > 0 && (
+                <Pagination
+                    currentPage={currentPage}
+                    totalItems={totalCount}
+                    itemsPerPage={itemsPerPage}
+                    onPageChange={handlePageChange}
+                    onItemsPerPageChange={handleItemsPerPageChange}
+                />
+            )}
         </div>
     );
 }

@@ -1,8 +1,9 @@
 import { db } from "@/db";
 import { tickets, attentionAreas } from "@/db/schema";
-import { queryTicketsWithUnread } from "@/db/queries";
+import { queryTicketsPaginated, getTicketFilterOptions } from "@/db/queries";
+import type { TicketFilterParams } from "@/db/queries";
 import { getSession } from "@/lib/auth/helpers";
-import { eq, desc } from "drizzle-orm";
+import { eq, inArray } from "drizzle-orm";
 import dynamic from "next/dynamic";
 import { Breadcrumb } from "@/components/shared/breadcrumb";
 import type { Metadata } from "next";
@@ -18,7 +19,11 @@ const TicketsList = dynamic(
     }
 );
 
-export default async function AreaTicketsPage() {
+interface PageProps {
+    searchParams: Promise<Record<string, string | string[] | undefined>>;
+}
+
+export default async function AreaTicketsPage({ searchParams }: PageProps) {
     // Authorization handled by (agent) layout
     const session = await getSession();
     if (!session?.user) return null;
@@ -36,34 +41,47 @@ export default async function AreaTicketsPage() {
     }
 
     const { attentionAreaId } = session.user;
+    const baseWhere = eq(tickets.attentionAreaId, attentionAreaId);
 
-    // All three queries are independent — run in parallel
-    const [areaDetails, areaTickets, ticketsWithAssigned] = await Promise.all([
-        // Fetch details of the attention area
+    const params = await searchParams;
+    const filters: TicketFilterParams = {
+        status: typeof params.status === "string" ? params.status : undefined,
+        assignedTo: typeof params.assignedTo === "string" ? params.assignedTo : undefined,
+        category: typeof params.category === "string" ? params.category : undefined,
+        search: typeof params.search === "string" ? params.search : undefined,
+        year: typeof params.year === "string" ? params.year : undefined,
+        dateFrom: typeof params.dateFrom === "string" ? params.dateFrom : undefined,
+        dateTo: typeof params.dateTo === "string" ? params.dateTo : undefined,
+        page: typeof params.page === "string" ? Number(params.page) : 1,
+        perPage: typeof params.perPage === "string" ? Number(params.perPage) : 25,
+    };
+
+    // Queries independientes en paralelo
+    const [areaDetails, paginatedResult, filterOptions] = await Promise.all([
         db.query.attentionAreas.findFirst({
             where: eq(attentionAreas.id, attentionAreaId),
         }),
-        queryTicketsWithUnread(
-            session.user.id,
-            eq(tickets.attentionAreaId, attentionAreaId),
-        ),
-        // Fetch assigned users
-        db.query.tickets.findMany({
-            where: eq(tickets.attentionAreaId, attentionAreaId),
+        queryTicketsPaginated(session.user.id, filters, baseWhere),
+        getTicketFilterOptions(baseWhere),
+    ]);
+
+    // Fetch relations solo para los IDs de la página actual
+    const ticketIds = paginatedResult.rows.map(t => t.id);
+    const relationsData = ticketIds.length > 0
+        ? await db.query.tickets.findMany({
+            where: inArray(tickets.id, ticketIds),
             columns: { id: true },
             with: {
                 assignedTo: true,
             },
-            orderBy: [desc(tickets.createdAt)],
-        }),
-    ]);
+        })
+        : [];
 
-    const mergedTickets = areaTickets.map((ticket) => {
-        const withAssigned = ticketsWithAssigned.find((t) => t.id === ticket.id);
+    const mergedTickets = paginatedResult.rows.map((ticket) => {
+        const withAssigned = relationsData.find((t) => t.id === ticket.id);
         return {
             ...ticket,
             assignedTo: withAssigned?.assignedTo || null,
-            commentCount: ticket.commentCount,
         };
     });
 
@@ -82,9 +100,12 @@ export default async function AreaTicketsPage() {
 
             <TicketsList
                 tickets={mergedTickets}
+                totalCount={paginatedResult.totalCount}
                 isAdmin={session.user.role === "admin"}
                 isAgent={true}
                 hideHeader={true}
+                assignedUsers={filterOptions.assignedUsers}
+                categories={filterOptions.categories}
             />
         </div>
     );

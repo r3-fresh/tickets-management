@@ -1,6 +1,7 @@
 "use client";
 
-import { useState, useMemo, useEffect } from "react";
+import { useCallback } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
 import {
     Table,
     TableBody,
@@ -11,17 +12,15 @@ import {
 } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import Link from "next/link";
-import { Button } from "@/components/ui/button";
 import { differenceInDays } from "date-fns";
 import { MessageCircle } from "lucide-react";
 import { CopyLinkButton } from "@/components/tickets/copy-link-button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { TicketFilters } from "@/components/tickets/ticket-filters";
 import { Pagination } from "@/components/shared/pagination";
-import { DateRange } from "react-day-picker";
 import { formatDate, translateStatus, translatePriority } from "@/lib/utils/format";
-import { isWithinInterval } from "date-fns";
 import { Input } from "@/components/ui/input";
+import { useDebounce } from "@/lib/hooks/use-debounce";
 
 interface Ticket {
     id: number;
@@ -44,122 +43,59 @@ interface Ticket {
 
 interface AdminTicketsTableProps {
     tickets: Ticket[];
+    totalCount: number;
+    assignedUsers: Array<{ id: string; name: string }>;
+    categories: Array<{ id: number; name: string }>;
 }
 
-export function AdminTicketsTable({ tickets }: AdminTicketsTableProps) {
-    const [filters, setFilters] = useState<{
-        status?: string;
-        assignedTo?: string;
-        dateRange?: DateRange;
-        category?: string;
-        year?: string;
-    }>({});
-    const [searchQuery, setSearchQuery] = useState("");
-    const [currentPage, setCurrentPage] = useState(1);
-    const [itemsPerPage, setItemsPerPage] = useState(25);
+export function AdminTicketsTable({ tickets, totalCount, assignedUsers, categories }: AdminTicketsTableProps) {
+    const router = useRouter();
+    const searchParams = useSearchParams();
 
-    // Get unique assigned users for filter
-    const assignedUsers = useMemo(() => {
-        const users = tickets
-            .filter((t) => t.assignedTo)
-            .map((t) => t.assignedTo!)
-            .filter((user, index, self) =>
-                index === self.findIndex((u) => u.id === user.id)
-            );
-        return users;
-    }, [tickets]);
+    const currentPage = Number(searchParams.get("page") ?? "1");
+    const itemsPerPage = Number(searchParams.get("perPage") ?? "25");
+    const searchQuery = searchParams.get("search") ?? "";
 
-    // Get unique categories for filter
-    const categories = useMemo(() => {
-        const categoriesMap = new Map<number, string>();
-        tickets.forEach(ticket => {
-            if (ticket.categoryId && ticket.categoryName) {
-                categoriesMap.set(ticket.categoryId, ticket.categoryName);
+    const updateParams = useCallback((updates: Record<string, string>) => {
+        const params = new URLSearchParams(searchParams.toString());
+        for (const [key, value] of Object.entries(updates)) {
+            if (value) {
+                params.set(key, value);
+            } else {
+                params.delete(key);
             }
-        });
-        return Array.from(categoriesMap.entries()).map(([id, name]) => ({ id, name }));
-    }, [tickets]);
+        }
+        router.push(`?${params.toString()}`, { scroll: false });
+    }, [searchParams, router]);
 
-    // Filter tickets
-    const filteredTickets = useMemo(() => {
-        return tickets.filter((ticket) => {
-            // Status filter
-            if (filters.status && ticket.status !== filters.status) {
-                return false;
-            }
+    const handlePageChange = useCallback((page: number) => {
+        updateParams({ page: page.toString() });
+    }, [updateParams]);
 
-            // Assigned to filter
-            if (filters.assignedTo) {
-                if (filters.assignedTo === "unassigned" && ticket.assignedTo) {
-                    return false;
-                }
-                if (filters.assignedTo !== "unassigned" && ticket.assignedTo?.id !== filters.assignedTo) {
-                    return false;
-                }
-            }
+    const handleItemsPerPageChange = useCallback((perPage: number) => {
+        updateParams({ perPage: perPage.toString(), page: "" });
+    }, [updateParams]);
 
-            // Date range filter
-            if (filters.dateRange?.from) {
-                const ticketDate = new Date(ticket.createdAt);
-                const from = filters.dateRange.from;
-                const to = filters.dateRange.to || from;
+    const debouncedSearch = useDebounce((value: string) => {
+        updateParams({ search: value, page: "" });
+    }, 400);
 
-                if (!isWithinInterval(ticketDate, { start: from, end: to })) {
-                    return false;
-                }
-            }
-
-            // Category filter
-            if (filters.category && ticket.categoryId?.toString() !== filters.category) {
-                return false;
-            }
-
-            // Year filter
-            if (filters.year && filters.year !== "all") {
-                const ticketYear = new Date(ticket.createdAt).getFullYear().toString();
-                if (ticketYear !== filters.year) {
-                    return false;
-                }
-            }
-
-            // Search filter
-            if (searchQuery) {
-                const query = searchQuery.toLowerCase();
-                const matchesCode = ticket.ticketCode.toLowerCase().includes(query);
-                const matchesTitle = ticket.title.toLowerCase().includes(query);
-                if (!matchesCode && !matchesTitle) {
-                    return false;
-                }
-            }
-
-            return true;
-        });
-    }, [tickets, filters, searchQuery]);
-
-    // Paginate filtered tickets
-    const paginatedTickets = useMemo(() => {
-        const startIndex = (currentPage - 1) * itemsPerPage;
-        const endIndex = startIndex + itemsPerPage;
-        return filteredTickets.slice(startIndex, endIndex);
-    }, [filteredTickets, currentPage, itemsPerPage]);
-
-    // Reset to page 1 when filters change
-    useEffect(() => {
-        setCurrentPage(1);
-    }, [filters, searchQuery]);
+    const handleSearchChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
+        debouncedSearch(e.target.value);
+    }, [debouncedSearch]);
 
     return (
         <div className="space-y-4">
             <div className="mb-4">
                 <Input
                     placeholder="Buscar por código o título..."
-                    value={searchQuery}
-                    onChange={(e) => setSearchQuery(e.target.value)}
+                    defaultValue={searchQuery}
+                    onChange={handleSearchChange}
                     className="max-w-sm"
                 />
             </div>
 
-            <TicketFilters onFilterChange={setFilters} assignedUsers={assignedUsers} categories={categories} />
+            <TicketFilters assignedUsers={assignedUsers} categories={categories} />
 
             <div className="rounded-md border bg-card shadow-sm">
                 <Table>
@@ -177,14 +113,14 @@ export function AdminTicketsTable({ tickets }: AdminTicketsTableProps) {
                         </TableRow>
                     </TableHeader>
                     <TableBody>
-                        {paginatedTickets.length === 0 ? (
+                        {tickets.length === 0 ? (
                             <TableRow>
                                 <TableCell colSpan={9} className="h-24 text-center text-muted-foreground">
                                     No se encontraron tickets con los filtros aplicados.
                                 </TableCell>
                             </TableRow>
                         ) : (
-                            paginatedTickets.map((ticket) => {
+                            tickets.map((ticket) => {
                                 const daysOpen = differenceInDays(new Date(), new Date(ticket.createdAt));
                                 return (
                                     <TableRow key={ticket.id}>
@@ -268,14 +204,14 @@ export function AdminTicketsTable({ tickets }: AdminTicketsTableProps) {
                 </Table>
             </div>
 
-            {/* Pagination */}
-            {filteredTickets.length > 0 && (
+            {/* Paginación */}
+            {totalCount > 0 && (
                 <Pagination
                     currentPage={currentPage}
-                    totalItems={filteredTickets.length}
+                    totalItems={totalCount}
                     itemsPerPage={itemsPerPage}
-                    onPageChange={setCurrentPage}
-                    onItemsPerPageChange={setItemsPerPage}
+                    onPageChange={handlePageChange}
+                    onItemsPerPageChange={handleItemsPerPageChange}
                 />
             )}
         </div>

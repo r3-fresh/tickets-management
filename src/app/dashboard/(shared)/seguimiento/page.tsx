@@ -1,8 +1,9 @@
 import { db } from "@/db";
 import { tickets } from "@/db/schema";
-import { queryTicketsWithUnread } from "@/db/queries";
+import { queryTicketsPaginated, getTicketFilterOptions } from "@/db/queries";
+import type { TicketFilterParams } from "@/db/queries";
 import { requireAuth } from "@/lib/auth/helpers";
-import { desc, sql, and, not, eq } from "drizzle-orm";
+import { sql, and, not, eq, inArray } from "drizzle-orm";
 import dynamic from "next/dynamic";
 import { Breadcrumb } from "@/components/shared/breadcrumb";
 import type { Metadata } from "next";
@@ -18,37 +19,57 @@ const TicketsList = dynamic(
     }
 );
 
-export default async function SeguimientoPage() {
+interface PageProps {
+    searchParams: Promise<Record<string, string | string[] | undefined>>;
+}
+
+export default async function SeguimientoPage({ searchParams }: PageProps) {
     const session = await requireAuth();
 
-    const watchedWhere = and(
+    const baseWhere = and(
         not(eq(tickets.createdById, session.user.id)),
         sql`${session.user.id} = ANY(${tickets.watchers})`
-    );
+    )!;
 
-    // Both queries are independent — run in parallel
-    const [watchedTickets, ticketsWithRelations] = await Promise.all([
-        queryTicketsWithUnread(session.user.id, watchedWhere),
-        // Fetch assigned users and creators separately
-        db.query.tickets.findMany({
-            where: watchedWhere,
+    const params = await searchParams;
+    const filters: TicketFilterParams = {
+        status: typeof params.status === "string" ? params.status : undefined,
+        assignedTo: typeof params.assignedTo === "string" ? params.assignedTo : undefined,
+        category: typeof params.category === "string" ? params.category : undefined,
+        search: typeof params.search === "string" ? params.search : undefined,
+        year: typeof params.year === "string" ? params.year : undefined,
+        dateFrom: typeof params.dateFrom === "string" ? params.dateFrom : undefined,
+        dateTo: typeof params.dateTo === "string" ? params.dateTo : undefined,
+        page: typeof params.page === "string" ? Number(params.page) : 1,
+        perPage: typeof params.perPage === "string" ? Number(params.perPage) : 25,
+    };
+
+    // Queries independientes en paralelo
+    const [paginatedResult, filterOptions] = await Promise.all([
+        queryTicketsPaginated(session.user.id, filters, baseWhere),
+        getTicketFilterOptions(baseWhere),
+    ]);
+
+    // Fetch relations solo para los IDs de la página actual
+    const ticketIds = paginatedResult.rows.map(t => t.id);
+    const relationsData = ticketIds.length > 0
+        ? await db.query.tickets.findMany({
+            where: inArray(tickets.id, ticketIds),
             columns: { id: true },
             with: {
                 assignedTo: true,
                 createdBy: true,
             },
-            orderBy: [desc(tickets.createdAt)],
-        }),
-    ]);
+        })
+        : [];
 
-    // Merge with relation data
-    const mergedTickets = watchedTickets.map((ticket) => {
-        const withRelations = ticketsWithRelations.find((t) => t.id === ticket.id);
+    // Merge
+    const mergedTickets = paginatedResult.rows.map((ticket) => {
+        const withRelations = relationsData.find((t) => t.id === ticket.id);
         return {
             ...ticket,
             assignedTo: withRelations?.assignedTo || null,
             createdBy: withRelations?.createdBy || null,
-            commentCount: ticket.commentCount,
         };
     });
 
@@ -67,9 +88,12 @@ export default async function SeguimientoPage() {
 
             <TicketsList
                 tickets={mergedTickets}
+                totalCount={paginatedResult.totalCount}
                 isAdmin={session.user.role === "admin"}
                 isWatchedView={true}
                 hideHeader={true}
+                assignedUsers={filterOptions.assignedUsers}
+                categories={filterOptions.categories}
             />
         </div>
     );

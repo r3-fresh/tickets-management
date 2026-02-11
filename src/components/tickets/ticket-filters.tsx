@@ -1,4 +1,7 @@
-import { useState, useEffect } from "react";
+"use client";
+
+import { useCallback } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Button } from "@/components/ui/button";
 import { Calendar } from "@/components/ui/calendar";
@@ -10,77 +13,69 @@ import { DateRange } from "react-day-picker";
 import { YearFilter } from "@/components/tickets/year-filter";
 
 interface TicketFiltersProps {
-    onFilterChange: (filters: {
-        status?: string;
-        assignedTo?: string;
-        dateRange?: DateRange;
-        category?: string;
-        year?: string;
-    }) => void;
     assignedUsers: Array<{ id: string; name: string }>;
     categories?: Array<{ id: number; name: string }>;
 }
 
-export function TicketFilters({ onFilterChange, assignedUsers, categories = [] }: TicketFiltersProps) {
-    const [status, setStatus] = useState<string>("");
-    const [assignedTo, setAssignedTo] = useState<string>("");
-    const [dateRange, setDateRange] = useState<DateRange | undefined>();
-    const [category, setCategory] = useState<string>("");
-    const [year, setYear] = useState<string>("all");
-    const [mounted, setMounted] = useState(false);
+export function TicketFilters({ assignedUsers, categories = [] }: TicketFiltersProps) {
+    const router = useRouter();
+    const searchParams = useSearchParams();
 
-    useEffect(() => {
-        setMounted(true);
-    }, []);
+    // Leer valores actuales de los search params
+    const status = searchParams.get("status") ?? "";
+    const assignedTo = searchParams.get("assignedTo") ?? "";
+    const category = searchParams.get("category") ?? "";
+    const year = searchParams.get("year") ?? "all";
+    const dateFrom = searchParams.get("dateFrom") ?? "";
+    const dateTo = searchParams.get("dateTo") ?? "";
 
-    if (!mounted) {
-        return (
-            <div className="flex flex-wrap gap-3 items-center opacity-50 pointer-events-none">
-                <Button variant="outline" disabled className="w-[180px]">Cargando...</Button>
-                <Button variant="outline" disabled className="w-[200px]">Cargando...</Button>
-                <Button variant="outline" disabled className="w-[280px]">Cargando...</Button>
-            </div>
-        );
-    }
+    const dateRange: DateRange | undefined = dateFrom
+        ? { from: new Date(dateFrom), to: dateTo ? new Date(dateTo) : undefined }
+        : undefined;
+
+    // Actualizar search params (resetea a página 1 al cambiar filtros)
+    const updateParams = useCallback((updates: Record<string, string>) => {
+        const params = new URLSearchParams(searchParams.toString());
+        // Siempre resetear a página 1 al cambiar filtros
+        params.delete("page");
+        for (const [key, value] of Object.entries(updates)) {
+            if (value && value !== "all") {
+                params.set(key, value);
+            } else {
+                params.delete(key);
+            }
+        }
+        router.push(`?${params.toString()}`, { scroll: false });
+    }, [searchParams, router]);
 
     const handleStatusChange = (value: string) => {
-        const newStatus = value === "all" ? "" : value;
-        setStatus(newStatus);
-        onFilterChange({ status: newStatus, assignedTo, dateRange, category });
+        updateParams({ status: value === "all" ? "" : value });
     };
 
     const handleAssignedToChange = (value: string) => {
-        const newAssignedTo = value === "all" ? "" : value;
-        setAssignedTo(newAssignedTo);
-        onFilterChange({ status, assignedTo: newAssignedTo, dateRange, category });
+        updateParams({ assignedTo: value === "all" ? "" : value });
     };
 
     const handleDateRangeChange = (range: DateRange | undefined) => {
-        setDateRange(range);
-        onFilterChange({ status, assignedTo, dateRange: range, category });
+        updateParams({
+            dateFrom: range?.from ? format(range.from, "yyyy-MM-dd") : "",
+            dateTo: range?.to ? format(range.to, "yyyy-MM-dd") : "",
+        });
     };
 
     const handleCategoryChange = (value: string) => {
-        const newCategory = value === "all" ? "" : value;
-        setCategory(newCategory);
-        onFilterChange({ status, assignedTo, dateRange, category: newCategory, year });
+        updateParams({ category: value === "all" ? "" : value });
     };
 
     const handleYearChange = (value: string) => {
-        setYear(value);
-        onFilterChange({ status, assignedTo, dateRange, category, year: value });
+        updateParams({ year: value });
     };
 
     const clearFilters = () => {
-        setStatus("");
-        setAssignedTo("");
-        setDateRange(undefined);
-        setCategory("");
-        setYear("all");
-        onFilterChange({});
+        router.push("?", { scroll: false });
     };
 
-    const hasActiveFilters = status || assignedTo || dateRange || category || year !== "all";
+    const hasActiveFilters = status || assignedTo || dateRange || category || (year && year !== "all");
 
     return (
         <div className="flex flex-wrap gap-3 items-center">
@@ -91,7 +86,8 @@ export function TicketFilters({ onFilterChange, assignedUsers, categories = [] }
                 <SelectContent>
                     <SelectItem value="all">Todos los estados</SelectItem>
                     <SelectItem value="open">Abierto</SelectItem>
-                    <SelectItem value="in_progress">En Curso</SelectItem>
+                    <SelectItem value="in_progress">En curso</SelectItem>
+                    <SelectItem value="pending_validation">Pendiente de validación</SelectItem>
                     <SelectItem value="resolved">Resuelto</SelectItem>
                     <SelectItem value="voided">Anulado</SelectItem>
                 </SelectContent>
