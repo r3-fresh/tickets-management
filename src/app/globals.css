@@ -105,59 +105,90 @@
   --sidebar-border: oklch(0.90 0 0);
   --sidebar-ring: oklch(0.65 0 0);
 
-  /* Status colors - light mode */
-  --status-open: oklch(0.91 0.08 85);
-  --status-open-foreground: oklch(0.42 0.12 85);
-  --status-in-progress: oklch(0.90 0.07 250);
-  --status-in-progress-foreground: oklch(0.40 0.12 250);
-  --status-resolved: oklch(0.90 0.08 155);
-  --status-resolved-foreground: oklch(0.38 0.10 155);
-  --status-pending-validation: oklch(0.91 0.08 75);
-  --status-pending-validation-foreground: oklch(0.42 0.12 75);
-  --status-closed: oklch(0.93 0 0);
-  --status-closed-foreground: oklch(0.42 0 0);
-  --status-voided: oklch(0.91 0.06 25);
-  --status-voided-foreground: oklch(0.42 0.14 25);
+  /* Semantic Tokens - Light Mode */
+  --semantic-neutral: oklch(0.93 0 0);
+  --semantic-neutral-foreground: oklch(0.38 0 0);
 
-  /* Priority colors - light mode */
-  --priority-low: oklch(0.93 0 0);
-  --priority-low-foreground: oklch(0.38 0 0);
-  --priority-medium: oklch(0.90 0.09 85);
-  --priority-medium-foreground: oklch(0.40 0.13 85);
-  --priority-high: oklch(0.90 0.10 55);
-  --priority-high-foreground: oklch(0.38 0.15 55);
-  --priority-critical: oklch(0.90 0.12 25);
-  --priority-critical-foreground: oklch(0.38 0.18 25);
+  --semantic-info: oklch(0.90 0.07 250);
+  --semantic-info-foreground: oklch(0.40 0.12 250);
+
+  --semantic-success: oklch(0.90 0.08 155);
+  --semantic-success-foreground: oklch(0.38 0.10 155);
+
+  --semantic-warning: oklch(0.91 0.08 85);
+  --semantic-warning-foreground: oklch(0.42 0.12 85);
+
+  --semantic-orange: oklch(0.90 0.10 65);
+  --semantic-orange-foreground: oklch(0.38 0.15 65);
+
+  --semantic-destructive: oklch(0.91 0.06 25);
+  --semantic-destructive-foreground: oklch(0.42 0.14 25);
+
+  /* Status colors - Mapped to Semantics */
+  --status-open: var(--semantic-warning);
+  --status-open-foreground: var(--semantic-warning-foreground);
+  --status-in-progress: var(--semantic-info);
+  --status-in-progress-foreground: var(--semantic-info-foreground);
+  --status-resolved: var(--semantic-success);
+  --status-resolved-foreground: var(--semantic-success-foreground);
+  --status-pending-validation: var(--semantic-orange);
+  --status-pending-validation-foreground: var(--semantic-orange-foreground);
+  --status-closed: var(--semantic-neutral);
+  --status-closed-foreground: var(--semantic-neutral-foreground);
+  --status-voided: var(--semantic-destructive);
+  --status-voided-foreground: var(--semantic-destructive-foreground);
+
+  /* Priority colors - Mapped to Semantics */
+  --priority-low: var(--semantic-neutral);
+  --priority-low-foreground: var(--semantic-neutral-foreground);
+  --priority-medium: var(--semantic-warning);
+  --priority-medium-foreground: var(--semantic-warning-foreground);
+  --priority-high: var(--semantic-orange);
+  --priority-high-foreground: var(--semantic-orange-foreground);
+  --priority-critical: var(--semantic-destructive);
+  --priority-critical-foreground: var(--semantic-destructive-foreground);
 }
 
 .dark {
   /* High Contrast Standard Dark Mode */
-  --background: oklch(0.05 0 0);       /* Deep black - Matches Login */
-  --foreground: oklch(0.98 0 0);       /* Pure white text */
+  --background: oklch(0.05 0 0);
+  /* Deep black - Matches Login */
+  --foreground: oklch(0.98 0 0);
+  /* Pure white text */
 
-  --card: oklch(0.12 0 0);             /* Dark Grey - Distinct from bg */
+  --card: oklch(0.12 0 0);
+  /* Dark Grey - Distinct from bg */
   --card-foreground: oklch(0.98 0 0);
 
-  --popover: oklch(0.12 0 0);          /* Matches card */
+  --popover: oklch(0.12 0 0);
+  /* Matches card */
   --popover-foreground: oklch(0.98 0 0);
 
-  --primary: oklch(0.98 0 0);          /* High contrast primary (white) */
+  --primary: oklch(0.98 0 0);
+  /* High contrast primary (white) */
   --primary-foreground: oklch(0.05 0 0);
 
-  --secondary: oklch(0.18 0 0);        /* Slightly lighter than card */
+  --secondary: oklch(0.18 0 0);
+  /* Slightly lighter than card */
   --secondary-foreground: oklch(0.98 0 0);
 
-  --muted: oklch(0.18 0 0);            /* Matches secondary */
-  --muted-foreground: oklch(0.70 0 0); /* Good contrast for metadata */
+  --muted: oklch(0.18 0 0);
+  /* Matches secondary */
+  --muted-foreground: oklch(0.70 0 0);
+  /* Good contrast for metadata */
 
-  --accent: oklch(0.18 0 0);           /* Matches secondary/muted */
+  --accent: oklch(0.18 0 0);
+  /* Matches secondary/muted */
   --accent-foreground: oklch(0.98 0 0);
 
   --destructive: oklch(0.60 0.20 25);
-  --destructive-foreground: oklch(0.98 0 0); /* Ensure readable text on destructive */
+  --destructive-foreground: oklch(0.98 0 0);
+  /* Ensure readable text on destructive */
 
-  --border: oklch(0.20 0 0);           /* Subtle but visible definition */
-  --input: oklch(0.18 0 0);            /* Matches secondary/muted */
+  --border: oklch(0.20 0 0);
+  /* Subtle but visible definition */
+  --input: oklch(0.18 0 0);
+  /* Matches secondary/muted */
   --ring: oklch(0.80 0 0);
 
   --chart-1: oklch(0.488 0.243 264.376);
@@ -166,7 +197,8 @@
   --chart-4: oklch(0.627 0.265 303.9);
   --chart-5: oklch(0.645 0.246 16.439);
 
-  --sidebar: oklch(0.08 0 0);          /* Bridge between bg and card */
+  --sidebar: oklch(0.08 0 0);
+  /* Bridge between bg and card */
   --sidebar-foreground: oklch(0.98 0 0);
   --sidebar-primary: oklch(0.98 0 0);
   --sidebar-primary-foreground: oklch(0.08 0 0);
@@ -176,33 +208,53 @@
   --sidebar-ring: oklch(0.80 0 0);
 
   /* FilePond Dark Mode Overrides */
-  --filepond-panel-bg: oklch(0.18 0 0); /* Match input/muted */
+  --filepond-panel-bg: oklch(0.18 0 0);
+  /* Match input/muted */
   --filepond-text: oklch(0.98 0 0);
   --filepond-icon: oklch(0.98 0 0);
 
-  /* Status colors - dark mode (Adjusted for contrast) */
-  --status-open: oklch(0.25 0.1 85);
-  --status-open-foreground: oklch(0.90 0.05 85);
-  --status-in-progress: oklch(0.25 0.1 250);
-  --status-in-progress-foreground: oklch(0.90 0.05 250);
-  --status-resolved: oklch(0.25 0.1 155);
-  --status-resolved-foreground: oklch(0.90 0.05 155);
-  --status-pending-validation: oklch(0.25 0.1 75);
-  --status-pending-validation-foreground: oklch(0.90 0.05 75);
-  --status-closed: oklch(0.20 0 0);
-  --status-closed-foreground: oklch(0.70 0 0);
-  --status-voided: oklch(0.25 0.1 25);
-  --status-voided-foreground: oklch(0.90 0.05 25);
+  /* Semantic Tokens - Dark Mode (High Contrast) */
+  --semantic-neutral: oklch(0.20 0 0);
+  --semantic-neutral-foreground: oklch(0.80 0 0);
 
-  /* Priority colors - dark mode */
-  --priority-low: oklch(0.20 0 0);
-  --priority-low-foreground: oklch(0.70 0 0);
-  --priority-medium: oklch(0.25 0.1 85);
-  --priority-medium-foreground: oklch(0.90 0.05 85);
-  --priority-high: oklch(0.25 0.1 55);
-  --priority-high-foreground: oklch(0.90 0.05 55);
-  --priority-critical: oklch(0.25 0.15 25);
-  --priority-critical-foreground: oklch(0.90 0.05 25);
+  --semantic-info: oklch(0.25 0.1 250);
+  --semantic-info-foreground: oklch(0.90 0.05 250);
+
+  --semantic-success: oklch(0.25 0.1 155);
+  --semantic-success-foreground: oklch(0.90 0.05 155);
+
+  --semantic-warning: oklch(0.25 0.1 85);
+  --semantic-warning-foreground: oklch(0.90 0.05 85);
+
+  --semantic-orange: oklch(0.25 0.15 65);
+  --semantic-orange-foreground: oklch(0.90 0.05 65);
+
+  --semantic-destructive: oklch(0.25 0.15 25);
+  --semantic-destructive-foreground: oklch(0.90 0.05 25);
+
+  /* Status colors - Mapped to Semantics */
+  --status-open: var(--semantic-warning);
+  --status-open-foreground: var(--semantic-warning-foreground);
+  --status-in-progress: var(--semantic-info);
+  --status-in-progress-foreground: var(--semantic-info-foreground);
+  --status-resolved: var(--semantic-success);
+  --status-resolved-foreground: var(--semantic-success-foreground);
+  --status-pending-validation: var(--semantic-orange);
+  --status-pending-validation-foreground: var(--semantic-orange-foreground);
+  --status-closed: var(--semantic-neutral);
+  --status-closed-foreground: var(--semantic-neutral-foreground);
+  --status-voided: var(--semantic-destructive);
+  --status-voided-foreground: var(--semantic-destructive-foreground);
+
+  /* Priority colors - Mapped to Semantics */
+  --priority-low: var(--semantic-neutral);
+  --priority-low-foreground: var(--semantic-neutral-foreground);
+  --priority-medium: var(--semantic-warning);
+  --priority-medium-foreground: var(--semantic-warning-foreground);
+  --priority-high: var(--semantic-orange);
+  --priority-high-foreground: var(--semantic-orange-foreground);
+  --priority-critical: var(--semantic-destructive);
+  --priority-critical-foreground: var(--semantic-destructive-foreground);
 }
 
 /* Apply FilePond specific variables if needed directly to classes */
