@@ -180,8 +180,7 @@
 
   /* Ensure borders are visible but subtle, like in the screenshot */
   --border: oklch(0.28 0 0);
-  /* Match secondary/category background */
-  --input: oklch(0.16 0 0);
+  --input: oklch(0.28 0 0);
   --ring: oklch(0.55 0.20 292);
 
   --chart-1: oklch(0.55 0.24 292);
@@ -264,7 +263,7 @@
 }
 
 .dark .filepond--panel-root {
-  background-color: var(--input) !important;
+  background-color: var(--secondary) !important;
 }
 
 .dark .filepond--drop-label {
