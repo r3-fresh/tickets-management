@@ -36,25 +36,29 @@ export const STATUS_STYLES: Record<TicketStatus, { bg: string; text: string; bor
 // Mapeo de prioridades a clases de Tailwind (tokens del design system)
 // ============================================
 
-export const PRIORITY_STYLES: Record<TicketPriority, { bg: string; text: string; border: string }> = {
+export const PRIORITY_STYLES: Record<TicketPriority, { bg: string; text: string; border: string; hover: string }> = {
     low: {
         bg: "bg-priority-low",
         text: "text-priority-low-foreground",
         border: "border-priority-low-foreground/20",
+        hover: "hover:bg-priority-low hover:text-priority-low-foreground/90",
     },
     medium: {
         bg: "bg-priority-medium",
         text: "text-priority-medium-foreground",
         border: "border-priority-medium-foreground/25",
+        hover: "hover:bg-priority-medium hover:text-priority-medium-foreground/90",
     },
     high: {
         bg: "bg-priority-high",
         text: "text-priority-high-foreground",
         border: "border-priority-high-foreground/25",
+        hover: "hover:bg-priority-high hover:text-priority-high-foreground/90",
     },
     critical: {
         bg: "bg-priority-critical",
         text: "text-priority-critical-foreground",
         border: "border-priority-critical-foreground/30",
+        hover: "hover:bg-priority-critical hover:text-priority-critical-foreground/90",
     },
 };

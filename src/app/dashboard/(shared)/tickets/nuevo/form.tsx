@@ -80,6 +80,7 @@ const PRIORITIES = (Object.keys(PRIORITY_STYLES) as TicketPriority[]).map((value
         label: PRIORITY_LABELS[value],
         activeColor: `${style.bg} ${style.text} ${style.border}`,
         inactiveColor: "bg-muted hover:bg-muted/80 text-muted-foreground border-transparent",
+        hover: style.hover,
     };
 });
 
@@ -429,7 +430,7 @@ export function NewTicketForm({
                                                                 "py-1.5 rounded-md border text-xs font-medium transition-all cursor-pointer text-center",
                                                                 field.value === priority.value
                                                                     ? priority.activeColor
-                                                                    : priority.inactiveColor
+                                                                    : cn("bg-muted/50 text-muted-foreground border-transparent", priority.hover)
                                                             )}
                                                         >
                                                             {priority.label}
