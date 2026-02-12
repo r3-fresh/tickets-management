@@ -463,7 +463,7 @@ export function NewTicketForm({
                                                     required
                                                 >
                                                     <FormControl>
-                                                        <SelectTrigger className="text-xs">
+                                                        <SelectTrigger className="text-xs dark:bg-input/40 border-border/80">
                                                             <SelectValue placeholder="¿De qué departamento eres?" />
                                                         </SelectTrigger>
                                                     </FormControl>
@@ -497,7 +497,7 @@ export function NewTicketForm({
                                                     required
                                                 >
                                                     <FormControl>
-                                                        <SelectTrigger className="text-xs">
+                                                        <SelectTrigger className="text-xs dark:bg-input/40 border-border/80">
                                                             <SelectValue placeholder="¿En qué sede te encuentras?" />
                                                         </SelectTrigger>
                                                     </FormControl>

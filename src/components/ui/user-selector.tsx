@@ -84,6 +84,7 @@ export function UserSelector({
                                     key={user.id}
                                     value={`${user.name} ${user.email}`}
                                     onSelect={() => toggleUser(user.id)}
+                                    className="cursor-pointer"
                                 >
                                     <Check
                                         className={cn(
@@ -114,7 +115,7 @@ export function UserSelector({
                     {selectedUsers.map((user) => (
                         <div
                             key={user.id}
-                            className="flex items-center gap-2 py-1 px-1.5 rounded-md hover:bg-muted/50 group"
+                            className="flex items-center gap-2 py-1 px-1.5 rounded-md hover:bg-muted/50 group cursor-pointer"
                         >
                             <Avatar className="h-5 w-5 shrink-0">
                                 <AvatarImage src={user.image || ""} />

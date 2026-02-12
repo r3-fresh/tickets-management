@@ -61,7 +61,7 @@ export function FileUpload({ uploadToken, onFilesChange }: FileUploadProps) {
                         updateParent();
                     }
                 }}
-                labelIdle='Arrastra archivos aquí o <span class="filepond--label-action">selecciona</span>'
+                labelIdle='<div class="text-[11px]">Arrastra archivos aquí o <span class="filepond--label-action">selecciona</span></div>'
                 labelFileProcessing="Subiendo..."
                 labelFileProcessingComplete="Listo"
                 labelFileProcessingAborted="Subida cancelada"
