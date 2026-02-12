@@ -430,7 +430,7 @@ export function NewTicketForm({
                                                                 "py-1.5 rounded-md border text-xs font-medium transition-all cursor-pointer text-center",
                                                                 field.value === priority.value
                                                                     ? priority.activeColor
-                                                                    : cn("bg-muted/50 text-muted-foreground border-transparent", priority.hover)
+                                                                    : cn("bg-muted/50 text-muted-foreground border-input/30 hover:border-input", priority.hover)
                                                             )}
                                                         >
                                                             {priority.label}
