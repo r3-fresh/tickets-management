@@ -16,7 +16,8 @@ import {
     Settings,
     ChevronLeft,
     ChevronRight,
-    BookOpen
+    BookOpen,
+    PlusCircle
 } from "lucide-react";
 import { authClient } from "@/lib/auth/client";
 import { useRouter } from "next/navigation";
@@ -36,12 +37,14 @@ const KNOWLEDGE_BASE_ITEM = {
 
 const USER_NAV_ITEMS = [
     { href: "/dashboard", label: "Mi panel", icon: LayoutDashboard },
+    { href: "/dashboard/tickets/nuevo", label: "Nuevo ticket", icon: PlusCircle },
     { href: "/dashboard/mis-tickets", label: "Mis tickets", icon: Ticket },
     { href: "/dashboard/seguimiento", label: "En seguimiento", icon: Eye },
 ];
 
 const AGENT_NAV_ITEMS = [
     { href: "/dashboard", label: "Mi panel", icon: LayoutDashboard },
+    { href: "/dashboard/tickets/nuevo", label: "Nuevo ticket", icon: PlusCircle },
     { href: "/dashboard/mis-tickets", label: "Mis tickets", icon: Ticket },
     { href: "/dashboard/seguimiento", label: "En seguimiento", icon: Eye },
     { href: "/dashboard/area", label: "Tickets del área", icon: Ticket },
