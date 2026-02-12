@@ -114,7 +114,7 @@ export default function DashboardLayout({
     }
 
     return (
-        <div className="flex h-screen bg-muted">
+        <div className="flex h-screen bg-background">
             {/* --- DESKTOP SIDEBAR --- */}
             <aside
                 aria-label="Menú principal"
