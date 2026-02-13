@@ -64,7 +64,7 @@ export function UserSelector({
                         variant="outline"
                         role="combobox"
                         aria-expanded={open}
-                        className="w-full justify-between dark:bg-secondary"
+                        className="w-full justify-between dark:bg-background"
                     >
                         <span className="truncate">
                             {selectedUsers.length > 0

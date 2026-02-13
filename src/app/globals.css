@@ -264,7 +264,7 @@
 }
 
 .dark .filepond--panel-root {
-  background-color: var(--secondary) !important;
+  background-color: var(--background) !important;
 }
 
 .dark .filepond--drop-label {
