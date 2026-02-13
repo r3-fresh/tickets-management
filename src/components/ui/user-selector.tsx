@@ -64,7 +64,7 @@ export function UserSelector({
                         variant="outline"
                         role="combobox"
                         aria-expanded={open}
-                        className="w-full justify-between dark:bg-background"
+                        className="w-full justify-between text-xs bg-background hover:bg-[color-mix(in_oklab,var(--input)_50%,transparent)]"
                     >
                         <span className="truncate">
                             {selectedUsers.length > 0

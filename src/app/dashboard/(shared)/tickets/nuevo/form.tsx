@@ -25,6 +25,8 @@ import { PRIORITY_STYLES } from "@/lib/constants/ticket-display";
 import { PRIORITY_LABELS } from "@/lib/constants/tickets";
 import type { TicketPriority } from "@/types";
 
+
+
 const FileUpload = lazy(() =>
     import("@/components/shared/file-upload").then(mod => ({ default: mod.FileUpload }))
 );
@@ -296,7 +298,7 @@ export function NewTicketForm({
                                                                 className={cn(
                                                                     "w-fit text-xs rounded-md border gap-1 pl-2.5 pr-1.5 max-w-[200px]",
                                                                     field.value
-                                                                        ? "border-foreground/15 text-foreground bg-secondary"
+                                                                        ? "border-foreground/15 text-foreground"
                                                                         : "border-dashed border-muted-foreground/30 text-muted-foreground"
                                                                 )}
                                                             >
@@ -343,7 +345,7 @@ export function NewTicketForm({
                                                                 className={cn(
                                                                     "w-fit text-xs rounded-md border gap-1 pl-2.5 pr-1.5 max-w-[200px]",
                                                                     field.value
-                                                                        ? "border-foreground/15 text-foreground bg-secondary"
+                                                                        ? "border-foreground/15 text-foreground"
                                                                         : "border-dashed border-muted-foreground/30 text-muted-foreground"
                                                                 )}
                                                             >
@@ -382,7 +384,7 @@ export function NewTicketForm({
                                                                 className={cn(
                                                                     "w-fit text-xs rounded-md border gap-1 pl-2.5 pr-1.5 max-w-[200px]",
                                                                     field.value
-                                                                        ? "border-foreground/15 text-foreground bg-secondary"
+                                                                        ? "border-foreground/15 text-foreground"
                                                                         : "border-dashed border-muted-foreground/30 text-muted-foreground"
                                                                 )}
                                                             >
@@ -430,7 +432,7 @@ export function NewTicketForm({
                                                                 "py-1.5 rounded-md border text-xs font-medium transition-all cursor-pointer text-center",
                                                                 field.value === priority.value
                                                                     ? priority.activeColor
-                                                                    : cn("bg-muted/50 text-muted-foreground border-input/30 hover:border-input", priority.hover)
+                                                                    : cn("bg-background text-muted-foreground border-input/30 hover:border-input", priority.hover)
                                                             )}
                                                         >
                                                             {priority.label}
@@ -464,7 +466,7 @@ export function NewTicketForm({
                                                     required
                                                 >
                                                     <FormControl>
-                                                        <SelectTrigger className="text-xs dark:bg-input/40 border-border/80">
+                                                        <SelectTrigger className="text-xs border-border/80">
                                                             <SelectValue placeholder="¿De qué departamento eres?" />
                                                         </SelectTrigger>
                                                     </FormControl>
@@ -498,7 +500,7 @@ export function NewTicketForm({
                                                     required
                                                 >
                                                     <FormControl>
-                                                        <SelectTrigger className="text-xs dark:bg-input/40 border-border/80">
+                                                        <SelectTrigger className="text-xs border-border/80">
                                                             <SelectValue placeholder="¿En qué sede te encuentras?" />
                                                         </SelectTrigger>
                                                     </FormControl>
@@ -603,8 +605,8 @@ export function NewTicketForm({
                                 </div>
                             </div>
                         </form>
-                    </Form>
-                </div>
+                    </Form >
+                </div >
 
                 {/* ════════════════════════════════════════ */}
                 {/* Panel lateral (desktop)                 */}
@@ -705,7 +707,7 @@ export function NewTicketForm({
                         </Link>
                     </div>
                 </aside>
-            </div>
-        </div>
+            </div >
+        </div >
     );
 }

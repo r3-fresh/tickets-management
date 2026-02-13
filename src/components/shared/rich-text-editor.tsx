@@ -66,9 +66,9 @@ export function RichTextEditor({ value, onChange, placeholder, disabled }: RichT
     }
 
     return (
-        <div className={`border border-border rounded-md bg-white dark:bg-background overflow-hidden ${disabled ? 'border-none bg-transparent dark:bg-transparent' : ''}`}>
+        <div className={`border border-border rounded-md bg-background overflow-hidden ${disabled ? 'border-none bg-transparent' : ''}`}>
             {!disabled && (
-                <div className="flex flex-wrap items-center gap-1 p-1 border-b border-input bg-muted/50">
+                <div className="flex flex-wrap items-center gap-1 p-1 border-b border-input bg-muted/30">
                     <Toggle
                         size="sm"
                         pressed={editor.isActive("bold")}

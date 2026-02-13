@@ -257,18 +257,24 @@
   --priority-critical-foreground: var(--semantic-danger-foreground);
 }
 
-/* Apply FilePond specific variables if needed directly to classes */
+/* FilePond unified styles */
 .filepond--panel-root {
   border: 1px solid var(--border) !important;
   border-radius: 0.5rem !important;
+  background-color: var(--background) !important;
+  transition: background-color 0.15s;
 }
 
-.dark .filepond--panel-root {
-  background-color: var(--background) !important;
+.filepond--panel-root:hover {
+  background-color: color-mix(in oklab, var(--input) 50%, transparent) !important;
 }
 
 .dark .filepond--drop-label {
   color: var(--muted-foreground) !important;
+}
+
+.filepond--drop-label {
+  font-size: 12px !important;
 }
 
 .dark .filepond--label-action {
