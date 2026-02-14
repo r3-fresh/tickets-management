@@ -4,36 +4,20 @@ import { tickets, comments, users } from "@/db/schema";
 import { requireAuth } from "@/lib/auth/helpers";
 import { notFound, redirect } from "next/navigation";
 import { eq, desc } from "drizzle-orm";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Separator } from "@/components/ui/separator";
-import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
-import { formatDate, translatePriority, formatFileSize } from "@/lib/utils/format";
+import { formatDate, translatePriority } from "@/lib/utils/format";
 import { StatusBadge } from "@/components/shared/status-badge";
 import { PriorityBadge } from "@/components/shared/priority-badge";
 import { UserAvatar } from "@/components/shared/user-avatar";
 import { Breadcrumb } from "@/components/shared/breadcrumb";
-import { FileIcon, ImageIcon, FileTextIcon, FileSpreadsheetIcon, FilmIcon, ExternalLinkIcon, PaperclipIcon, MessageSquareIcon } from "lucide-react";
 import { AdminTicketControls } from "./admin-ticket-controls";
 import { MarkAsViewed } from "./mark-as-viewed";
 import { WatchersManager } from "./watchers-manager";
 import { CancelTicketButton } from "./cancel-ticket-button";
 import { CopyTicketButton } from "./copy-ticket-button";
 import { UserValidationControls } from "./user-validation-controls";
-import dynamic from "next/dynamic";
-import { CommentForm } from "./comment-form";
+import { TicketTabs } from "./ticket-tabs";
 import type { Metadata } from "next";
-
-function AttachmentIcon({ mimeType }: { mimeType: string }) {
-    const className = "h-5 w-5 text-muted-foreground shrink-0";
-    if (mimeType.startsWith("image/")) return <ImageIcon className={className} />;
-    if (mimeType.startsWith("video/")) return <FilmIcon className={className} />;
-    if (mimeType.includes("spreadsheet") || mimeType.includes("excel") || mimeType === "text/csv")
-        return <FileSpreadsheetIcon className={className} />;
-    if (mimeType.includes("pdf") || mimeType.includes("document") || mimeType.includes("text/"))
-        return <FileTextIcon className={className} />;
-    return <FileIcon className={className} />;
-}
 
 export async function generateMetadata({ params }: { params: Promise<{ id: string }> }): Promise<Metadata> {
     const { id } = await params;
@@ -49,13 +33,6 @@ export async function generateMetadata({ params }: { params: Promise<{ id: strin
 
     return { title: `${ticket.ticketCode} - ${ticket.title}` };
 }
-
-const RichTextEditor = dynamic(
-    () => import("@/components/shared/rich-text-editor").then(mod => ({ default: mod.RichTextEditor })),
-    {
-        loading: () => <div className="h-24 animate-pulse rounded-md bg-muted" />,
-    }
-);
 
 export default async function TicketDetailPage({ params }: { params: Promise<{ id: string }> }) {
     const session = await requireAuth();
@@ -86,12 +63,10 @@ export default async function TicketDetailPage({ params }: { params: Promise<{ i
 
     if (!ticket) notFound();
 
-    // Access control: Only creator, watchers, admins, or agents of the area can view
+    // Access control
     const isCreator = ticket.createdById === session.user.id;
     const isWatcher = ticket.watchers?.includes(session.user.id) || false;
     const isAdmin = session.user.role === "admin";
-
-    // Check if user is an agent for this specific area
     const isAgentForArea = session.user.role === "agent" &&
         session.user.attentionAreaId === ticket.attentionAreaId;
 
@@ -99,7 +74,6 @@ export default async function TicketDetailPage({ params }: { params: Promise<{ i
         redirect("/dashboard");
     }
 
-    // Fetch only the columns needed for display
     const allUsers = await db.select({
         id: users.id,
         name: users.name,
@@ -107,7 +81,6 @@ export default async function TicketDetailPage({ params }: { params: Promise<{ i
         image: users.image,
     }).from(users);
 
-    // Derive watchers from allUsers instead of a separate query
     const watchersList = ticket.watchers?.length
         ? allUsers.filter(u => ticket.watchers!.includes(u.id))
         : [];
@@ -116,308 +89,214 @@ export default async function TicketDetailPage({ params }: { params: Promise<{ i
     const canComment = !isTicketClosed;
 
     return (
-        <div className="space-y-6 max-w-6xl mx-auto">
+        <div className="space-y-5 max-w-6xl mx-auto">
             <MarkAsViewed ticketId={ticketId} />
 
             {/* Breadcrumbs */}
             <Breadcrumb items={[{ label: ticket.ticketCode }]} />
 
-            {/* User Validation Controls - Only show for creators when pending validation */}
+            {/* Validation banner */}
             {ticket.status === 'pending_validation' && ticket.createdById === session.user.id && (
                 <UserValidationControls ticketId={ticket.id} />
             )}
 
-            {/* Header Section */}
-            <div className="flex items-start justify-between gap-4">
-                <div className="flex-1 min-w-0">
-                    <div className="flex items-center gap-2.5 flex-wrap mb-2">
-                        <span className="text-xs font-mono text-muted-foreground bg-muted px-2 py-0.5 rounded-md">{ticket.ticketCode}</span>
+            {/* ─── HEADER ─── */}
+            <header>
+                {/* Row 1: Code + badges + actions */}
+                <div className="flex items-center justify-between gap-3 mb-3">
+                    <div className="flex items-center gap-2 flex-wrap">
+                        <span className="text-xs font-mono text-muted-foreground bg-muted px-2 py-0.5 rounded-md">
+                            {ticket.ticketCode}
+                        </span>
                         <StatusBadge status={ticket.status} />
                         <PriorityBadge priority={ticket.priority} />
                     </div>
-                    <div className="flex items-center gap-1.5 mb-2">
-                        <h1 className="text-2xl font-bold tracking-tight">{ticket.title}</h1>
-                        <CopyTicketButton ticketCode={ticket.ticketCode} title={ticket.title} />
-                    </div>
-                    <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                    {isCreator && !isTicketClosed && (
+                        <CancelTicketButton ticketId={ticketId} />
+                    )}
+                </div>
+
+                {/* Row 2: Title + copy */}
+                <div className="flex items-start gap-2 mb-2">
+                    <h1 className="text-xl font-bold tracking-tight leading-tight">
+                        {ticket.title}
+                    </h1>
+                    <CopyTicketButton ticketCode={ticket.ticketCode} title={ticket.title} />
+                </div>
+
+                {/* Row 3: Meta chips */}
+                <div className="flex items-center gap-3 text-sm text-muted-foreground flex-wrap">
+                    <div className="flex items-center gap-1.5">
                         <UserAvatar name={ticket.createdBy.name} image={ticket.createdBy.image} size="sm" />
                         <span className="font-medium text-foreground">{ticket.createdBy.name}</span>
-                        <span>·</span>
-                        <span>{formatDate(ticket.createdAt)}</span>
                     </div>
-                </div>
-                {isCreator && !isTicketClosed && (
-                    <CancelTicketButton ticketId={ticketId} />
-                )}
-            </div>
-
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                {/* Main Content */}
-                <div className="lg:col-span-2 space-y-6">
-
-                    {/* Description — Collapsible, open by default */}
-                    <Accordion type="single" collapsible defaultValue="description" className="w-full" suppressHydrationWarning>
-                        <AccordionItem value="description" className="border rounded-lg">
-                            <AccordionTrigger className="px-5 py-3 text-sm font-semibold hover:no-underline">
-                                Descripción
-                            </AccordionTrigger>
-                            <AccordionContent className="px-5 pb-4">
-                                <div className="prose prose-sm max-w-none text-foreground">
-                                    <RichTextEditor value={ticket.description} disabled={true} />
-                                </div>
-                            </AccordionContent>
-                        </AccordionItem>
-                    </Accordion>
-
-                    {/* Technical Details — Collapsible, closed by default */}
-                    <Accordion type="single" collapsible className="w-full" suppressHydrationWarning>
-                        <AccordionItem value="details" className="border rounded-lg">
-                            <AccordionTrigger className="px-5 py-3 text-sm font-semibold text-muted-foreground hover:text-foreground hover:no-underline">
-                                Detalles técnicos
-                            </AccordionTrigger>
-                            <AccordionContent className="px-5 pb-4">
-                                <div className="grid grid-cols-2 md:grid-cols-3 gap-x-6 gap-y-3 text-sm">
-                                    <div>
-                                        <span className="block text-[11px] text-muted-foreground mb-0.5">Categoría</span>
-                                        <span className="font-medium">{ticket.category?.name || "—"}</span>
-                                    </div>
-                                    <div>
-                                        <span className="block text-[11px] text-muted-foreground mb-0.5">Subcategoría</span>
-                                        <span className="font-medium">{ticket.subcategory?.name || "—"}</span>
-                                    </div>
-                                    <div>
-                                        <span className="block text-[11px] text-muted-foreground mb-0.5">Prioridad</span>
-                                        <span className="font-medium capitalize">{translatePriority(ticket.priority)}</span>
-                                    </div>
-                                    <div>
-                                        <span className="block text-[11px] text-muted-foreground mb-0.5">Área de Atención</span>
-                                        <span className="font-medium">{ticket.attentionArea?.name || "—"}</span>
-                                    </div>
-                                    <div>
-                                        <span className="block text-[11px] text-muted-foreground mb-0.5">Área de Procedencia</span>
-                                        <span className="font-medium">{ticket.area?.name || "—"}</span>
-                                    </div>
-                                    <div>
-                                        <span className="block text-[11px] text-muted-foreground mb-0.5">Campus</span>
-                                        <span className="font-medium">{ticket.campus?.name || "—"}</span>
-                                    </div>
-                                </div>
-                            </AccordionContent>
-                        </AccordionItem>
-                    </Accordion>
-
-                    {/* Attachments Section */}
-                    {ticket.attachments && ticket.attachments.length > 0 && (
-                        <div className="space-y-3">
-                            <div className="flex items-center gap-2">
-                                <PaperclipIcon className="h-4 w-4 text-muted-foreground" />
-                                <h3 className="text-sm font-semibold">
-                                    Archivos adjuntos ({ticket.attachments.length})
-                                </h3>
-                            </div>
-                            <div className="grid gap-2">
-                                {ticket.attachments.map((attachment) => (
-                                    <a
-                                        key={attachment.id}
-                                        href={attachment.driveViewLink}
-                                        target="_blank"
-                                        rel="noopener noreferrer"
-                                        className="flex items-center gap-3 rounded-lg border bg-card px-4 py-2.5 hover:bg-muted/50 transition-colors group"
-                                    >
-                                        <AttachmentIcon mimeType={attachment.mimeType} />
-                                        <div className="flex-1 min-w-0">
-                                            <p className="text-sm font-medium truncate">{attachment.fileName}</p>
-                                            <p className="text-xs text-muted-foreground">{formatFileSize(attachment.fileSize)}</p>
-                                        </div>
-                                        <ExternalLinkIcon className="h-4 w-4 text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity shrink-0" />
-                                    </a>
-                                ))}
-                            </div>
-                        </div>
+                    <span className="text-muted-foreground/40">•</span>
+                    <span>{formatDate(ticket.createdAt)}</span>
+                    {ticket.category && (
+                        <>
+                            <span className="text-muted-foreground/40">•</span>
+                            <span className="bg-muted text-muted-foreground px-2 py-0.5 rounded-md text-xs">
+                                {ticket.category.name}
+                                {ticket.subcategory && ` / ${ticket.subcategory.name}`}
+                            </span>
+                        </>
                     )}
+                    {ticket.campus && (
+                        <>
+                            <span className="text-muted-foreground/40">•</span>
+                            <span className="text-xs">{ticket.campus.name}</span>
+                        </>
+                    )}
+                </div>
+            </header>
 
-                    {/* Comments Section — Collapsible Card, open by default */}
-                    <Accordion type="single" collapsible defaultValue="comments" className="w-full" suppressHydrationWarning>
-                        <AccordionItem value="comments" className="border-0">
-                            <Card>
-                                <CardHeader className="pb-0">
-                                    <AccordionTrigger className="py-0 hover:no-underline">
-                                        <div className="flex items-center gap-2">
-                                            <MessageSquareIcon className="h-4 w-4 text-muted-foreground" />
-                                            <span className="text-sm font-semibold">
-                                                Comentarios {ticket.comments.length > 0 && `(${ticket.comments.length})`}
-                                            </span>
-                                        </div>
-                                    </AccordionTrigger>
-                                </CardHeader>
-                                <AccordionContent>
-                                    <CardContent className="pt-4">
-                                        {/* Comment List — Timeline */}
-                                        {ticket.comments.length > 0 ? (
-                                            <div className="relative">
-                                                {/* Timeline line */}
-                                                <div className="absolute left-[19px] top-5 bottom-5 w-px bg-border" aria-hidden />
+            <Separator />
 
-                                                <div className="space-y-5">
-                                                    {ticket.comments.map((comment) => (
-                                                        <div key={comment.id} className="relative flex gap-3">
-                                                            <UserAvatar
-                                                                name={comment.author.name}
-                                                                image={comment.author.image}
-                                                                size="md"
-                                                                className="shrink-0 relative z-10 ring-4 ring-card h-10 w-10"
-                                                            />
-                                                            <div className="flex-1 min-w-0">
-                                                                <div className="flex items-baseline justify-between mb-1 gap-2">
-                                                                    <p className="text-sm font-semibold">{comment.author.name}</p>
-                                                                    <span className="text-[11px] text-muted-foreground whitespace-nowrap">
-                                                                        {formatDate(comment.createdAt)}
-                                                                    </span>
-                                                                </div>
-                                                                <div className="rounded-lg bg-muted/30 border px-3 py-2">
-                                                                    <div className="text-sm text-foreground [&_p]:my-0.5 [&_ul]:my-0.5 [&_ol]:my-0.5">
-                                                                        <RichTextEditor value={comment.content} disabled={true} />
-                                                                    </div>
-                                                                </div>
-                                                            </div>
-                                                        </div>
-                                                    ))}
-                                                </div>
-                                            </div>
-                                        ) : (
-                                            <p className="text-sm text-muted-foreground italic py-2">Aún no hay comentarios.</p>
-                                        )}
+            {/* ─── BODY: 2 columns ─── */}
+            <div className="grid grid-cols-1 lg:grid-cols-[1fr_280px] gap-8">
 
-                                        {/* New Comment Form */}
-                                        {canComment ? (
-                                            <div className="mt-4">
-                                                <CommentForm ticketId={ticketId} />
-                                            </div>
-                                        ) : (
-                                            <div className="mt-4 bg-muted/50 border rounded-lg p-4 text-center text-sm text-muted-foreground">
-                                                Este ticket está cerrado y no admite más comentarios.
-                                            </div>
-                                        )}
-                                    </CardContent>
-                                </AccordionContent>
-                            </Card>
-                        </AccordionItem>
-                    </Accordion>
+                {/* LEFT: Tabbed content */}
+                <div className="min-w-0">
+                    <TicketTabs
+                        description={ticket.description}
+                        comments={ticket.comments.map(c => ({
+                            id: c.id,
+                            content: c.content,
+                            createdAt: c.createdAt,
+                            author: {
+                                name: c.author.name,
+                                image: c.author.image,
+                            }
+                        }))}
+                        attachments={(ticket.attachments || []).map(a => ({
+                            id: a.id,
+                            fileName: a.fileName,
+                            mimeType: a.mimeType,
+                            fileSize: a.fileSize,
+                            driveViewLink: a.driveViewLink,
+                        }))}
+                        ticketId={ticketId}
+                        canComment={canComment}
+                        formatDate={formatDate}
+                    />
                 </div>
 
-                {/* Sidebar - Details */}
-                <div className="space-y-4">
-                    <Card>
-                        <CardHeader className="pb-3">
-                            <CardTitle className="text-sm font-semibold">Detalles del ticket</CardTitle>
-                        </CardHeader>
-                        <CardContent className="space-y-4 text-sm">
-                            {/* Solicitante */}
-                            <div>
-                                <span className="block text-[10px] text-muted-foreground mb-1.5 uppercase tracking-wider font-medium">Solicitante</span>
+                {/* RIGHT: Sidebar */}
+                <aside className="space-y-5">
+                    {/* People section */}
+                    <div className="space-y-4">
+                        {/* Asignado */}
+                        <div>
+                            <span className="block text-[10px] text-muted-foreground mb-1.5 uppercase tracking-wider font-medium">
+                                Asignado a
+                            </span>
+                            {ticket.assignedTo ? (
                                 <div className="flex items-center gap-2">
-                                    <UserAvatar name={ticket.createdBy.name} image={ticket.createdBy.image} size="md" />
-                                    <div className="flex flex-col min-w-0">
-                                        <span className="font-medium truncate text-sm">{ticket.createdBy.name}</span>
-                                        <span className="text-xs text-muted-foreground truncate">{ticket.createdBy.email}</span>
+                                    <UserAvatar name={ticket.assignedTo.name} image={ticket.assignedTo.image} size="md" />
+                                    <div className="min-w-0">
+                                        <span className="block text-sm font-medium truncate">{ticket.assignedTo.name}</span>
                                     </div>
                                 </div>
-                            </div>
+                            ) : (
+                                <span className="text-xs text-muted-foreground italic">Sin asignar</span>
+                            )}
+                        </div>
 
-                            <Separator />
+                        <Separator />
 
-                            {/* Asignado a */}
-                            <div>
-                                <span className="block text-[10px] text-muted-foreground mb-1.5 uppercase tracking-wider font-medium">Asignado a</span>
-                                {ticket.assignedTo ? (
-                                    <div className="flex items-center gap-2">
-                                        <UserAvatar name={ticket.assignedTo.name} image={ticket.assignedTo.image} size="md" />
-                                        <span className="font-medium">{ticket.assignedTo.name}</span>
-                                    </div>
-                                ) : (
-                                    <span className="text-muted-foreground italic text-xs">Sin asignar</span>
+                        {/* En seguimiento */}
+                        <div>
+                            <div className="flex items-center justify-between mb-1.5">
+                                <span className="text-[10px] text-muted-foreground uppercase tracking-wider font-medium">
+                                    En seguimiento
+                                </span>
+                                {!isTicketClosed && (
+                                    <WatchersManager
+                                        ticketId={ticketId}
+                                        currentWatchers={ticket.watchers || []}
+                                        currentUserId={session.user.id}
+                                        allUsers={allUsers}
+                                    />
                                 )}
                             </div>
-
-                            <Separator />
-
-                            {/* En seguimiento */}
-                            <div>
-                                <div className="flex items-center justify-between mb-1.5">
-                                    <span className="text-[10px] text-muted-foreground uppercase tracking-wider font-medium">En seguimiento</span>
-                                    {!isTicketClosed && (
-                                        <WatchersManager
-                                            ticketId={ticketId}
-                                            currentWatchers={ticket.watchers || []}
-                                            currentUserId={session.user.id}
-                                            allUsers={allUsers}
-                                        />
-                                    )}
+                            {watchersList.length > 0 ? (
+                                <div className="space-y-1.5">
+                                    {watchersList.map(watcher => (
+                                        <div key={watcher.id} className="flex items-center gap-2">
+                                            <UserAvatar name={watcher.name} image={watcher.image} size="sm" />
+                                            <span className="text-sm truncate">{watcher.name}</span>
+                                        </div>
+                                    ))}
                                 </div>
-                                {watchersList.length > 0 ? (
-                                    <div className="space-y-1.5">
-                                        {watchersList.map(watcher => (
-                                            <div key={watcher.id} className="flex items-center gap-2">
-                                                <UserAvatar name={watcher.name} image={watcher.image} size="sm" />
-                                                <span className="text-xs">{watcher.name}</span>
-                                            </div>
-                                        ))}
-                                    </div>
-                                ) : (
-                                    <span className="text-muted-foreground italic text-xs">Sin seguidores</span>
-                                )}
-                            </div>
+                            ) : (
+                                <span className="text-xs text-muted-foreground italic">Sin seguidores</span>
+                            )}
+                        </div>
 
-                            <Separator />
+                        <Separator />
 
-                            {/* Prioridad */}
-                            <div>
-                                <span className="block text-[10px] text-muted-foreground mb-1.5 uppercase tracking-wider font-medium">Prioridad</span>
+                        {/* Metadata */}
+                        <div className="space-y-2.5 text-sm">
+                            <div className="flex items-center justify-between">
+                                <span className="text-muted-foreground text-xs">Prioridad</span>
                                 <PriorityBadge priority={ticket.priority} />
                             </div>
-                        </CardContent>
-                    </Card>
+                            <div className="flex items-center justify-between">
+                                <span className="text-muted-foreground text-xs">Área destino</span>
+                                <span className="text-xs font-medium text-right max-w-[160px] truncate">
+                                    {ticket.attentionArea?.name || "—"}
+                                </span>
+                            </div>
+                            <div className="flex items-center justify-between">
+                                <span className="text-muted-foreground text-xs">Área origen</span>
+                                <span className="text-xs font-medium text-right max-w-[160px] truncate">
+                                    {ticket.area?.name || "—"}
+                                </span>
+                            </div>
+                        </div>
 
-                    {/* Admin/Agent Controls */}
+                        {/* Closure details */}
+                        {ticket.status === 'resolved' && ticket.closedBy && (
+                            <>
+                                <Separator />
+                                <div className="space-y-1.5 text-sm">
+                                    <span className="block text-[10px] text-muted-foreground uppercase tracking-wider font-medium mb-1">
+                                        Cierre
+                                    </span>
+                                    <div className="text-xs text-muted-foreground">
+                                        <span className="font-medium text-foreground">Por: </span>
+                                        {ticket.closedBy === 'user' && 'Usuario (Validado)'}
+                                        {ticket.closedBy === 'admin' && 'Administrador'}
+                                        {ticket.closedBy === 'system' && 'Sistema (Auto-cierre)'}
+                                    </div>
+                                    {ticket.closedAt && (
+                                        <div className="text-xs text-muted-foreground">
+                                            <span className="font-medium text-foreground">Fecha: </span>
+                                            {formatDate(ticket.closedAt)}
+                                        </div>
+                                    )}
+                                </div>
+                            </>
+                        )}
+                    </div>
+
+                    {/* Admin Controls */}
                     {(session.user.role === "admin" || isAgentForArea) && (
-                        <Card>
-                            <CardHeader className="pb-3">
-                                <CardTitle className="text-sm font-semibold">Controles</CardTitle>
-                            </CardHeader>
-                            <CardContent className="space-y-4">
+                        <>
+                            <Separator />
+                            <div>
+                                <span className="block text-[10px] text-muted-foreground mb-3 uppercase tracking-wider font-medium">
+                                    Controles
+                                </span>
                                 <AdminTicketControls
                                     ticketId={ticketId}
                                     currentStatus={ticket.status}
                                     isAssigned={!!ticket.assignedToId}
                                 />
-
-                                {/* Closure Details - Only for closed tickets */}
-                                {ticket.status === 'resolved' && ticket.closedBy && (
-                                    <>
-                                        <Separator />
-                                        <div>
-                                            <h4 className="text-xs font-semibold mb-1.5 uppercase tracking-wider text-muted-foreground">Detalles de Cierre</h4>
-                                            <div className="space-y-1.5 text-sm text-muted-foreground">
-                                                <div>
-                                                    <span className="font-medium text-foreground">Cerrado por: </span>
-                                                    {ticket.closedBy === 'user' && 'Usuario (Validado)'}
-                                                    {ticket.closedBy === 'admin' && 'Administrador'}
-                                                    {ticket.closedBy === 'system' && 'Sistema (Auto-cierre 48hrs)'}
-                                                </div>
-                                                {ticket.closedAt && (
-                                                    <div>
-                                                        <span className="font-medium text-foreground">Fecha de cierre: </span>
-                                                        {formatDate(ticket.closedAt)}
-                                                    </div>
-                                                )}
-                                            </div>
-                                        </div>
-                                    </>
-                                )}
-                            </CardContent>
-                        </Card>
+                            </div>
+                        </>
                     )}
-                </div>
+                </aside>
             </div>
         </div>
     );
