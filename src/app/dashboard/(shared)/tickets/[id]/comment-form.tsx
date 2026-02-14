@@ -3,7 +3,6 @@
 import { useState, useTransition } from "react";
 import { RichTextEditor } from "@/components/shared/rich-text-editor";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
 import { addCommentAction } from "@/actions/comments";
 import { Loader2 } from "lucide-react";
 import { toast } from "sonner";
@@ -38,20 +37,18 @@ export function CommentForm({ ticketId }: CommentFormProps) {
     };
 
     return (
-        <Card>
-            <CardContent className="pt-6 space-y-4">
-                <RichTextEditor
-                    value={content}
-                    onChange={setContent}
-                    placeholder="Escribe una respuesta..."
-                />
-                <div className="flex justify-end">
-                    <Button onClick={handleSubmit} disabled={isPending || !content}>
-                        {isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                        Enviar respuesta
-                    </Button>
-                </div>
-            </CardContent>
-        </Card>
+        <div className="border-t pt-4 space-y-3">
+            <RichTextEditor
+                value={content}
+                onChange={setContent}
+                placeholder="Escribe una respuesta..."
+            />
+            <div className="flex justify-end">
+                <Button onClick={handleSubmit} disabled={isPending || !content} size="sm">
+                    {isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                    Enviar respuesta
+                </Button>
+            </div>
+        </div>
     );
 }
