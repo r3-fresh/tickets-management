@@ -11,7 +11,7 @@ export default function TicketDetailLoading() {
                     <div className="h-5 w-20 animate-pulse rounded-full bg-muted" />
                     <div className="h-5 w-16 animate-pulse rounded-full bg-muted" />
                 </div>
-                <div className="h-8 w-[28rem] max-w-full animate-pulse rounded bg-muted" />
+                <div className="h-8 w-md max-w-full animate-pulse rounded bg-muted" />
                 <div className="flex items-center gap-2">
                     <div className="h-6 w-6 animate-pulse rounded-full bg-muted" />
                     <div className="h-4 w-28 animate-pulse rounded bg-muted" />

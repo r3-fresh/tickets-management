@@ -74,14 +74,13 @@ export function WatchersManager({ ticketId, currentWatchers, allUsers, currentUs
     return (
         <Dialog open={open} onOpenChange={setOpen}>
             <DialogTrigger asChild>
-                <Button variant="outline" size="sm" className="w-full justify-start mt-2">
-                    <Plus className="mr-2 h-4 w-4" />
-                    Gestionar observadores
+                <Button variant="ghost" size="icon" className="h-6 w-6 text-muted-foreground hover:text-foreground">
+                    <Plus className="h-3.5 w-3.5" />
                 </Button>
             </DialogTrigger>
             <DialogContent className="sm:max-w-[425px]">
                 <DialogHeader>
-                    <DialogTitle>Gestionar observadores</DialogTitle>
+                    <DialogTitle>Gestionar seguimiento</DialogTitle>
                     <DialogDescription>
                         Añade o elimina usuarios que recibirán notificaciones sobre este ticket.
                     </DialogDescription>

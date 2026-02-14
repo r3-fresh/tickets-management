@@ -7,6 +7,7 @@ import { eq, desc } from "drizzle-orm";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Separator } from "@/components/ui/separator";
+import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import { formatDate, translatePriority, formatFileSize } from "@/lib/utils/format";
 import { StatusBadge } from "@/components/shared/status-badge";
 import { PriorityBadge } from "@/components/shared/priority-badge";
@@ -17,6 +18,7 @@ import { AdminTicketControls } from "./admin-ticket-controls";
 import { MarkAsViewed } from "./mark-as-viewed";
 import { WatchersManager } from "./watchers-manager";
 import { CancelTicketButton } from "./cancel-ticket-button";
+import { CopyTicketButton } from "./copy-ticket-button";
 import { UserValidationControls } from "./user-validation-controls";
 import dynamic from "next/dynamic";
 import { CommentForm } from "./comment-form";
@@ -133,7 +135,10 @@ export default async function TicketDetailPage({ params }: { params: Promise<{ i
                         <StatusBadge status={ticket.status} />
                         <PriorityBadge priority={ticket.priority} />
                     </div>
-                    <h1 className="text-2xl font-bold tracking-tight mb-2">{ticket.title}</h1>
+                    <div className="flex items-center gap-1.5 mb-2">
+                        <h1 className="text-2xl font-bold tracking-tight">{ticket.title}</h1>
+                        <CopyTicketButton ticketCode={ticket.ticketCode} title={ticket.title} />
+                    </div>
                     <div className="flex items-center gap-2 text-sm text-muted-foreground">
                         <UserAvatar name={ticket.createdBy.name} image={ticket.createdBy.image} size="sm" />
                         <span className="font-medium text-foreground">{ticket.createdBy.name}</span>
@@ -150,52 +155,56 @@ export default async function TicketDetailPage({ params }: { params: Promise<{ i
                 {/* Main Content */}
                 <div className="lg:col-span-2 space-y-6">
 
-                    {/* Description — Always visible */}
-                    <div className="rounded-lg border bg-card">
-                        <div className="px-5 py-3 border-b">
-                            <h2 className="text-sm font-semibold">Descripción</h2>
-                        </div>
-                        <div className="px-5 py-4">
-                            <div className="prose prose-sm max-w-none text-foreground">
-                                <RichTextEditor value={ticket.description} disabled={true} />
-                            </div>
-                        </div>
-                    </div>
+                    {/* Description — Collapsible, open by default */}
+                    <Accordion type="single" collapsible defaultValue="description" className="w-full" suppressHydrationWarning>
+                        <AccordionItem value="description" className="border rounded-lg">
+                            <AccordionTrigger className="px-5 py-3 text-sm font-semibold hover:no-underline">
+                                Descripción
+                            </AccordionTrigger>
+                            <AccordionContent className="px-5 pb-4">
+                                <div className="prose prose-sm max-w-none text-foreground">
+                                    <RichTextEditor value={ticket.description} disabled={true} />
+                                </div>
+                            </AccordionContent>
+                        </AccordionItem>
+                    </Accordion>
 
-                    {/* Technical Details — Compact grid */}
-                    <div className="rounded-lg border bg-card">
-                        <div className="px-5 py-3 border-b">
-                            <h2 className="text-sm font-semibold text-muted-foreground">Detalles técnicos</h2>
-                        </div>
-                        <div className="px-5 py-4">
-                            <div className="grid grid-cols-2 md:grid-cols-3 gap-x-6 gap-y-3 text-sm">
-                                <div>
-                                    <span className="block text-[11px] text-muted-foreground mb-0.5">Categoría</span>
-                                    <span className="font-medium">{ticket.category?.name || "—"}</span>
+                    {/* Technical Details — Collapsible, closed by default */}
+                    <Accordion type="single" collapsible className="w-full" suppressHydrationWarning>
+                        <AccordionItem value="details" className="border rounded-lg">
+                            <AccordionTrigger className="px-5 py-3 text-sm font-semibold text-muted-foreground hover:text-foreground hover:no-underline">
+                                Detalles técnicos
+                            </AccordionTrigger>
+                            <AccordionContent className="px-5 pb-4">
+                                <div className="grid grid-cols-2 md:grid-cols-3 gap-x-6 gap-y-3 text-sm">
+                                    <div>
+                                        <span className="block text-[11px] text-muted-foreground mb-0.5">Categoría</span>
+                                        <span className="font-medium">{ticket.category?.name || "—"}</span>
+                                    </div>
+                                    <div>
+                                        <span className="block text-[11px] text-muted-foreground mb-0.5">Subcategoría</span>
+                                        <span className="font-medium">{ticket.subcategory?.name || "—"}</span>
+                                    </div>
+                                    <div>
+                                        <span className="block text-[11px] text-muted-foreground mb-0.5">Prioridad</span>
+                                        <span className="font-medium capitalize">{translatePriority(ticket.priority)}</span>
+                                    </div>
+                                    <div>
+                                        <span className="block text-[11px] text-muted-foreground mb-0.5">Área de Atención</span>
+                                        <span className="font-medium">{ticket.attentionArea?.name || "—"}</span>
+                                    </div>
+                                    <div>
+                                        <span className="block text-[11px] text-muted-foreground mb-0.5">Área de Procedencia</span>
+                                        <span className="font-medium">{ticket.area?.name || "—"}</span>
+                                    </div>
+                                    <div>
+                                        <span className="block text-[11px] text-muted-foreground mb-0.5">Campus</span>
+                                        <span className="font-medium">{ticket.campus?.name || "—"}</span>
+                                    </div>
                                 </div>
-                                <div>
-                                    <span className="block text-[11px] text-muted-foreground mb-0.5">Subcategoría</span>
-                                    <span className="font-medium">{ticket.subcategory?.name || "—"}</span>
-                                </div>
-                                <div>
-                                    <span className="block text-[11px] text-muted-foreground mb-0.5">Prioridad</span>
-                                    <span className="font-medium capitalize">{translatePriority(ticket.priority)}</span>
-                                </div>
-                                <div>
-                                    <span className="block text-[11px] text-muted-foreground mb-0.5">Área de Atención</span>
-                                    <span className="font-medium">{ticket.attentionArea?.name || "—"}</span>
-                                </div>
-                                <div>
-                                    <span className="block text-[11px] text-muted-foreground mb-0.5">Área de Procedencia</span>
-                                    <span className="font-medium">{ticket.area?.name || "—"}</span>
-                                </div>
-                                <div>
-                                    <span className="block text-[11px] text-muted-foreground mb-0.5">Campus</span>
-                                    <span className="font-medium">{ticket.campus?.name || "—"}</span>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
+                            </AccordionContent>
+                        </AccordionItem>
+                    </Accordion>
 
                     {/* Attachments Section */}
                     {ticket.attachments && ticket.attachments.length > 0 && (
@@ -227,77 +236,80 @@ export default async function TicketDetailPage({ params }: { params: Promise<{ i
                         </div>
                     )}
 
-                    {/* Comments Section — Timeline style */}
-                    <div className="space-y-4">
-                        <div className="flex items-center gap-2">
-                            <MessageSquareIcon className="h-4 w-4 text-muted-foreground" />
-                            <h3 className="text-sm font-semibold">
-                                Comentarios {ticket.comments.length > 0 && `(${ticket.comments.length})`}
-                            </h3>
-                        </div>
+                    {/* Comments Section — Collapsible Card, open by default */}
+                    <Accordion type="single" collapsible defaultValue="comments" className="w-full" suppressHydrationWarning>
+                        <AccordionItem value="comments" className="border-0">
+                            <Card>
+                                <CardHeader className="pb-0">
+                                    <AccordionTrigger className="py-0 hover:no-underline">
+                                        <div className="flex items-center gap-2">
+                                            <MessageSquareIcon className="h-4 w-4 text-muted-foreground" />
+                                            <span className="text-sm font-semibold">
+                                                Comentarios {ticket.comments.length > 0 && `(${ticket.comments.length})`}
+                                            </span>
+                                        </div>
+                                    </AccordionTrigger>
+                                </CardHeader>
+                                <AccordionContent>
+                                    <CardContent className="pt-4">
+                                        {/* Comment List — Timeline */}
+                                        {ticket.comments.length > 0 ? (
+                                            <div className="relative">
+                                                {/* Timeline line */}
+                                                <div className="absolute left-[19px] top-5 bottom-5 w-px bg-border" aria-hidden />
 
-                        {/* Comment List — Timeline */}
-                        {ticket.comments.length > 0 ? (
-                            <div className="relative">
-                                {/* Timeline line */}
-                                <div className="absolute left-[19px] top-5 bottom-5 w-px bg-border" aria-hidden />
-
-                                <div className="space-y-5">
-                                    {ticket.comments.map((comment) => (
-                                        <div key={comment.id} className="relative flex gap-3">
-                                            <Avatar className="h-10 w-10 shrink-0 relative z-10 ring-4 ring-background">
-                                                <AvatarImage src={comment.author.image || undefined} />
-                                                <AvatarFallback className="bg-muted-foreground/80 text-background font-bold text-xs">
-                                                    {comment.author.name.charAt(0)}
-                                                </AvatarFallback>
-                                            </Avatar>
-                                            <div className="flex-1 min-w-0">
-                                                <div className="flex items-baseline justify-between mb-1 gap-2">
-                                                    <p className="text-sm font-semibold">{comment.author.name}</p>
-                                                    <span className="text-[11px] text-muted-foreground whitespace-nowrap">
-                                                        {formatDate(comment.createdAt)}
-                                                    </span>
-                                                </div>
-                                                <div className="rounded-lg bg-muted/30 border px-3 py-2">
-                                                    <div className="text-sm text-foreground [&_p]:my-0.5 [&_ul]:my-0.5 [&_ol]:my-0.5">
-                                                        <RichTextEditor value={comment.content} disabled={true} />
-                                                    </div>
+                                                <div className="space-y-5">
+                                                    {ticket.comments.map((comment) => (
+                                                        <div key={comment.id} className="relative flex gap-3">
+                                                            <UserAvatar
+                                                                name={comment.author.name}
+                                                                image={comment.author.image}
+                                                                size="md"
+                                                                className="shrink-0 relative z-10 ring-4 ring-card h-10 w-10"
+                                                            />
+                                                            <div className="flex-1 min-w-0">
+                                                                <div className="flex items-baseline justify-between mb-1 gap-2">
+                                                                    <p className="text-sm font-semibold">{comment.author.name}</p>
+                                                                    <span className="text-[11px] text-muted-foreground whitespace-nowrap">
+                                                                        {formatDate(comment.createdAt)}
+                                                                    </span>
+                                                                </div>
+                                                                <div className="rounded-lg bg-muted/30 border px-3 py-2">
+                                                                    <div className="text-sm text-foreground [&_p]:my-0.5 [&_ul]:my-0.5 [&_ol]:my-0.5">
+                                                                        <RichTextEditor value={comment.content} disabled={true} />
+                                                                    </div>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    ))}
                                                 </div>
                                             </div>
-                                        </div>
-                                    ))}
-                                </div>
-                            </div>
-                        ) : (
-                            <p className="text-sm text-muted-foreground italic py-2">Aún no hay comentarios.</p>
-                        )}
+                                        ) : (
+                                            <p className="text-sm text-muted-foreground italic py-2">Aún no hay comentarios.</p>
+                                        )}
 
-                        {/* New Comment Form */}
-                        {canComment ? (
-                            <CommentForm ticketId={ticketId} />
-                        ) : (
-                            <div className="bg-muted/50 border rounded-lg p-4 text-center text-sm text-muted-foreground">
-                                Este ticket está cerrado y no admite más comentarios.
-                            </div>
-                        )}
-                    </div>
+                                        {/* New Comment Form */}
+                                        {canComment ? (
+                                            <div className="mt-4">
+                                                <CommentForm ticketId={ticketId} />
+                                            </div>
+                                        ) : (
+                                            <div className="mt-4 bg-muted/50 border rounded-lg p-4 text-center text-sm text-muted-foreground">
+                                                Este ticket está cerrado y no admite más comentarios.
+                                            </div>
+                                        )}
+                                    </CardContent>
+                                </AccordionContent>
+                            </Card>
+                        </AccordionItem>
+                    </Accordion>
                 </div>
 
                 {/* Sidebar - Details */}
                 <div className="space-y-4">
                     <Card>
                         <CardHeader className="pb-3">
-                            <div className="flex items-center justify-between">
-                                <CardTitle className="text-sm font-semibold">Detalles del ticket</CardTitle>
-                                {!isTicketClosed && (
-                                    <WatchersManager
-                                        ticketId={ticketId}
-                                        currentWatchers={ticket.watchers || []}
-                                        currentUserId={session.user.id}
-                                        allUsers={allUsers}
-                                    />
-                                )}
-                            </div>
+                            <CardTitle className="text-sm font-semibold">Detalles del ticket</CardTitle>
                         </CardHeader>
                         <CardContent className="space-y-4 text-sm">
                             {/* Solicitante */}
@@ -331,16 +343,23 @@ export default async function TicketDetailPage({ params }: { params: Promise<{ i
 
                             {/* En seguimiento */}
                             <div>
-                                <span className="block text-[10px] text-muted-foreground mb-1.5 uppercase tracking-wider font-medium">En seguimiento</span>
+                                <div className="flex items-center justify-between mb-1.5">
+                                    <span className="text-[10px] text-muted-foreground uppercase tracking-wider font-medium">En seguimiento</span>
+                                    {!isTicketClosed && (
+                                        <WatchersManager
+                                            ticketId={ticketId}
+                                            currentWatchers={ticket.watchers || []}
+                                            currentUserId={session.user.id}
+                                            allUsers={allUsers}
+                                        />
+                                    )}
+                                </div>
                                 {watchersList.length > 0 ? (
-                                    <div className="flex flex-wrap gap-1.5">
+                                    <div className="space-y-1.5">
                                         {watchersList.map(watcher => (
-                                            <div key={watcher.id} className="flex items-center gap-1.5 bg-muted/50 rounded-full pl-0.5 pr-2 py-0.5">
-                                                <Avatar className="h-5 w-5">
-                                                    <AvatarImage src={watcher.image || undefined} />
-                                                    <AvatarFallback className="text-[10px]">{watcher.name.charAt(0)}</AvatarFallback>
-                                                </Avatar>
-                                                <span className="text-xs">{watcher.name.split(' ')[0]}</span>
+                                            <div key={watcher.id} className="flex items-center gap-2">
+                                                <UserAvatar name={watcher.name} image={watcher.image} size="sm" />
+                                                <span className="text-xs">{watcher.name}</span>
                                             </div>
                                         ))}
                                     </div>
