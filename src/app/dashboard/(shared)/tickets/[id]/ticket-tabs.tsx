@@ -39,7 +39,7 @@ interface TicketTabsProps {
     comments: {
         id: string;
         content: string;
-        createdAt: Date;
+        formattedDate: string;
         author: {
             name: string;
             image: string | null;
@@ -54,10 +54,9 @@ interface TicketTabsProps {
     }[];
     ticketId: number;
     canComment: boolean;
-    formatDate: (date: Date) => string;
 }
 
-export function TicketTabs({ description, comments, attachments, ticketId, canComment, formatDate }: TicketTabsProps) {
+export function TicketTabs({ description, comments, attachments, ticketId, canComment }: TicketTabsProps) {
     const hasAttachments = attachments && attachments.length > 0;
 
     return (
@@ -124,7 +123,7 @@ export function TicketTabs({ description, comments, attachments, ticketId, canCo
                                             <div className="flex items-baseline justify-between mb-1 gap-2">
                                                 <p className="text-sm font-semibold">{comment.author.name}</p>
                                                 <span className="text-[11px] text-muted-foreground whitespace-nowrap">
-                                                    {formatDate(comment.createdAt)}
+                                                    {comment.formattedDate}
                                                 </span>
                                             </div>
                                             <div className="rounded-lg bg-muted/30 border px-3 py-2">

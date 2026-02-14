@@ -162,7 +162,7 @@ export default async function TicketDetailPage({ params }: { params: Promise<{ i
                         comments={ticket.comments.map(c => ({
                             id: c.id,
                             content: c.content,
-                            createdAt: c.createdAt,
+                            formattedDate: formatDate(c.createdAt),
                             author: {
                                 name: c.author.name,
                                 image: c.author.image,
@@ -177,7 +177,6 @@ export default async function TicketDetailPage({ params }: { params: Promise<{ i
                         }))}
                         ticketId={ticketId}
                         canComment={canComment}
-                        formatDate={formatDate}
                     />
                 </div>
 
