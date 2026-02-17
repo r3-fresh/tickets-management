@@ -13,8 +13,9 @@ import { UserAvatar } from "@/components/shared/user-avatar";
 import { Breadcrumb } from "@/components/shared/breadcrumb";
 import {
     FileIcon, ImageIcon, FileTextIcon, FileSpreadsheetIcon, FilmIcon, ExternalLinkIcon, PaperclipIcon,
-    MessageSquareIcon, FileText, ChevronDown, Monitor, User
+    MessageSquareIcon, FileText, ChevronDown, Monitor, User, Clock, Calendar, Hash, Tag, ArrowRight, Eye
 } from "lucide-react";
+import { cn } from "@/lib/utils/cn";
 import { AdminTicketControls } from "./admin-ticket-controls";
 import { MarkAsViewed } from "./mark-as-viewed";
 import { WatchersManager } from "./watchers-manager";
@@ -114,319 +115,309 @@ export default async function TicketDetailPage({ params }: { params: Promise<{ i
     const canComment = !isTicketClosed;
 
     return (
-        <div className="mx-auto max-w-6xl space-y-6 pb-20">
+        <div className="mx-auto max-w-[1600px] space-y-8 pb-20 animate-in fade-in duration-500">
             <MarkAsViewed ticketId={ticketId} />
-            <Breadcrumb items={[{ label: ticket.ticketCode }]} />
 
-            {/* Notification Banner */}
+            {/* Top Navigation */}
+            <div>
+                <Breadcrumb items={[{ label: ticket.ticketCode }]} />
+            </div>
+
+            {/* Validation Controls */}
             {ticket.status === 'pending_validation' && ticket.createdById === session.user.id && (
                 <UserValidationControls ticketId={ticket.id} />
             )}
 
-            {/* HEADER: Title & Actions */}
-            <div className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
-                <div className="space-y-3 flex-1">
-                    {/* Metadata Row */}
-                    <div className="flex flex-wrap items-center gap-2">
-                        <span className="bg-muted px-2 py-0.5 rounded text-xs font-mono text-muted-foreground border">
-                            {ticket.ticketCode}
-                        </span>
-                        <StatusBadge status={ticket.status} />
-                        <PriorityBadge priority={ticket.priority} />
-                    </div>
-
-                    {/* Title Row */}
-                    <div className="flex items-start gap-3 group">
-                        <h1 className="text-2xl font-bold tracking-tight text-foreground leading-tight md:text-3xl">
-                            {ticket.title}
-                        </h1>
-                        <CopyTicketButton ticketCode={ticket.ticketCode} title={ticket.title} />
-                    </div>
-
-                    {/* Author Row */}
-                    <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                        <UserAvatar name={ticket.createdBy.name} image={ticket.createdBy.image} size="xs" />
-                        <span className="font-medium text-foreground">{ticket.createdBy.name}</span>
-                        <span>creó esto el {formatDate(ticket.createdAt)}</span>
-                    </div>
-                </div>
-
-                {/* Top Actions */}
-                {isCreator && !isTicketClosed && (
-                    <CancelTicketButton ticketId={ticketId} />
-                )}
-            </div>
-
-            <Separator className="my-6" />
-
-            <div className="grid grid-cols-1 gap-8 lg:grid-cols-[1fr_300px]">
+            <div className="grid grid-cols-1 lg:grid-cols-[1fr_340px] gap-10 items-start">
 
                 {/* LEFT COLUMN: Main Content */}
-                <div className="space-y-8 min-w-0">
+                <div className="min-w-0 space-y-8">
 
-                    {/* 1. DESCRIPTION (Collapsible, open default) */}
-                    <Collapsible defaultOpen className="group/desc">
-                        <div className="flex items-center justify-between mb-2">
-                            <CollapsibleTrigger className="flex items-center gap-2 text-sm font-semibold text-foreground/80 hover:text-foreground">
-                                <ChevronDown className="h-4 w-4 transition-transform group-data-[state=closed]/desc:-rotate-90" />
-                                <FileText className="h-4 w-4 text-muted-foreground" />
-                                Descripción
-                            </CollapsibleTrigger>
+                    {/* Header */}
+                    <div className="space-y-4">
+                        <div className="flex items-start justify-between gap-4">
+                            <h1 className="text-3xl font-bold tracking-tight text-foreground sm:text-4xl leading-tight">
+                                {ticket.title}
+                            </h1>
                         </div>
-                        <CollapsibleContent>
-                            <Card>
-                                <CardContent className="pt-6">
-                                    <div className="prose prose-sm max-w-none dark:prose-invert">
-                                        <RichTextEditor value={ticket.description} disabled={true} />
-                                    </div>
-                                </CardContent>
-                            </Card>
-                        </CollapsibleContent>
-                    </Collapsible>
-
-                    {/* 2. TECHNICAL DETAILS (Collapsible, closed default) */}
-                    <Collapsible className="group/tech">
-                        <div className="flex items-center justify-between mb-2">
-                            <CollapsibleTrigger className="flex items-center gap-2 text-sm font-semibold text-foreground/80 hover:text-foreground">
-                                <ChevronDown className="h-4 w-4 transition-transform group-data-[state=closed]/tech:-rotate-90" />
-                                <Monitor className="h-4 w-4 text-muted-foreground" />
-                                Detalles Técnicos
-                            </CollapsibleTrigger>
-                        </div>
-                        <CollapsibleContent>
-                            <Card>
-                                <CardContent className="pt-6">
-                                    <dl className="grid grid-cols-1 gap-x-4 gap-y-4 sm:grid-cols-2 lg:grid-cols-3">
-                                        {[
-                                            { label: "Categoría", value: ticket.category?.name },
-                                            { label: "Subcategoría", value: ticket.subcategory?.name },
-                                            { label: "Campus", value: ticket.campus?.name },
-                                            { label: "Área Origen", value: ticket.area?.name },
-                                            { label: "Área Destino", value: ticket.attentionArea?.name },
-                                            { label: "Prioridad", value: translatePriority(ticket.priority) },
-                                        ].map((item, i) => (
-                                            <div key={i} className="flex flex-col">
-                                                <dt className="text-xs font-medium text-muted-foreground">{item.label}</dt>
-                                                <dd className="text-sm font-medium mt-0.5">{item.value || "—"}</dd>
-                                            </div>
-                                        ))}
-                                    </dl>
-                                </CardContent>
-                            </Card>
-                        </CollapsibleContent>
-                    </Collapsible>
-
-                    {/* 3. ATTACHMENTS (Visible if present) */}
-                    {ticket.attachments && ticket.attachments.length > 0 && (
-                        <div className="space-y-2">
-                            <h3 className="flex items-center gap-2 text-sm font-semibold text-foreground/80">
-                                <PaperclipIcon className="h-4 w-4 text-muted-foreground" />
-                                Archivos Adjuntos ({ticket.attachments.length})
-                            </h3>
-                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                                {ticket.attachments.map((file) => (
-                                    <a
-                                        key={file.id}
-                                        href={file.driveViewLink}
-                                        target="_blank"
-                                        rel="noopener noreferrer"
-                                        className="flex items-center gap-3 p-3 rounded-lg border bg-card hover:bg-accent/50 transition-colors group"
-                                    >
-                                        <div className="bg-muted p-2 rounded shrink-0">
-                                            <AttachmentIcon mimeType={file.mimeType} />
-                                        </div>
-                                        <div className="flex-1 min-w-0 pr-2">
-                                            <p className="text-sm font-medium truncate group-hover:underline decoration-muted-foreground/50 underline-offset-4">
-                                                {file.fileName}
-                                            </p>
-                                            <p className="text-xs text-muted-foreground">{formatFileSize(file.fileSize)}</p>
-                                        </div>
-                                        <ExternalLinkIcon className="h-3.5 w-3.5 text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity" />
-                                    </a>
-                                ))}
+                        <div className="flex flex-wrap items-center gap-x-6 gap-y-2 text-sm text-muted-foreground">
+                            <div className="flex items-center gap-2">
+                                <StatusBadge status={ticket.status} />
+                                <PriorityBadge priority={ticket.priority} />
+                                <CopyTicketButton ticketCode={ticket.ticketCode} title={ticket.title} />
                             </div>
+                            <span className="flex items-center gap-1.5 font-mono text-xs bg-muted/50 px-2 py-0.5 rounded border">
+                                <Hash className="w-3 h-3 text-muted-foreground/70" />
+                                {ticket.ticketCode}
+                            </span>
+                            <span className="flex items-center gap-2">
+                                <UserAvatar name={ticket.createdBy.name} image={ticket.createdBy.image} size="xs" />
+                                <span className="text-foreground font-medium">{ticket.createdBy.name}</span>
+                            </span>
+                            <span className="flex items-center gap-1.5 text-muted-foreground/80">
+                                <Calendar className="w-3.5 h-3.5 opacity-70" />
+                                <span className="font-medium text-muted-foreground">Creado el:</span> {formatDate(ticket.createdAt)}
+                            </span>
                         </div>
-                    )}
+                    </div>
 
-                    <Separator />
+                    {/* Main Content - Description & Attachments */}
+                    <div className="ml-1">
 
-                    {/* 4. COMMENTS (Collapsible, open default) */}
-                    <Collapsible defaultOpen className="group/comments">
-                        <div className="flex items-center justify-between mb-4">
-                            <CollapsibleTrigger className="flex items-center gap-2 text-sm font-semibold text-foreground/80 hover:text-foreground">
-                                <ChevronDown className="h-4 w-4 transition-transform group-data-[state=closed]/comments:-rotate-90" />
-                                <MessageSquareIcon className="h-4 w-4 text-muted-foreground" />
-                                Comentarios ({ticket.comments.length})
-                            </CollapsibleTrigger>
+                        <div className="rounded-xl border border-border bg-card">
+                            <div className="px-6 pt-5 pb-4">
+                                <h3 className="text-sm font-medium mb-1 flex items-center gap-2">
+                                    Descripción
+                                </h3>
+                                <div className="prose prose-zinc dark:prose-invert max-w-none">
+                                    <RichTextEditor
+                                        value={ticket.description}
+                                        disabled={true}
+                                        className="border-0 px-0 bg-transparent min-h-0 shadow-none focus-within:ring-0 text-sm leading-relaxed"
+                                    />
+                                </div>
+                            </div>
+                            {ticket.attachments && ticket.attachments.length > 0 && (
+                                <>
+                                    <div className="mx-6 border-t border-border" />
+                                    <div className="px-6 pt-4 pb-6 space-y-3">
+                                        <div className="flex items-center gap-2 mb-1">
+                                            <PaperclipIcon className="h-3.5 w-3.5 text-muted-foreground" />
+                                            <p className="text-sm font-medium">Archivos adjuntos</p>
+                                        </div>
+                                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                                            {ticket.attachments.map((file) => (
+                                                <a
+                                                    key={file.id}
+                                                    href={file.driveViewLink}
+                                                    target="_blank"
+                                                    rel="noopener noreferrer"
+                                                    className="flex items-center gap-3 p-3 rounded-lg border bg-background/50 hover:bg-accent/50 hover:border-accent-foreground/20 transition-all group"
+                                                >
+                                                    <div className="bg-muted p-2.5 rounded-md shrink-0 text-muted-foreground group-hover:text-foreground transition-colors">
+                                                        <AttachmentIcon mimeType={file.mimeType} />
+                                                    </div>
+                                                    <div className="flex-1 min-w-0 pr-2">
+                                                        <p className="text-sm font-medium truncate group-hover:underline decoration-muted-foreground/50 underline-offset-4 text-foreground">
+                                                            {file.fileName}
+                                                        </p>
+                                                        <p className="text-xs text-muted-foreground">{formatFileSize(file.fileSize)}</p>
+                                                    </div>
+                                                    <ExternalLinkIcon className="h-3.5 w-3.5 text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity" />
+                                                </a>
+                                            ))}
+                                        </div>
+                                    </div>
+                                </>
+                            )}
                         </div>
 
-                        <CollapsibleContent>
-                            <div className="space-y-8 pl-2">
+
+                    </div>
+
+
+                    {/* Activity / Comments */}
+                    <div className="space-y-6 pt-4">
+                        <Collapsible defaultOpen className="space-y-6">
+                            <div className="flex items-center justify-between">
+                                <CollapsibleTrigger className="flex items-center gap-2 text-xs font-semibold text-muted-foreground uppercase tracking-wider hover:text-foreground transition-colors group cursor-pointer">
+                                    <MessageSquareIcon className="w-3.5 h-3.5" />
+                                    Comentarios
+                                    <ChevronDown className="w-3 h-3 transition-transform group-data-[state=open]:rotate-180" />
+                                </CollapsibleTrigger>
+                                <span className="text-xs text-muted-foreground bg-muted px-2 py-0.5 rounded-full">{ticket.comments.length}</span>
+                            </div>
+
+                            <CollapsibleContent>
+                                {/* Comment Form (Top) */}
+                                {canComment && (
+                                    <div className="pb-8 pl-2">
+                                        <CommentForm ticketId={ticketId} />
+                                    </div>
+                                )}
+
                                 {/* Timeline */}
-                                <div className="space-y-6 relative before:absolute before:inset-y-0 before:left-[19px] before:w-px before:bg-border/60">
+                                <div className="space-y-8 relative pl-2">
+                                    {/* Line connector */}
+                                    {ticket.comments.length > 0 && (
+                                        <div className="absolute left-[26px] top-4 bottom-4 w-px bg-linear-to-b from-border/80 via-border/40 to-transparent" />
+                                    )}
+
                                     {ticket.comments.map((comment) => (
-                                        <div key={comment.id} className="relative pl-12">
-                                            {/* Avatar node on timeline */}
-                                            <div className="absolute left-0 top-0">
+                                        <div key={comment.id} className="relative pl-12 group">
+                                            {/* Avatar */}
+                                            <div className="absolute left-0 top-0 z-10">
                                                 <UserAvatar
                                                     name={comment.author.name}
                                                     image={comment.author.image}
                                                     size="md"
-                                                    className="ring-4 ring-background h-10 w-10 relative z-10"
+                                                    className="ring-4 ring-background h-10 w-10 shadow-sm"
                                                 />
                                             </div>
 
-                                            {/* Comment Content */}
+                                            {/* Comment Body */}
                                             <div className="space-y-2">
-                                                <div className="flex items-baseline justify-between">
-                                                    <span className="text-sm font-semibold">{comment.author.name}</span>
-                                                    <time className="text-xs text-muted-foreground">
-                                                        {formatDate(comment.createdAt)}
-                                                    </time>
+                                                <div className="flex items-baseline gap-2">
+                                                    <span className="text-sm font-semibold text-foreground">{comment.author.name}</span>
+                                                    <span className="text-xs text-muted-foreground">{formatDate(comment.createdAt)}</span>
                                                 </div>
-                                                <div className="bg-muted/30 border rounded-lg px-4 py-3 text-sm">
-                                                    <RichTextEditor value={comment.content} disabled={true} />
+                                                <div className="bg-sidebar border border-border/50 rounded-xl px-4 py-2 text-sm text-foreground shadow-sm group-hover:border-border/80 transition-colors">
+                                                    <RichTextEditor
+                                                        value={comment.content}
+                                                        disabled={true}
+                                                        className="border-0 px-0 bg-transparent min-h-0 p-0 shadow-none"
+                                                    />
                                                 </div>
                                             </div>
                                         </div>
                                     ))}
                                 </div>
+                            </CollapsibleContent>
+                        </Collapsible>
 
-                                {/* No comments state */}
-                                {ticket.comments.length === 0 && (
-                                    <div className="flex flex-col items-center justify-center py-10 text-muted-foreground border border-dashed rounded-lg bg-muted/10">
-                                        <MessageSquareIcon className="h-8 w-8 opacity-20 mb-2" />
-                                        <p className="text-sm">No hay comentarios aún</p>
-                                    </div>
-                                )}
-
-                                {/* Comment Form */}
-                                {canComment ? (
-                                    <div className="pl-12 pt-4">
-                                        <CommentForm ticketId={ticketId} />
-                                    </div>
-                                ) : (
-                                    <div className="bg-muted/50 border rounded-lg p-4 text-center text-sm text-muted-foreground mx-12">
-                                        Este ticket está cerrado y no admite más comentarios.
-                                    </div>
-                                )}
+                        {/* Empty State */}
+                        {ticket.comments.length === 0 && (
+                            <div className="text-center py-12 px-4 border border-dashed rounded-lg bg-muted/5">
+                                <div className="mx-auto h-12 w-12 rounded-full bg-muted/20 flex items-center justify-center mb-3">
+                                    <MessageSquareIcon className="h-6 w-6 text-muted-foreground/50" />
+                                </div>
+                                <h3 className="text-sm font-medium text-foreground">Sin comentarios aún</h3>
+                                <p className="text-xs text-muted-foreground mt-1 max-w-xs mx-auto">
+                                    Inicia la conversación preguntando detalles o añadiendo actualizaciones.
+                                </p>
                             </div>
-                        </CollapsibleContent>
-                    </Collapsible>
+                        )}
+
+                        {/* Comment Form */}
+                        {!canComment && (
+                            <div className="bg-muted/30 border rounded-lg p-4 flex items-center justify-center gap-2 text-sm text-muted-foreground mt-4">
+                                <span className="h-2 w-2 rounded-full bg-muted-foreground/50" />
+                                Este ticket ha sido cerrado.
+                            </div>
+                        )}
+                    </div>
                 </div>
 
                 {/* RIGHT COLUMN: Context Sidebar */}
-                <div className="space-y-6">
+                <div className="space-y-8 sticky top-6 lg:border-l lg:pl-10 border-border/60">
 
-                    {/* People Card */}
-                    <Card>
-                        <CardHeader className="pb-3 border-b bg-muted/10">
-                            <CardTitle className="text-xs font-semibold uppercase tracking-wider text-muted-foreground flex items-center gap-2">
-                                <User className="h-3.5 w-3.5" />
-                                Personas
-                            </CardTitle>
-                        </CardHeader>
-                        <CardContent className="pt-4 space-y-5">
+                    {/* Ticket Details */}
+                    <div className="space-y-6">
+                        <div className="space-y-1">
+                            <h3 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-3 flex items-center gap-2">
+                                <Tag className="w-3.5 h-3.5" />
+                                Detalles
+                            </h3>
+
                             {/* Assigned To */}
-                            <div>
-                                <span className="text-xs font-medium text-muted-foreground mb-2 block">Asignado a</span>
+                            <div className="bg-sidebar border border-border/50 rounded-xl p-4 group">
+                                <label className="text-[11px] font-medium text-muted-foreground uppercase flex items-center gap-1.5 mb-2">
+                                    <User className="w-3 h-3" />
+                                    Responsable
+                                </label>
                                 {ticket.assignedTo ? (
-                                    <div className="flex items-center gap-3">
-                                        <UserAvatar name={ticket.assignedTo.name} image={ticket.assignedTo.image} size="sm" />
-                                        <div className="text-sm font-medium">{ticket.assignedTo.name}</div>
+                                    <div className="flex items-center gap-2.5 rounded-md transition-colors cursor-default">
+                                        <UserAvatar name={ticket.assignedTo.name} image={ticket.assignedTo.image} size="xs" className="h-6 w-6" />
+                                        <span className="text-sm font-medium text-foreground">{ticket.assignedTo.name}</span>
                                     </div>
                                 ) : (
-                                    <div className="flex items-center gap-2 text-muted-foreground text-sm italic">
-                                        <div className="h-8 w-8 rounded-full bg-muted flex items-center justify-center border border-dashed">
-                                            <User className="h-4 w-4 opacity-50" />
-                                        </div>
-                                        Sin asignar
-                                    </div>
+                                    <div className="text-sm text-muted-foreground italic">Sin asignar</div>
                                 )}
                             </div>
+                        </div>
 
-                            {/* Watchers */}
+                        {/* Attributes Grid */}
+                        <div className="bg-sidebar border border-border/50 rounded-xl p-4 grid grid-cols-1 gap-y-4">
                             <div>
-                                <div className="flex items-center justify-between mb-2">
-                                    <span className="text-xs font-medium text-muted-foreground">En seguimiento</span>
-                                    {!isTicketClosed && (
-                                        <WatchersManager
-                                            ticketId={ticketId}
-                                            currentWatchers={ticket.watchers || []}
-                                            currentUserId={session.user.id}
-                                            allUsers={allUsers}
-                                        />
-                                    )}
+                                <label className="text-[11px] font-medium text-muted-foreground uppercase block mb-1">Categoría</label>
+                                <div className="text-sm font-medium text-foreground">{ticket.category?.name || "—"}</div>
+                                <div className="text-xs text-muted-foreground mt-0.5">{ticket.subcategory?.name}</div>
+                            </div>
+
+                            <div className="space-y-4">
+                                <div>
+                                    <label className="text-[11px] font-medium text-muted-foreground uppercase block mb-1">Campus</label>
+                                    <div className="text-sm text-foreground">{ticket.campus?.name || "—"}</div>
                                 </div>
-                                <div className="space-y-2">
-                                    {watchersList.length > 0 ? watchersList.map(watcher => (
-                                        <div key={watcher.id} className="flex items-center gap-2">
-                                            <UserAvatar name={watcher.name} image={watcher.image} size="xs" className="h-6 w-6" />
-                                            <span className="text-sm">{watcher.name}</span>
-                                        </div>
-                                    )) : (
-                                        <p className="text-xs text-muted-foreground italic pl-1">Nadie sigue este ticket</p>
-                                    )}
+                                <div>
+                                    <label className="text-[11px] font-medium text-muted-foreground uppercase block mb-1">Área</label>
+                                    <div className="text-sm text-foreground">{ticket.attentionArea?.name || "—"}</div>
                                 </div>
                             </div>
-                        </CardContent>
-                    </Card>
+                        </div>
 
-                    {/* Meta Card */}
-                    <Card>
-                        <CardHeader className="pb-3 border-b bg-muted/10">
-                            <CardTitle className="text-xs font-semibold uppercase tracking-wider text-muted-foreground flex items-center gap-2">
-                                <Monitor className="h-3.5 w-3.5" />
-                                Contexto
-                            </CardTitle>
-                        </CardHeader>
-                        <CardContent className="pt-4 space-y-4 text-sm">
-                            <div className="flex justify-between items-center">
-                                <span className="text-muted-foreground">Prioridad</span>
-                                <PriorityBadge priority={ticket.priority} />
-                            </div>
-                            <div className="flex justify-between items-center">
-                                <span className="text-muted-foreground">Estado</span>
-                                <span className="capitalize font-medium">{ticket.status.replace('_', ' ')}</span>
-                            </div>
-                            <Separator />
-                            <div>
-                                <span className="block text-xs text-muted-foreground mb-1">Área Destino</span>
-                                <span className="font-medium text-right block truncate">{ticket.attentionArea?.name || "—"}</span>
-                            </div>
+                        {/* Cancellation Action for Creator */}
+                        {isCreator && !isTicketClosed && (
+                            <>
 
-                            {/* Closure Info */}
-                            {ticket.status === 'resolved' && ticket.closedBy && (
-                                <>
-                                    <Separator />
-                                    <div className="bg-green-500/10 -mx-4 -mb-4 p-4 border-t border-green-500/20">
-                                        <p className="text-xs font-semibold text-green-700 dark:text-green-400 mb-1">CERRADO EL {formatDate(ticket.closedAt!)}</p>
-                                        <p className="text-xs text-green-600/80 dark:text-green-500/80">
-                                            Por: {ticket.closedBy === 'user' ? 'Usuario' : ticket.closedBy === 'admin' ? 'Admin' : 'Sistema'}
-                                        </p>
+                                <div>
+                                    <CancelTicketButton ticketId={ticketId} />
+                                </div>
+                            </>
+                        )}
+
+                        {/* Watchers */}
+                        <div className="bg-sidebar border border-border/50 rounded-xl p-4 space-y-3">
+                            <div className="flex items-center justify-between">
+                                <label className="text-[11px] font-medium text-muted-foreground uppercase flex items-center gap-1.5">
+                                    <Eye className="w-3 h-3" />
+                                    Usuarios notificados
+                                </label>
+                                {!isTicketClosed && (
+                                    <WatchersManager
+                                        ticketId={ticketId}
+                                        currentWatchers={ticket.watchers || []}
+                                        currentUserId={session.user.id}
+                                        allUsers={allUsers}
+                                    />
+                                )}
+                            </div>
+                            <div className="flex flex-col gap-2">
+                                {watchersList.length > 0 ? watchersList.map(watcher => (
+                                    <div key={watcher.id} className="flex items-center gap-2 text-sm" title={watcher.email}>
+                                        <UserAvatar name={watcher.name} image={watcher.image} size="xs" className="h-6 w-6" />
+                                        <span className="text-foreground/90 font-medium truncate">{watcher.name}</span>
                                     </div>
-                                </>
-                            )}
-                        </CardContent>
-                    </Card>
+                                )) : (
+                                    <p className="text-xs text-muted-foreground/60 italic">No hay usuarios notificados</p>
+                                )}
+                            </div>
+                        </div>
+
+                        {/* Closure Info (if applicable) */}
+                        {ticket.status === 'resolved' && ticket.closedBy && (
+                            <div className="rounded-md bg-green-500/10 border border-green-500/20 p-3 mt-4">
+                                <div className="flex items-center gap-2 mb-1">
+                                    <div className="h-1.5 w-1.5 rounded-full bg-green-500 animate-pulse" />
+                                    <span className="text-xs font-bold text-green-700 dark:text-green-400">Resuelto</span>
+                                </div>
+                                <p className="text-xs text-green-600/80 dark:text-green-500/80">
+                                    Cerrado por {ticket.closedBy === 'user' ? 'Usuario' : ticket.closedBy === 'admin' ? 'Admin' : 'Sistema'} el {formatDate(ticket.closedAt!)}
+                                </p>
+                            </div>
+                        )}
+                    </div>
 
                     {/* Admin Controls */}
                     {(isAdmin || isAgentForArea) && (
-                        <Card className="border-orange-200 dark:border-orange-900 overflow-hidden">
-                            <div className="bg-orange-50 dark:bg-orange-950/30 px-4 py-2 border-b border-orange-100 dark:border-orange-900">
-                                <span className="text-xs font-bold text-orange-600 dark:text-orange-400 uppercase tracking-wider">Zona Administrativa</span>
+                        <div className="space-y-3 pt-2">
+                            <div className="rounded-lg border border-orange-200 dark:border-orange-900 bg-linear-to-b from-orange-50/50 to-orange-50/10 dark:from-orange-950/20 dark:to-transparent overflow-hidden">
+                                <div className="px-3 py-2 border-b border-orange-100 dark:border-orange-900/50 flex items-center gap-2 bg-orange-100/30 dark:bg-orange-950/30">
+                                    <Monitor className="w-3.5 h-3.5 text-orange-600 dark:text-orange-400" />
+                                    <span className="text-[10px] font-bold text-orange-600 dark:text-orange-400 uppercase tracking-wider">Gestión del Ticket</span>
+                                </div>
+                                <div className="p-3">
+                                    <AdminTicketControls
+                                        ticketId={ticketId}
+                                        currentStatus={ticket.status}
+                                        isAssigned={!!ticket.assignedToId}
+                                    />
+                                </div>
                             </div>
-                            <CardContent className="pt-4">
-                                <AdminTicketControls
-                                    ticketId={ticketId}
-                                    currentStatus={ticket.status}
-                                    isAssigned={!!ticket.assignedToId}
-                                />
-                            </CardContent>
-                        </Card>
+                        </div>
                     )}
                 </div>
             </div>
-        </div>
+        </div >
     );
 }

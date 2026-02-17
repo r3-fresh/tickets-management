@@ -39,7 +39,7 @@ export function CancelTicketButton({ ticketId }: { ticketId: number }) {
     return (
         <AlertDialog>
             <AlertDialogTrigger asChild>
-                <Button variant="destructive" size="sm" disabled={loading}>
+                <Button variant="destructive" size="sm" disabled={loading} className="w-full">
                     <Ban className="mr-2 h-4 w-4" />
                     Anular ticket
                 </Button>
