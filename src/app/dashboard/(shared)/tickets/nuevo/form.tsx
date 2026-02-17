@@ -23,6 +23,9 @@ import { RichTextEditor } from "@/components/shared/rich-text-editor";
 import { cn } from "@/lib/utils/cn";
 import { PRIORITY_STYLES } from "@/lib/constants/ticket-display";
 import { PRIORITY_LABELS } from "@/lib/constants/tickets";
+import { PRIORITY_DEFINITIONS } from "@/lib/constants/priority-info";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
+import { Info } from "lucide-react";
 import type { TicketPriority } from "@/types";
 
 
@@ -42,10 +45,12 @@ interface User {
 interface Category {
     id: number;
     name: string;
+    description: string | null;
     attentionAreaId?: number | null;
     subcategories: Array<{
         id: number;
         name: string;
+        description: string | null;
     }>;
 }
 
@@ -86,50 +91,37 @@ const PRIORITIES = (Object.keys(PRIORITY_STYLES) as TicketPriority[]).map((value
     };
 });
 
+interface SidebarContext {
+    areaName: string;
+    category?: { name: string; description: string | null };
+    subcategory?: { name: string; description: string | null };
+    tips: string[];
+}
+
 // Contexto dinámico del panel lateral según el estado del formulario
 function useSidebarContext(
     selectedAttentionArea: number | null,
     selectedCategory: number | null,
+    selectedSubcategory: number | null,
     attentionAreas: AttentionArea[],
     categories: Category[]
-) {
+): SidebarContext {
     return useMemo(() => {
-        if (!selectedAttentionArea) {
-            return {
-                title: "Comienza describiendo tu solicitud",
-                tips: [
-                    "Escribe un asunto claro y específico",
-                    "Selecciona el área que atenderá tu caso",
-                    "Mientras más detalle, más rápida la resolución",
-                ],
-            };
-        }
-
         const area = attentionAreas.find(a => a.id === selectedAttentionArea);
-
-        if (!selectedCategory) {
-            return {
-                title: area ? `Enviando a: ${area.name}` : "Área seleccionada",
-                tips: [
-                    "Selecciona la categoría que mejor describe tu caso",
-                    "Esto ayuda al equipo a priorizar correctamente",
-                    "Si no encuentras la categoría, elige la más cercana",
-                ],
-            };
-        }
-
         const category = categories.find(c => c.id === selectedCategory);
+        const subcategory = category?.subcategories.find(s => s.id === selectedSubcategory);
 
         return {
-            title: area ? `${area.name}` : "Casi listo",
-            subtitle: category ? category.name : undefined,
+            areaName: area ? area.name : "Comienza describiendo tu solicitud",
+            category: category ? { name: category.name, description: category.description } : undefined,
+            subcategory: subcategory ? { name: subcategory.name, description: subcategory.description } : undefined,
             tips: [
                 "Describe el problema con el mayor detalle posible",
                 "Incluye pasos para reproducir el incidente si aplica",
                 "Adjunta capturas o enlaces relevantes en la descripción",
             ],
         };
-    }, [selectedAttentionArea, selectedCategory, attentionAreas, categories]);
+    }, [selectedAttentionArea, selectedCategory, selectedSubcategory, attentionAreas, categories]);
 }
 
 // Progreso del formulario
@@ -158,6 +150,7 @@ export function NewTicketForm({
 }: NewTicketFormProps) {
     const [isPending, startTransition] = useTransition();
     const [selectedCategory, setSelectedCategory] = useState<number | null>(null);
+    const [selectedSubcategory, setSelectedSubcategory] = useState<number | null>(null);
     const [selectedAttentionArea, setSelectedAttentionArea] = useState<number | null>(null);
     const [selectedWatchers, setSelectedWatchers] = useState<string[]>([]);
     const [uploadToken] = useState(() => crypto.randomUUID());
@@ -174,7 +167,7 @@ export function NewTicketForm({
     const watchedValues = form.watch();
     const hasDescription = Boolean(watchedValues.description && watchedValues.description.length >= 10);
 
-    const sidebarContext = useSidebarContext(selectedAttentionArea, selectedCategory, attentionAreas, categories);
+    const sidebarContext = useSidebarContext(selectedAttentionArea, selectedCategory, selectedSubcategory, attentionAreas, categories);
     const progress = useFormProgress(watchedValues, hasDescription);
 
     if (!allowNewTickets) {
@@ -248,363 +241,381 @@ export function NewTicketForm({
                 {/* ════════════════════════════════════════ */}
                 <div className="flex-1 min-w-0">
                     <Form {...form}>
-                        <form onSubmit={form.handleSubmit(onSubmit)} id="ticket-form">
-                            {/* ── Card 1: Título + Clasificación ── */}
-                            <div className="rounded-xl border border-border bg-card">
-                                <FormField
-                                    control={form.control}
-                                    name="title"
-                                    render={({ field }) => (
-                                        <FormItem className="p-0">
-                                            <FormControl>
-                                                <input
-                                                    {...field}
-                                                    type="text"
-                                                    placeholder="¿Qué necesitas resolver?"
-                                                    className="w-full bg-transparent text-xl font-medium placeholder:text-muted-foreground/50 outline-none px-6 pt-6 pb-2 tracking-tight"
-                                                    autoFocus
-                                                    autoComplete="off"
-                                                    required
-                                                />
-                                            </FormControl>
-                                            <FormMessage className="px-6 pb-2" />
-                                        </FormItem>
-                                    )}
-                                />
-
-                                {/* Clasificación — selectores compactos en línea */}
-                                <div className="px-6 pb-4">
-                                    <div className="flex items-center gap-2 flex-wrap">
-                                        <FormField
-                                            control={form.control}
-                                            name="attentionAreaId"
-                                            render={({ field }) => (
-                                                <FormItem>
-                                                    <Select
-                                                        onValueChange={(val) => {
-                                                            const areaId = Number(val);
-                                                            field.onChange(areaId);
-                                                            setSelectedAttentionArea(areaId);
-                                                            form.setValue("categoryId", undefined as unknown as number);
-                                                            form.setValue("subcategoryId", undefined as unknown as number);
-                                                            setSelectedCategory(null);
-                                                        }}
-                                                        value={field.value?.toString() ?? ""}
-                                                        required
-                                                    >
-                                                        <FormControl>
-                                                            <SelectTrigger
-                                                                size="sm"
-                                                                className={cn(
-                                                                    "w-fit text-xs rounded-md border gap-1 pl-2.5 pr-1.5 max-w-[200px]",
-                                                                    field.value
-                                                                        ? "border-foreground/15 text-foreground"
-                                                                        : "border-dashed border-muted-foreground/30 text-muted-foreground"
-                                                                )}
-                                                            >
-                                                                <SelectValue placeholder="Área de atención" />
-                                                            </SelectTrigger>
-                                                        </FormControl>
-                                                        <SelectContent>
-                                                            {attentionAreas.map((area) => (
-                                                                <SelectItem
-                                                                    key={area.id}
-                                                                    value={area.id.toString()}
-                                                                    disabled={!area.isAcceptingTickets}
-                                                                >
-                                                                    {area.name} {!area.isAcceptingTickets && "(Cerrado)"}
-                                                                </SelectItem>
-                                                            ))}
-                                                        </SelectContent>
-                                                    </Select>
-                                                    <FormMessage />
-                                                </FormItem>
-                                            )}
-                                        />
-
-                                        <span className="text-muted-foreground/30 text-sm select-none">/</span>
-
-                                        <FormField
-                                            control={form.control}
-                                            name="categoryId"
-                                            render={({ field }) => (
-                                                <FormItem>
-                                                    <Select
-                                                        onValueChange={(val) => {
-                                                            field.onChange(Number(val));
-                                                            setSelectedCategory(Number(val));
-                                                            form.setValue("subcategoryId", undefined as unknown as number);
-                                                        }}
-                                                        value={field.value?.toString() ?? ""}
-                                                        disabled={!selectedAttentionArea || filteredCategories.length === 0}
-                                                        required
-                                                    >
-                                                        <FormControl>
-                                                            <SelectTrigger
-                                                                size="sm"
-                                                                className={cn(
-                                                                    "w-fit text-xs rounded-md border gap-1 pl-2.5 pr-1.5 max-w-[200px]",
-                                                                    field.value
-                                                                        ? "border-foreground/15 text-foreground"
-                                                                        : "border-dashed border-muted-foreground/30 text-muted-foreground"
-                                                                )}
-                                                            >
-                                                                <SelectValue placeholder="Categoría" />
-                                                            </SelectTrigger>
-                                                        </FormControl>
-                                                        <SelectContent>
-                                                            {filteredCategories.map((cat) => (
-                                                                <SelectItem key={cat.id} value={cat.id.toString()}>
-                                                                    {cat.name}
-                                                                </SelectItem>
-                                                            ))}
-                                                        </SelectContent>
-                                                    </Select>
-                                                    <FormMessage />
-                                                </FormItem>
-                                            )}
-                                        />
-
-                                        <span className="text-muted-foreground/30 text-sm select-none">/</span>
-
-                                        <FormField
-                                            control={form.control}
-                                            name="subcategoryId"
-                                            render={({ field }) => (
-                                                <FormItem>
-                                                    <Select
-                                                        onValueChange={(val) => field.onChange(Number(val))}
-                                                        value={field.value?.toString() ?? ""}
-                                                        disabled={!selectedCategory || currentSubcategories.length === 0}
-                                                        required
-                                                    >
-                                                        <FormControl>
-                                                            <SelectTrigger
-                                                                size="sm"
-                                                                className={cn(
-                                                                    "w-fit text-xs rounded-md border gap-1 pl-2.5 pr-1.5 max-w-[200px]",
-                                                                    field.value
-                                                                        ? "border-foreground/15 text-foreground"
-                                                                        : "border-dashed border-muted-foreground/30 text-muted-foreground"
-                                                                )}
-                                                            >
-                                                                <SelectValue placeholder="Subcategoría" />
-                                                            </SelectTrigger>
-                                                        </FormControl>
-                                                        <SelectContent>
-                                                            {currentSubcategories.map((sub) => (
-                                                                <SelectItem key={sub.id} value={sub.id.toString()}>
-                                                                    {sub.name}
-                                                                </SelectItem>
-                                                            ))}
-                                                        </SelectContent>
-                                                    </Select>
-                                                    <FormMessage />
-                                                </FormItem>
-                                            )}
-                                        />
-                                    </div>
-                                </div>
-
-                                {/* Separador */}
-                                <div className="mx-6 border-t border-border" />
-
-                                {/* Prioridad */}
-                                <div className="px-6 pb-5 pt-4">
+                        <TooltipProvider delayDuration={300}>
+                            <form onSubmit={form.handleSubmit(onSubmit)} id="ticket-form">
+                                {/* ── Card 1: Título + Clasificación ── */}
+                                <div className="rounded-xl border border-border bg-card">
                                     <FormField
                                         control={form.control}
-                                        name="priority"
+                                        name="title"
                                         render={({ field }) => (
-                                            <FormItem>
-                                                <FormLabel className="text-sm font-medium">
-                                                    Prioridad <span className="text-muted-foreground">*</span>
-                                                </FormLabel>
-                                                <p className="text-xs text-muted-foreground mb-2">
-                                                    Define la urgencia de tu solicitud para ayudar al equipo a priorizar
-                                                </p>
-                                                <div className="grid grid-cols-4 gap-2">
-                                                    {PRIORITIES.map((priority) => (
-                                                        <button
-                                                            key={priority.value}
-                                                            type="button"
-                                                            onClick={() => field.onChange(priority.value)}
-                                                            className={cn(
-                                                                "py-1.5 rounded-md border text-xs font-medium transition-all cursor-pointer text-center",
-                                                                field.value === priority.value
-                                                                    ? priority.activeColor
-                                                                    : cn("bg-background text-muted-foreground border-input/30 hover:border-input", priority.hover)
-                                                            )}
-                                                        >
-                                                            {priority.label}
-                                                        </button>
-                                                    ))}
-                                                </div>
-                                                <FormMessage />
-                                            </FormItem>
-                                        )}
-                                    />
-                                </div>
-                            </div>
-
-                            {/* ── Card 2: Ubicación ── */}
-                            <div className="mt-5 rounded-xl border border-border bg-card p-5">
-                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                                    <FormField
-                                        control={form.control}
-                                        name="areaId"
-                                        render={({ field }) => (
-                                            <FormItem>
-                                                <FormLabel className="text-sm font-medium">
-                                                    Área de procedencia <span className="text-muted-foreground">*</span>
-                                                </FormLabel>
-                                                <p className="text-xs text-muted-foreground mb-1">
-                                                    El departamento o área al que perteneces
-                                                </p>
-                                                <Select
-                                                    onValueChange={(val) => field.onChange(val ? Number(val) : undefined)}
-                                                    value={field.value?.toString() ?? ""}
-                                                    required
-                                                >
-                                                    <FormControl>
-                                                        <SelectTrigger className="text-xs border-border/80">
-                                                            <SelectValue placeholder="¿De qué departamento eres?" />
-                                                        </SelectTrigger>
-                                                    </FormControl>
-                                                    <SelectContent>
-                                                        {workAreas.map((area) => (
-                                                            <SelectItem key={area.id} value={area.id.toString()} className="text-xs">
-                                                                {area.name}
-                                                            </SelectItem>
-                                                        ))}
-                                                    </SelectContent>
-                                                </Select>
-                                                <FormMessage />
-                                            </FormItem>
-                                        )}
-                                    />
-
-                                    <FormField
-                                        control={form.control}
-                                        name="campusId"
-                                        render={({ field }) => (
-                                            <FormItem>
-                                                <FormLabel className="text-sm font-medium">
-                                                    Campus <span className="text-muted-foreground">*</span>
-                                                </FormLabel>
-                                                <p className="text-xs text-muted-foreground mb-1">
-                                                    La sede donde te encuentras físicamente
-                                                </p>
-                                                <Select
-                                                    onValueChange={(val) => field.onChange(val ? Number(val) : undefined)}
-                                                    value={field.value?.toString() ?? ""}
-                                                    required
-                                                >
-                                                    <FormControl>
-                                                        <SelectTrigger className="text-xs border-border/80">
-                                                            <SelectValue placeholder="¿En qué sede te encuentras?" />
-                                                        </SelectTrigger>
-                                                    </FormControl>
-                                                    <SelectContent>
-                                                        {campuses.map((campus) => (
-                                                            <SelectItem key={campus.id} value={campus.id.toString()} className="text-xs">
-                                                                {campus.name}
-                                                            </SelectItem>
-                                                        ))}
-                                                    </SelectContent>
-                                                </Select>
-                                                <FormMessage />
-                                            </FormItem>
-                                        )}
-                                    />
-                                </div>
-                            </div>
-
-                            {/* ── Card 3: Descripción + Archivos adjuntos (juntos al final) ── */}
-                            <div className="mt-5 rounded-xl border border-border bg-card">
-                                {/* Descripción */}
-                                <div className="px-6 pt-5 pb-4">
-                                    <FormField
-                                        control={form.control}
-                                        name="description"
-                                        render={({ field }) => (
-                                            <FormItem>
-                                                <FormLabel className="text-sm font-medium">
-                                                    Descripción <span className="text-muted-foreground">*</span>
-                                                </FormLabel>
-                                                <p className="text-xs text-muted-foreground mb-1">
-                                                    Detalla el problema o solicitud. Incluye pasos para reproducirlo, contexto relevante y el resultado esperado.
-                                                </p>
+                                            <FormItem className="p-0">
                                                 <FormControl>
-                                                    <RichTextEditor
-                                                        value={field.value}
-                                                        onChange={field.onChange}
-                                                        placeholder="Ej: Al intentar acceder al sistema de notas, aparece un error 500. Esto ocurre desde ayer..."
+                                                    <input
+                                                        {...field}
+                                                        type="text"
+                                                        placeholder="¿Qué necesitas resolver?"
+                                                        className="w-full bg-transparent text-xl font-medium placeholder:text-muted-foreground/50 outline-none px-6 pt-6 pb-2 tracking-tight"
+                                                        autoFocus
+                                                        autoComplete="off"
+                                                        required
                                                     />
                                                 </FormControl>
-                                                <FormMessage />
+                                                <FormMessage className="px-6 pb-2" />
                                             </FormItem>
                                         )}
                                     />
+
+                                    {/* Clasificación — selectores compactos en línea */}
+                                    <div className="px-6 pb-4">
+                                        <div className="flex items-center gap-2 flex-wrap">
+                                            <FormField
+                                                control={form.control}
+                                                name="attentionAreaId"
+                                                render={({ field }) => (
+                                                    <FormItem>
+                                                        <Select
+                                                            onValueChange={(val) => {
+                                                                const areaId = Number(val);
+                                                                field.onChange(areaId);
+                                                                setSelectedAttentionArea(areaId);
+                                                                form.setValue("categoryId", undefined as unknown as number);
+                                                                form.setValue("subcategoryId", undefined as unknown as number);
+                                                                setSelectedCategory(null);
+                                                                setSelectedSubcategory(null);
+                                                            }}
+                                                            value={field.value?.toString() ?? ""}
+                                                            required
+                                                        >
+                                                            <FormControl>
+                                                                <SelectTrigger
+                                                                    size="sm"
+                                                                    className={cn(
+                                                                        "w-fit text-xs rounded-md border gap-1 pl-2.5 pr-1.5 max-w-[200px]",
+                                                                        field.value
+                                                                            ? "border-foreground/15 text-foreground"
+                                                                            : "border-dashed border-muted-foreground/30 text-muted-foreground"
+                                                                    )}
+                                                                >
+                                                                    <SelectValue placeholder="Área de atención" />
+                                                                </SelectTrigger>
+                                                            </FormControl>
+                                                            <SelectContent>
+                                                                {attentionAreas.map((area) => (
+                                                                    <SelectItem
+                                                                        key={area.id}
+                                                                        value={area.id.toString()}
+                                                                        disabled={!area.isAcceptingTickets}
+                                                                    >
+                                                                        {area.name} {!area.isAcceptingTickets && "(Cerrado)"}
+                                                                    </SelectItem>
+                                                                ))}
+                                                            </SelectContent>
+                                                        </Select>
+                                                        <FormMessage />
+                                                    </FormItem>
+                                                )}
+                                            />
+
+                                            <span className="text-muted-foreground/30 text-sm select-none">/</span>
+
+                                            <FormField
+                                                control={form.control}
+                                                name="categoryId"
+                                                render={({ field }) => (
+                                                    <FormItem>
+                                                        <Select
+                                                            onValueChange={(val) => {
+                                                                field.onChange(Number(val));
+                                                                setSelectedCategory(Number(val));
+                                                                form.setValue("subcategoryId", undefined as unknown as number);
+                                                                setSelectedSubcategory(null);
+                                                            }}
+                                                            value={field.value?.toString() ?? ""}
+                                                            disabled={!selectedAttentionArea || filteredCategories.length === 0}
+                                                            required
+                                                        >
+                                                            <FormControl>
+                                                                <SelectTrigger
+                                                                    size="sm"
+                                                                    className={cn(
+                                                                        "w-fit text-xs rounded-md border gap-1 pl-2.5 pr-1.5 max-w-[200px]",
+                                                                        field.value
+                                                                            ? "border-foreground/15 text-foreground"
+                                                                            : "border-dashed border-muted-foreground/30 text-muted-foreground"
+                                                                    )}
+                                                                >
+                                                                    <SelectValue placeholder="Categoría" />
+                                                                </SelectTrigger>
+                                                            </FormControl>
+                                                            <SelectContent>
+                                                                {filteredCategories.map((cat) => (
+                                                                    <SelectItem key={cat.id} value={cat.id.toString()}>
+                                                                        {cat.name}
+                                                                    </SelectItem>
+                                                                ))}
+                                                            </SelectContent>
+                                                        </Select>
+                                                        <FormMessage />
+                                                    </FormItem>
+                                                )}
+                                            />
+
+                                            <span className="text-muted-foreground/30 text-sm select-none">/</span>
+
+                                            <FormField
+                                                control={form.control}
+                                                name="subcategoryId"
+                                                render={({ field }) => (
+                                                    <FormItem>
+                                                        <Select
+                                                            onValueChange={(val) => {
+                                                                field.onChange(Number(val));
+                                                                setSelectedSubcategory(Number(val));
+                                                            }}
+                                                            value={field.value?.toString() ?? ""}
+                                                            disabled={!selectedCategory || currentSubcategories.length === 0}
+                                                            required
+                                                        >
+                                                            <FormControl>
+                                                                <SelectTrigger
+                                                                    size="sm"
+                                                                    className={cn(
+                                                                        "w-fit text-xs rounded-md border gap-1 pl-2.5 pr-1.5 max-w-[200px]",
+                                                                        field.value
+                                                                            ? "border-foreground/15 text-foreground"
+                                                                            : "border-dashed border-muted-foreground/30 text-muted-foreground"
+                                                                    )}
+                                                                >
+                                                                    <SelectValue placeholder="Subcategoría" />
+                                                                </SelectTrigger>
+                                                            </FormControl>
+                                                            <SelectContent>
+                                                                {currentSubcategories.map((sub) => (
+                                                                    <SelectItem key={sub.id} value={sub.id.toString()}>
+                                                                        {sub.name}
+                                                                    </SelectItem>
+                                                                ))}
+                                                            </SelectContent>
+                                                        </Select>
+                                                        <FormMessage />
+                                                    </FormItem>
+                                                )}
+                                            />
+                                        </div>
+                                    </div>
+
+                                    {/* Separador */}
+                                    <div className="mx-6 border-t border-border" />
+
+                                    {/* Prioridad */}
+                                    <div className="px-6 pb-5 pt-4">
+                                        <FormField
+                                            control={form.control}
+                                            name="priority"
+                                            render={({ field }) => (
+                                                <FormItem>
+                                                    <FormLabel className="text-sm font-medium">
+                                                        Prioridad <span className="text-muted-foreground">*</span>
+                                                    </FormLabel>
+                                                    <p className="text-xs text-muted-foreground mb-2">
+                                                        Define la urgencia de tu solicitud para ayudar al equipo a priorizar
+                                                    </p>
+                                                    <div className="grid grid-cols-4 gap-2">
+                                                        {PRIORITIES.map((priority) => (
+                                                            <Tooltip key={priority.value}>
+                                                                <TooltipTrigger asChild>
+                                                                    <button
+                                                                        type="button"
+                                                                        onClick={() => field.onChange(priority.value)}
+                                                                        className={cn(
+                                                                            "py-1.5 rounded-md border text-xs font-medium transition-all cursor-pointer text-center",
+                                                                            field.value === priority.value
+                                                                                ? priority.activeColor
+                                                                                : cn("bg-background text-muted-foreground border-input/30 hover:border-input", priority.hover)
+                                                                        )}
+                                                                    >
+                                                                        {priority.label}
+                                                                    </button>
+                                                                </TooltipTrigger>
+                                                                <TooltipContent side="bottom" className="text-xs max-w-[200px] p-3 space-y-1.5" align="center">
+                                                                    <p className="font-semibold opacity-90">{priority.label}</p>
+                                                                    <p className="opacity-70 leading-snug">{PRIORITY_DEFINITIONS[priority.value].description}</p>
+                                                                    <div className="flex items-center gap-1.5 pt-1 border-t border-background/20 mt-1">
+                                                                        <span className="text-[10px] font-medium opacity-90">SLA:</span>
+                                                                        <span className="text-[10px] opacity-70">{PRIORITY_DEFINITIONS[priority.value].sla}</span>
+                                                                    </div>
+                                                                </TooltipContent>
+                                                            </Tooltip>
+                                                        ))}
+                                                    </div>
+                                                    <FormMessage />
+                                                </FormItem>
+                                            )}
+                                        />
+                                    </div>
                                 </div>
 
-                                {/* Separador */}
-                                <div className="mx-6 border-t border-border" />
+                                {/* ── Card 2: Ubicación ── */}
+                                <div className="mt-5 rounded-xl border border-border bg-card p-5">
+                                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                        <FormField
+                                            control={form.control}
+                                            name="areaId"
+                                            render={({ field }) => (
+                                                <FormItem>
+                                                    <FormLabel className="text-sm font-medium">
+                                                        Área de procedencia <span className="text-muted-foreground">*</span>
+                                                    </FormLabel>
+                                                    <p className="text-xs text-muted-foreground mb-1">
+                                                        El departamento o área al que perteneces
+                                                    </p>
+                                                    <Select
+                                                        onValueChange={(val) => field.onChange(val ? Number(val) : undefined)}
+                                                        value={field.value?.toString() ?? ""}
+                                                        required
+                                                    >
+                                                        <FormControl>
+                                                            <SelectTrigger className="text-xs border-border/80">
+                                                                <SelectValue placeholder="¿De qué departamento eres?" />
+                                                            </SelectTrigger>
+                                                        </FormControl>
+                                                        <SelectContent>
+                                                            {workAreas.map((area) => (
+                                                                <SelectItem key={area.id} value={area.id.toString()} className="text-xs">
+                                                                    {area.name}
+                                                                </SelectItem>
+                                                            ))}
+                                                        </SelectContent>
+                                                    </Select>
+                                                    <FormMessage />
+                                                </FormItem>
+                                            )}
+                                        />
 
-                                {/* Archivos adjuntos */}
-                                <div className="px-6 pt-4 pb-6">
+                                        <FormField
+                                            control={form.control}
+                                            name="campusId"
+                                            render={({ field }) => (
+                                                <FormItem>
+                                                    <FormLabel className="text-sm font-medium">
+                                                        Campus <span className="text-muted-foreground">*</span>
+                                                    </FormLabel>
+                                                    <p className="text-xs text-muted-foreground mb-1">
+                                                        La sede donde te encuentras físicamente
+                                                    </p>
+                                                    <Select
+                                                        onValueChange={(val) => field.onChange(val ? Number(val) : undefined)}
+                                                        value={field.value?.toString() ?? ""}
+                                                        required
+                                                    >
+                                                        <FormControl>
+                                                            <SelectTrigger className="text-xs border-border/80">
+                                                                <SelectValue placeholder="¿En qué sede te encuentras?" />
+                                                            </SelectTrigger>
+                                                        </FormControl>
+                                                        <SelectContent>
+                                                            {campuses.map((campus) => (
+                                                                <SelectItem key={campus.id} value={campus.id.toString()} className="text-xs">
+                                                                    {campus.name}
+                                                                </SelectItem>
+                                                            ))}
+                                                        </SelectContent>
+                                                    </Select>
+                                                    <FormMessage />
+                                                </FormItem>
+                                            )}
+                                        />
+                                    </div>
+                                </div>
+
+                                {/* ── Card 3: Descripción + Archivos adjuntos (juntos al final) ── */}
+                                <div className="mt-5 rounded-xl border border-border bg-card">
+                                    {/* Descripción */}
+                                    <div className="px-6 pt-5 pb-4">
+                                        <FormField
+                                            control={form.control}
+                                            name="description"
+                                            render={({ field }) => (
+                                                <FormItem>
+                                                    <FormLabel className="text-sm font-medium">
+                                                        Descripción <span className="text-muted-foreground">*</span>
+                                                    </FormLabel>
+                                                    <p className="text-xs text-muted-foreground mb-1">
+                                                        Detalla el problema o solicitud. Incluye pasos para reproducirlo, contexto relevante y el resultado esperado.
+                                                    </p>
+                                                    <FormControl>
+                                                        <RichTextEditor
+                                                            value={field.value}
+                                                            onChange={field.onChange}
+                                                            placeholder="Ej: Al intentar acceder al sistema de notas, aparece un error 500. Esto ocurre desde ayer..."
+                                                        />
+                                                    </FormControl>
+                                                    <FormMessage />
+                                                </FormItem>
+                                            )}
+                                        />
+                                    </div>
+
+                                    {/* Separador */}
+                                    <div className="mx-6 border-t border-border" />
+
+                                    {/* Archivos adjuntos */}
+                                    <div className="px-6 pt-4 pb-6">
+                                        <div className="flex items-center gap-2 mb-1">
+                                            <Paperclip className="h-3.5 w-3.5 text-muted-foreground" />
+                                            <p className="text-sm font-medium">Archivos adjuntos</p>
+                                            <span className="text-xs text-muted-foreground">(opcional)</span>
+                                        </div>
+                                        <p className="text-xs text-muted-foreground mb-3">
+                                            Adjunta capturas de pantalla, documentos u otros archivos relevantes. Máximo 50 MB por archivo.
+                                        </p>
+                                        <Suspense fallback={<div className="h-20 animate-pulse rounded-md bg-muted" />}>
+                                            <FileUpload uploadToken={uploadToken} />
+                                        </Suspense>
+                                    </div>
+                                </div>
+
+                                {/* ── Notificar a — solo visible en móvil (en desktop va al sidebar) ── */}
+                                <div className="mt-3 rounded-xl border border-border bg-card p-5 lg:hidden">
                                     <div className="flex items-center gap-2 mb-1">
-                                        <Paperclip className="h-3.5 w-3.5 text-muted-foreground" />
-                                        <p className="text-sm font-medium">Archivos adjuntos</p>
-                                        <span className="text-xs text-muted-foreground">(opcional)</span>
+                                        <Bell className="h-3.5 w-3.5 text-muted-foreground" />
+                                        <p className="text-sm font-medium">Notificar a</p>
                                     </div>
                                     <p className="text-xs text-muted-foreground mb-3">
-                                        Adjunta capturas de pantalla, documentos u otros archivos relevantes. Máximo 50 MB por archivo.
+                                        Estas personas recibirán notificaciones sobre cada actualización del ticket
                                     </p>
-                                    <Suspense fallback={<div className="h-20 animate-pulse rounded-md bg-muted" />}>
-                                        <FileUpload uploadToken={uploadToken} />
-                                    </Suspense>
+                                    <UserSelector
+                                        users={availableUsers}
+                                        selectedUserIds={selectedWatchers}
+                                        onSelectionChange={setSelectedWatchers}
+                                        placeholder="Buscar personas..."
+                                    />
                                 </div>
-                            </div>
 
-                            {/* ── Notificar a — solo visible en móvil (en desktop va al sidebar) ── */}
-                            <div className="mt-3 rounded-xl border border-border bg-card p-5 lg:hidden">
-                                <div className="flex items-center gap-2 mb-1">
-                                    <Bell className="h-3.5 w-3.5 text-muted-foreground" />
-                                    <p className="text-sm font-medium">Notificar a</p>
-                                </div>
-                                <p className="text-xs text-muted-foreground mb-3">
-                                    Estas personas recibirán notificaciones sobre cada actualización del ticket
-                                </p>
-                                <UserSelector
-                                    users={availableUsers}
-                                    selectedUserIds={selectedWatchers}
-                                    onSelectionChange={setSelectedWatchers}
-                                    placeholder="Buscar personas..."
-                                />
-                            </div>
-
-                            {/* ── Barra sticky — solo en móvil (sin sidebar) ── */}
-                            <div className="sticky bottom-0 mt-6 lg:hidden">
-                                <div className="rounded-xl border border-border bg-card/95 backdrop-blur-sm px-5 py-3.5">
-                                    <div className="flex items-center justify-between">
-                                        <span className="text-xs text-muted-foreground tabular-nums">
-                                            {progress.completed} de {progress.total}
-                                        </span>
-                                        <div className="flex items-center gap-2">
-                                            <Link href="/dashboard">
-                                                <Button type="button" variant="ghost" size="sm">
-                                                    Cancelar
+                                {/* ── Barra sticky — solo en móvil (sin sidebar) ── */}
+                                <div className="sticky bottom-0 mt-6 lg:hidden">
+                                    <div className="rounded-xl border border-border bg-card/95 backdrop-blur-sm px-5 py-3.5">
+                                        <div className="flex items-center justify-between">
+                                            <span className="text-xs text-muted-foreground tabular-nums">
+                                                {progress.completed} de {progress.total}
+                                            </span>
+                                            <div className="flex items-center gap-2">
+                                                <Link href="/dashboard">
+                                                    <Button type="button" variant="ghost" size="sm">
+                                                        Cancelar
+                                                    </Button>
+                                                </Link>
+                                                <Button type="submit" size="sm" disabled={isPending}>
+                                                    {isPending && <Loader2 className="mr-1.5 h-3.5 w-3.5 animate-spin" />}
+                                                    Crear ticket
                                                 </Button>
-                                            </Link>
-                                            <Button type="submit" size="sm" disabled={isPending}>
-                                                {isPending && <Loader2 className="mr-1.5 h-3.5 w-3.5 animate-spin" />}
-                                                Crear ticket
-                                            </Button>
+                                            </div>
                                         </div>
                                     </div>
                                 </div>
-                            </div>
-                        </form>
+                            </form>
+                        </TooltipProvider>
                     </Form >
                 </div >
 
@@ -635,24 +646,74 @@ export function NewTicketForm({
                         <div className="border-t border-border" />
 
                         {/* Contexto dinámico */}
-                        <div>
-                            <div className="flex items-start gap-2 mb-2">
-                                <Lightbulb className="h-3.5 w-3.5 text-muted-foreground shrink-0 mt-0.5" />
-                                <div>
-                                    <p className="text-xs font-medium text-foreground leading-snug">{sidebarContext.title}</p>
-                                    {sidebarContext.subtitle && (
-                                        <p className="text-[11px] text-muted-foreground mt-0.5">{sidebarContext.subtitle}</p>
-                                    )}
+                        <div className="space-y-4">
+                            {/* Clasificación */}
+                            <div className="space-y-3">
+                                <div className="flex items-center gap-2">
+                                    <Lightbulb className="h-3.5 w-3.5 text-muted-foreground" />
+                                    <p className="text-xs font-semibold text-foreground">
+                                        {sidebarContext.areaName}
+                                    </p>
                                 </div>
+
+                                {(sidebarContext.category || sidebarContext.subcategory) && (
+                                    <ul className="space-y-2.5 pl-1">
+                                        {sidebarContext.category && (
+                                            <li className="flex items-start gap-2.5">
+                                                <div className="mt-1.5 h-1.5 w-1.5 rounded-full bg-foreground/30 shrink-0" />
+                                                <div className="space-y-0.5">
+                                                    <p className="text-[11px] font-semibold text-foreground/90 leading-snug">
+                                                        {sidebarContext.category.name}
+                                                    </p>
+                                                    {sidebarContext.category.description && (
+                                                        <p className="text-[11px] text-muted-foreground leading-relaxed">
+                                                            {sidebarContext.category.description}
+                                                        </p>
+                                                    )}
+                                                </div>
+                                            </li>
+                                        )}
+                                        {sidebarContext.subcategory && (
+                                            <li className="flex items-start gap-2.5">
+                                                <div className="mt-1.5 h-1.5 w-1.5 rounded-full bg-foreground/30 shrink-0" />
+                                                <div className="space-y-0.5">
+                                                    <p className="text-[11px] font-semibold text-foreground/90 leading-snug">
+                                                        {sidebarContext.subcategory.name}
+                                                    </p>
+                                                    {sidebarContext.subcategory.description && (
+                                                        <p className="text-[11px] text-muted-foreground leading-relaxed">
+                                                            {sidebarContext.subcategory.description}
+                                                        </p>
+                                                    )}
+                                                </div>
+                                            </li>
+                                        )}
+                                    </ul>
+                                )}
                             </div>
-                            <ul className="space-y-1.5 pl-5.5">
-                                {sidebarContext.tips.map((tip, i) => (
-                                    <li key={i} className="flex items-start gap-1.5">
-                                        <span className="text-muted-foreground/40 mt-px text-[11px] leading-none">&mdash;</span>
-                                        <span className="text-[11px] text-muted-foreground leading-relaxed">{tip}</span>
-                                    </li>
-                                ))}
-                            </ul>
+
+                            {/* Separador */}
+                            <div className="border-t border-border/50" />
+
+                            {/* Instrucciones */}
+                            <div className="space-y-3">
+                                <div className="flex items-center gap-2">
+                                    <Info className="h-3.5 w-3.5 text-muted-foreground" />
+                                    <p className="text-xs font-semibold text-foreground">
+                                        Instrucciones
+                                    </p>
+                                </div>
+                                <ul className="space-y-2.5 pl-1">
+                                    {sidebarContext.tips.map((tip, i) => (
+                                        <li key={i} className="flex items-start gap-2.5">
+                                            <div className="mt-1.5 h-1.5 w-1.5 rounded-full bg-foreground/30 shrink-0" />
+                                            <span className="text-[11px] text-muted-foreground leading-relaxed">
+                                                {tip}
+                                            </span>
+                                        </li>
+                                    ))}
+                                </ul>
+                            </div>
                         </div>
 
                         <div className="border-t border-border" />

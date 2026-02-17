@@ -10,10 +10,24 @@ export async function getActiveCategories() {
     try {
         const categories = await db.query.ticketCategories.findMany({
             where: (categories, { eq }) => eq(categories.isActive, true),
+            columns: {
+                id: true,
+                name: true,
+                description: true,
+                attentionAreaId: true,
+                displayOrder: true,
+            },
             orderBy: (categories, { asc }) => [asc(categories.displayOrder)],
             with: {
                 subcategories: {
                     where: (subcategories, { eq }) => eq(subcategories.isActive, true),
+                    columns: {
+                        id: true,
+                        name: true,
+                        description: true,
+                        categoryId: true,
+                        displayOrder: true,
+                    },
                     orderBy: (subcategories, { asc }) => [asc(subcategories.displayOrder)],
                 },
             },
