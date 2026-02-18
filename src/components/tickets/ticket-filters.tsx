@@ -7,10 +7,9 @@ import { Button } from "@/components/ui/button";
 import { Calendar } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { CalendarIcon, X } from "lucide-react";
-import { format } from "date-fns";
-import { es } from "date-fns/locale";
 import { DateRange } from "react-day-picker";
 import { YearFilter } from "@/components/tickets/year-filter";
+import { dayjs } from "@/lib/utils/date";
 
 interface TicketFiltersProps {
     assignedUsers: Array<{ id: string; name: string }>;
@@ -22,7 +21,6 @@ export function TicketFilters({ assignedUsers, categories = [], subcategories = 
     const router = useRouter();
     const searchParams = useSearchParams();
 
-    // Leer valores actuales de los search params
     const status = searchParams.get("status") ?? "";
     const assignedTo = searchParams.get("assignedTo") ?? "";
     const category = searchParams.get("category") ?? "";
@@ -35,10 +33,8 @@ export function TicketFilters({ assignedUsers, categories = [], subcategories = 
         ? { from: new Date(dateFrom), to: dateTo ? new Date(dateTo) : undefined }
         : undefined;
 
-    // Actualizar search params (resetea a página 1 al cambiar filtros)
     const updateParams = useCallback((updates: Record<string, string>) => {
         const params = new URLSearchParams(searchParams.toString());
-        // Siempre resetear a página 1 al cambiar filtros
         params.delete("page");
         for (const [key, value] of Object.entries(updates)) {
             if (value && value !== "all") {
@@ -60,13 +56,12 @@ export function TicketFilters({ assignedUsers, categories = [], subcategories = 
 
     const handleDateRangeChange = (range: DateRange | undefined) => {
         updateParams({
-            dateFrom: range?.from ? format(range.from, "yyyy-MM-dd") : "",
-            dateTo: range?.to ? format(range.to, "yyyy-MM-dd") : "",
+            dateFrom: range?.from ? dayjs(range.from).format("YYYY-MM-DD") : "",
+            dateTo: range?.to ? dayjs(range.to).format("YYYY-MM-DD") : "",
         });
     };
 
     const handleCategoryChange = (value: string) => {
-        // Reset subcategory when category changes
         updateParams({
             category: value === "all" ? "" : value,
             subcategory: ""
@@ -87,10 +82,11 @@ export function TicketFilters({ assignedUsers, categories = [], subcategories = 
 
     const hasActiveFilters = status || assignedTo || dateRange || category || subcategory || (year && year !== "all");
 
-    // Filter available subcategories based on selected category
     const availableSubcategories = category && category !== 'all'
         ? subcategories.filter(s => s.categoryId === Number(category))
         : [];
+
+    const formatDateDisplay = (date: Date) => dayjs(date).format("DD MMM YYYY");
 
     return (
         <div className="flex flex-wrap gap-3 items-center">
@@ -162,11 +158,11 @@ export function TicketFilters({ assignedUsers, categories = [], subcategories = 
                         {dateRange?.from ? (
                             dateRange.to ? (
                                 <>
-                                    {format(dateRange.from, "dd MMM", { locale: es })} -{" "}
-                                    {format(dateRange.to, "dd MMM yyyy", { locale: es })}
+                                    {dayjs(dateRange.from).format("DD MMM")} -{" "}
+                                    {dayjs(dateRange.to).format("DD MMM YYYY")}
                                 </>
                             ) : (
-                                format(dateRange.from, "dd MMM yyyy", { locale: es })
+                                formatDateDisplay(dateRange.from)
                             )
                         ) : (
                             <span>Rango de fechas</span>
@@ -181,7 +177,6 @@ export function TicketFilters({ assignedUsers, categories = [], subcategories = 
                         selected={dateRange}
                         onSelect={handleDateRangeChange}
                         numberOfMonths={2}
-                        locale={es}
                     />
                 </PopoverContent>
             </Popover>

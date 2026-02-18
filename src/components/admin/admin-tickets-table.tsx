@@ -11,7 +11,6 @@ import {
     TableRow,
 } from "@/components/ui/table";
 import Link from "next/link";
-import { differenceInDays } from "date-fns";
 import { MessageCircle } from "lucide-react";
 import { CopyLinkButton } from "@/components/tickets/copy-link-button";
 import { StatusBadge } from "@/components/shared/status-badge";
@@ -19,7 +18,7 @@ import { PriorityBadge } from "@/components/shared/priority-badge";
 import { UserAvatar } from "@/components/shared/user-avatar";
 import { TicketFilters } from "@/components/tickets/ticket-filters";
 import { Pagination } from "@/components/shared/pagination";
-import { formatDate } from "@/lib/utils/format";
+import { formatDate, differenceInDays } from "@/lib/utils/format";
 import { Input } from "@/components/ui/input";
 import { useDebounce } from "@/lib/hooks/use-debounce";
 
