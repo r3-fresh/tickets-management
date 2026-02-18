@@ -128,6 +128,11 @@ export default async function TicketDetailPage({ params }: { params: Promise<{ i
                 <Breadcrumb items={[{ label: ticket.ticketCode }]} />
             </div>
 
+            {/* Floating Validation Controls */}
+            {ticket.status === 'pending_validation' && ticket.createdById === session.user.id && (
+                <UserValidationControls ticketId={ticket.id} />
+            )}
+
             <div className="grid grid-cols-1 lg:grid-cols-[1fr_340px] gap-10 items-start">
 
                 {/* LEFT COLUMN: Main Content */}
@@ -334,13 +339,6 @@ export default async function TicketDetailPage({ params }: { params: Promise<{ i
 
                 {/* RIGHT COLUMN: Context Sidebar */}
                 <div className="sticky top-6 lg:border-l lg:pl-10 border-border/60">
-
-                    {/* Validation Controls - Show first if pending validation */}
-                    {ticket.status === 'pending_validation' && ticket.createdById === session.user.id && (
-                        <div className="mb-6">
-                            <UserValidationControls ticketId={ticket.id} />
-                        </div>
-                    )}
 
                     {/* Ticket Details */}
                     <div className="space-y-6">
