@@ -23,6 +23,7 @@ import { CancelTicketButton } from "./cancel-ticket-button";
 import { CopyTicketButton } from "./copy-ticket-button";
 import { UserValidationControls } from "./user-validation-controls";
 import { CommentForm } from "./comment-form";
+import { TicketAttachmentUploader } from "./ticket-attachment-uploader";
 import dynamic from "next/dynamic";
 import type { Metadata } from "next";
 
@@ -362,6 +363,11 @@ export default async function TicketDetailPage({ params }: { params: Promise<{ i
                                     <CancelTicketButton ticketId={ticketId} />
                                 </div>
                             </>
+                        )}
+
+                        {/* Attachment Uploader — only for open tickets */}
+                        {!isTicketClosed && (
+                            <TicketAttachmentUploader ticketId={ticketId} />
                         )}
 
                         {/* Watchers */}
