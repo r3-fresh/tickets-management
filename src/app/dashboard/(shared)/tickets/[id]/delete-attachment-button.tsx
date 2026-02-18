@@ -45,7 +45,7 @@ export function DeleteAttachmentButton({ attachmentId, ticketId, fileName }: Del
                 <Button
                     variant="ghost"
                     size="icon"
-                    className="h-6 w-6 text-muted-foreground hover:text-destructive opacity-0 group-hover:opacity-100 transition-opacity absolute top-2 right-2"
+                    className="h-6 w-6 text-muted-foreground hover:text-destructive opacity-70 group-hover:opacity-100 transition-opacity"
                 >
                     <Trash2 className="h-3.5 w-3.5" />
                     <span className="sr-only">Eliminar archivo</span>
