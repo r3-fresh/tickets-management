@@ -95,7 +95,7 @@ export function TicketFilters({ assignedUsers, categories = [], subcategories = 
     return (
         <div className="flex flex-wrap gap-3 items-center">
             <Select value={status || "all"} onValueChange={handleStatusChange}>
-                <SelectTrigger className="w-[180px]">
+                <SelectTrigger className="w-[180px] bg-transparent">
                     <SelectValue placeholder="Estado" />
                 </SelectTrigger>
                 <SelectContent>
@@ -109,7 +109,7 @@ export function TicketFilters({ assignedUsers, categories = [], subcategories = 
             </Select>
 
             <Select value={assignedTo || "all"} onValueChange={handleAssignedToChange}>
-                <SelectTrigger className="w-[200px]">
+                <SelectTrigger className="w-[200px] bg-transparent">
                     <SelectValue placeholder="Asignado a" />
                 </SelectTrigger>
                 <SelectContent>
@@ -125,7 +125,7 @@ export function TicketFilters({ assignedUsers, categories = [], subcategories = 
 
             {categories.length > 0 && (
                 <Select value={category || "all"} onValueChange={handleCategoryChange}>
-                    <SelectTrigger className="w-[200px]">
+                    <SelectTrigger className="w-[200px] bg-transparent">
                         <SelectValue placeholder="Categoría" />
                     </SelectTrigger>
                     <SelectContent>
@@ -141,7 +141,7 @@ export function TicketFilters({ assignedUsers, categories = [], subcategories = 
 
             {category && availableSubcategories.length > 0 && (
                 <Select value={subcategory || "all"} onValueChange={handleSubcategoryChange}>
-                    <SelectTrigger className="w-[200px]">
+                    <SelectTrigger className="w-[200px] bg-transparent">
                         <SelectValue placeholder="Subcategoría" />
                     </SelectTrigger>
                     <SelectContent>
@@ -157,7 +157,7 @@ export function TicketFilters({ assignedUsers, categories = [], subcategories = 
 
             <Popover>
                 <PopoverTrigger asChild>
-                    <Button variant="outline" className="w-[280px] justify-start text-left font-normal">
+                    <Button variant="outline" className="w-[280px] justify-start text-left font-normal bg-transparent">
                         <CalendarIcon className="mr-2 h-4 w-4" />
                         {dateRange?.from ? (
                             dateRange.to ? (

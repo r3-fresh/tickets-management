@@ -106,51 +106,37 @@
   --sidebar-border: oklch(0.92 0 0);
   --sidebar-ring: var(--border);
 
-  /* Semantic Tokens - Light Mode */
-  --semantic-neutral: oklch(0.93 0 0);
-  --semantic-neutral-foreground: oklch(0.40 0 0);
+  /* Status colors - Light Mode - Soft & Accessible */
+  --status-open: oklch(0.96 0.04 85);
+  --status-open-foreground: oklch(0.45 0.08 85);
+  
+  --status-in-progress: oklch(0.94 0.04 250);
+  --status-in-progress-foreground: oklch(0.40 0.08 250);
+  
+  --status-pending-validation: oklch(0.94 0.03 190);
+  --status-pending-validation-foreground: oklch(0.40 0.06 190);
+  
+  --status-resolved: oklch(0.94 0.04 150);
+  --status-resolved-foreground: oklch(0.38 0.08 150);
+  
+  --status-closed: oklch(0.94 0.005 260);
+  --status-closed-foreground: oklch(0.45 0.01 260);
+  
+  --status-voided: oklch(0.94 0.005 260);
+  --status-voided-foreground: oklch(0.42 0.01 260);
 
-  --semantic-purple: oklch(0.92 0.06 292);
-  --semantic-purple-foreground: oklch(0.38 0.20 292);
-
-  --semantic-info: oklch(0.92 0.05 250);
-  --semantic-info-foreground: oklch(0.40 0.12 250);
-
-  --semantic-success: oklch(0.92 0.06 155);
-  --semantic-success-foreground: oklch(0.38 0.12 155);
-
-  --semantic-warning: oklch(0.93 0.07 85);
-  --semantic-warning-foreground: oklch(0.42 0.12 85);
-
-  --semantic-orange: oklch(0.92 0.08 65);
-  --semantic-orange-foreground: oklch(0.40 0.14 65);
-
-  --semantic-danger: oklch(0.92 0.06 25);
-  --semantic-danger-foreground: oklch(0.42 0.16 25);
-
-  /* Status colors - Mapped to Semantics */
-  --status-open: var(--semantic-warning);
-  --status-open-foreground: var(--semantic-warning-foreground);
-  --status-in-progress: var(--semantic-purple);
-  --status-in-progress-foreground: var(--semantic-purple-foreground);
-  --status-resolved: var(--semantic-success);
-  --status-resolved-foreground: var(--semantic-success-foreground);
-  --status-pending-validation: var(--semantic-orange);
-  --status-pending-validation-foreground: var(--semantic-orange-foreground);
-  --status-closed: var(--semantic-neutral);
-  --status-closed-foreground: var(--semantic-neutral-foreground);
-  --status-voided: var(--semantic-danger);
-  --status-voided-foreground: var(--semantic-danger-foreground);
-
-  /* Priority colors - Mapped to Semantics */
-  --priority-low: var(--semantic-neutral);
-  --priority-low-foreground: var(--semantic-neutral-foreground);
-  --priority-medium: var(--semantic-purple);
-  --priority-medium-foreground: var(--semantic-purple-foreground);
-  --priority-high: var(--semantic-orange);
-  --priority-high-foreground: var(--semantic-orange-foreground);
-  --priority-critical: var(--semantic-danger);
-  --priority-critical-foreground: var(--semantic-danger-foreground);
+  /* Priority colors - Light Mode - Clear Hierarchy */
+  --priority-low: oklch(0.95 0.005 260);
+  --priority-low-foreground: oklch(0.50 0.01 260);
+  
+  --priority-medium: oklch(0.94 0.04 250);
+  --priority-medium-foreground: oklch(0.42 0.08 250);
+  
+  --priority-high: oklch(0.94 0.06 60);
+  --priority-high-foreground: oklch(0.45 0.10 60);
+  
+  --priority-critical: oklch(0.94 0.06 25);
+  --priority-critical-foreground: oklch(0.45 0.12 25);
 }
 
 .dark {
@@ -207,57 +193,37 @@
   --filepond-text: oklch(0.98 0 0);
   --filepond-icon: oklch(0.98 0 0);
 
-  /* Semantic Tokens - Dark Mode (Standardized) */
-  --semantic-neutral: oklch(0.26 0 0);
-  --semantic-neutral-foreground: oklch(0.90 0 0);
+  /* Status colors - Dark Mode - Soft & Readable */
+  --status-open: oklch(0.32 0.06 85);
+  --status-open-foreground: oklch(0.88 0.04 85);
+  
+  --status-in-progress: oklch(0.32 0.06 250);
+  --status-in-progress-foreground: oklch(0.88 0.04 250);
+  
+  --status-pending-validation: oklch(0.32 0.04 190);
+  --status-pending-validation-foreground: oklch(0.88 0.03 190);
+  
+  --status-resolved: oklch(0.32 0.06 150);
+  --status-resolved-foreground: oklch(0.88 0.04 150);
+  
+  --status-closed: oklch(0.28 0.01 260);
+  --status-closed-foreground: oklch(0.72 0.01 260);
+  
+  --status-voided: oklch(0.28 0.01 260);
+  --status-voided-foreground: oklch(0.68 0.01 260);
 
-  --semantic-purple: oklch(0.35 0.14 292);
-  --semantic-purple-foreground: oklch(0.95 0.05 292);
-
-  --semantic-info: oklch(0.35 0.12 250);
-  /* Standard Blue */
-  --semantic-info-foreground: oklch(0.90 0.05 250);
-
-  --semantic-success: oklch(0.40 0.14 150);
-  /* Standard Green */
-  --semantic-success-foreground: oklch(0.95 0.05 150);
-
-  --semantic-warning: oklch(0.40 0.14 85);
-  /* Standard Yellow/Amber */
-  --semantic-warning-foreground: oklch(0.95 0.05 85);
-
-  --semantic-orange: oklch(0.45 0.18 45);
-  /* Standard Orange */
-  --semantic-orange-foreground: oklch(0.95 0.05 45);
-
-  --semantic-danger: oklch(0.40 0.18 25);
-  /* Standard Red */
-  --semantic-danger-foreground: oklch(0.95 0.05 25);
-
-  /* Status colors - Direct Mapping */
-  --status-open: var(--semantic-warning);
-  --status-open-foreground: var(--semantic-warning-foreground);
-  --status-in-progress: var(--semantic-purple);
-  --status-in-progress-foreground: var(--semantic-purple-foreground);
-  --status-resolved: var(--semantic-success);
-  --status-resolved-foreground: var(--semantic-success-foreground);
-  --status-pending-validation: var(--semantic-orange);
-  --status-pending-validation-foreground: var(--semantic-orange-foreground);
-  --status-closed: var(--semantic-neutral);
-  --status-closed-foreground: var(--semantic-neutral-foreground);
-  --status-voided: var(--semantic-danger);
-  --status-voided-foreground: var(--semantic-danger-foreground);
-
-  /* Priority colors - Direct Mapping */
-  --priority-low: var(--semantic-neutral);
-  --priority-low-foreground: var(--semantic-neutral-foreground);
-  --priority-medium: var(--semantic-purple);
-  /* Mapped to Purple */
-  --priority-medium-foreground: var(--semantic-purple-foreground);
-  --priority-high: var(--semantic-orange);
-  --priority-high-foreground: var(--semantic-orange-foreground);
-  --priority-critical: var(--semantic-danger);
-  --priority-critical-foreground: var(--semantic-danger-foreground);
+  /* Priority colors - Dark Mode - Clear Hierarchy */
+  --priority-low: oklch(0.26 0.01 260);
+  --priority-low-foreground: oklch(0.70 0.01 260);
+  
+  --priority-medium: oklch(0.30 0.06 250);
+  --priority-medium-foreground: oklch(0.86 0.03 250);
+  
+  --priority-high: oklch(0.34 0.08 60);
+  --priority-high-foreground: oklch(0.88 0.04 60);
+  
+  --priority-critical: oklch(0.34 0.10 25);
+  --priority-critical-foreground: oklch(0.88 0.05 25);
 }
 
 /* FilePond unified styles */

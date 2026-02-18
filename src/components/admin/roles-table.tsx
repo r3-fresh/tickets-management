@@ -76,7 +76,7 @@ export function RolesTable({ users, totalCount, currentUserId, attentionAreas }:
                     placeholder="Buscar por correo o nombre..."
                     defaultValue={searchQuery}
                     onChange={handleSearchChange}
-                    className="max-w-sm"
+                    className="max-w-sm bg-transparent"
                 />
             </div>
 
@@ -104,7 +104,7 @@ export function RolesTable({ users, totalCount, currentUserId, attentionAreas }:
                                     <TableCell>
                                         <div className="flex items-center space-x-3">
                                             <Avatar className="h-8 w-8">
-                                                <AvatarImage src={user.image || ""} />
+                                                <AvatarImage src={user.image || ""} referrerPolicy="no-referrer" />
                                                 <AvatarFallback>{user.name.charAt(0)}</AvatarFallback>
                                             </Avatar>
                                             <span className="font-medium">{user.name}</span>

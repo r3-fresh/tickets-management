@@ -93,7 +93,7 @@ export function WatchersManager({ ticketId, currentWatchers, allUsers, currentUs
                             return (
                                 <Badge key={watcherId} variant="secondary" className="flex items-center gap-1">
                                     <Avatar className="h-4 w-4">
-                                        <AvatarImage src={user.image || undefined} />
+                                        <AvatarImage src={user.image || undefined} referrerPolicy="no-referrer" />
                                         <AvatarFallback>{user.name.charAt(0)}</AvatarFallback>
                                     </Avatar>
                                     {user.name}
@@ -123,7 +123,7 @@ export function WatchersManager({ ticketId, currentWatchers, allUsers, currentUs
                                         >
                                             <div className="flex items-center gap-2">
                                                 <Avatar className="h-6 w-6">
-                                                    <AvatarImage src={user.image || undefined} />
+                                                    <AvatarImage src={user.image || undefined} referrerPolicy="no-referrer" />
                                                     <AvatarFallback>{user.name.charAt(0)}</AvatarFallback>
                                                 </Avatar>
                                                 <div className="flex flex-col">

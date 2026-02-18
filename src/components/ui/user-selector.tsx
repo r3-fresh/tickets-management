@@ -95,7 +95,7 @@ export function UserSelector({
                                         )}
                                     />
                                     <Avatar className="h-6 w-6 mr-2">
-                                        <AvatarImage src={user.image || ""} />
+                                        <AvatarImage src={user.image || ""} referrerPolicy="no-referrer" />
                                         <AvatarFallback>{user.name.charAt(0)}</AvatarFallback>
                                     </Avatar>
                                     <div className="flex flex-col">
@@ -118,7 +118,7 @@ export function UserSelector({
                             className="flex items-center gap-2 py-1 px-1.5 rounded-md hover:bg-muted/50 group cursor-pointer"
                         >
                             <Avatar className="h-5 w-5 shrink-0">
-                                <AvatarImage src={user.image || ""} />
+                                <AvatarImage src={user.image || ""} referrerPolicy="no-referrer" />
                                 <AvatarFallback className="text-[8px]">
                                     {user.name.charAt(0)}
                                 </AvatarFallback>

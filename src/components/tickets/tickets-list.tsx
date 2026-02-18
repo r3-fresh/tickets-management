@@ -128,7 +128,7 @@ export function TicketsList({
                             placeholder="Buscar por código o título..."
                             defaultValue={searchQuery}
                             onChange={handleSearchChange}
-                            className="max-w-sm"
+                            className="max-w-sm bg-transparent"
                         />
                     </div>
 

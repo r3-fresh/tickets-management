@@ -92,7 +92,7 @@ export function AdminTicketsTable({ tickets, totalCount, assignedUsers, categori
                     placeholder="Buscar por código o título..."
                     defaultValue={searchQuery}
                     onChange={handleSearchChange}
-                    className="max-w-sm"
+                    className="max-w-sm bg-transparent"
                 />
             </div>
 
@@ -129,11 +129,15 @@ export function AdminTicketsTable({ tickets, totalCount, assignedUsers, categori
                                             {ticket.ticketCode}
                                         </TableCell>
                                         <TableCell>
-                                            <Link href={`/dashboard/tickets/${ticket.id}`} className="hover:underline font-medium text-foreground">
+                                            <Link 
+                                                href={`/dashboard/tickets/${ticket.id}`} 
+                                                className="hover:underline font-medium text-foreground block truncate max-w-[250px]" 
+                                                title={ticket.title}
+                                            >
                                                 {ticket.title}
                                             </Link>
                                             {ticket.categoryName && (
-                                                <div className="text-xs text-muted-foreground">{ticket.categoryName}</div>
+                                                <div className="text-xs text-muted-foreground truncate">{ticket.categoryName}</div>
                                             )}
                                         </TableCell>
                                         <TableCell>

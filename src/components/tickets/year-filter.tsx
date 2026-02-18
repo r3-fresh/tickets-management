@@ -16,7 +16,7 @@ export function YearFilter({ value, onChange }: YearFilterProps) {
 
     return (
         <Select value={value} onValueChange={onChange}>
-            <SelectTrigger className="w-[180px]">
+            <SelectTrigger className="w-[180px] bg-transparent">
                 <SelectValue placeholder="Filtrar por año" />
             </SelectTrigger>
             <SelectContent>
