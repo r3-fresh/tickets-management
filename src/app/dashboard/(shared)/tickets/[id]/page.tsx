@@ -190,7 +190,7 @@ export default async function TicketDetailPage({ params }: { params: Promise<{ i
                                             <PaperclipIcon className="h-3.5 w-3.5 text-muted-foreground" />
                                             <p className="text-sm font-medium">Archivos adjuntos</p>
                                         </div>
-                                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+                                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 pt-3">
                                             {ticket.attachments.map((file) => {
                                                 const canDelete = isAdmin || isAgentForArea || file.uploadedById === session.user.id;
                                                 return (
@@ -338,7 +338,7 @@ export default async function TicketDetailPage({ params }: { params: Promise<{ i
                 </div>
 
                 {/* RIGHT COLUMN: Context Sidebar */}
-                <div className="space-y-8 sticky top-6 lg:border-l lg:pl-10 border-border/60">
+                <div className="sticky top-6 lg:border-l lg:pl-10 border-border/60">
 
                     {/* Ticket Details */}
                     <div className="space-y-6">

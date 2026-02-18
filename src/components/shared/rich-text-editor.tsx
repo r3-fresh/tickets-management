@@ -70,7 +70,7 @@ export function RichTextEditor({ value, onChange, placeholder, disabled, classNa
     return (
         <div className={cn(
             "border border-input rounded-md bg-transparent overflow-hidden focus-within:ring-1 focus-within:ring-ring transition-all",
-            disabled ? 'border-none bg-transparent' : 'bg-sidebar',
+            disabled ? 'border-none bg-transparent opacity-50' : 'bg-background',
             className
         )}>
             {!disabled && (
