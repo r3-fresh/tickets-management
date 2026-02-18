@@ -45,7 +45,7 @@ export function TicketAttachmentUploader({ ticketId }: TicketAttachmentUploaderP
         <div className="bg-sidebar border border-border/50 rounded-xl p-4 space-y-3">
             <label className="text-[11px] font-medium text-muted-foreground uppercase flex items-center gap-1.5">
                 <Paperclip className="w-3 h-3" />
-                Adjuntar documentos
+                Archivos adjuntos
             </label>
             <Suspense fallback={<div className="h-16 animate-pulse rounded-md bg-muted" />}>
                 <FileUpload

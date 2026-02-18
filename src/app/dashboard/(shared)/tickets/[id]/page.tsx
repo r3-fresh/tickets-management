@@ -190,7 +190,7 @@ export default async function TicketDetailPage({ params }: { params: Promise<{ i
                                             <PaperclipIcon className="h-3.5 w-3.5 text-muted-foreground" />
                                             <p className="text-sm font-medium">Archivos adjuntos</p>
                                         </div>
-                                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                                        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
                                             {ticket.attachments.map((file) => {
                                                 const canDelete = isAdmin || isAgentForArea || file.uploadedById === session.user.id;
                                                 return (
@@ -202,7 +202,7 @@ export default async function TicketDetailPage({ params }: { params: Promise<{ i
                                                             href={file.driveViewLink}
                                                             target="_blank"
                                                             rel="noopener noreferrer"
-                                                            className="flex items-center gap-3 flex-1 min-w-0"
+                                                            className="flex items-center gap-3 flex-1 min-w-0 pr-7"
                                                         >
                                                             <div className="bg-muted p-2.5 rounded-md shrink-0 text-muted-foreground group-hover:text-foreground transition-colors">
                                                                 <AttachmentIcon mimeType={file.mimeType} />
@@ -218,14 +218,17 @@ export default async function TicketDetailPage({ params }: { params: Promise<{ i
                                                                     )}
                                                                 </p>
                                                             </div>
-                                                            <ExternalLinkIcon className="h-3.5 w-3.5 text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity absolute top-3 right-3 pointer-events-none" />
+
+                                                            <ExternalLinkIcon className="h-3.5 w-3.5 text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity self-center mr-2" />
                                                         </a>
                                                         {canDelete && (
-                                                            <DeleteAttachmentButton
-                                                                attachmentId={file.id}
-                                                                ticketId={ticketId}
-                                                                fileName={file.fileName}
-                                                            />
+                                                            <div className="absolute top-1 right-1 z-10">
+                                                                <DeleteAttachmentButton
+                                                                    attachmentId={file.id}
+                                                                    ticketId={ticketId}
+                                                                    fileName={file.fileName}
+                                                                />
+                                                            </div>
                                                         )}
                                                     </div>
                                                 );
@@ -370,19 +373,20 @@ export default async function TicketDetailPage({ params }: { params: Promise<{ i
                             </div>
                         </div>
 
+                        {/* Attachment Uploader — only for open tickets */}
+                        {!isTicketClosed && (
+                            <div className="mb-4">
+                                <TicketAttachmentUploader ticketId={ticketId} />
+                            </div>
+                        )}
+
                         {/* Cancellation Action for Creator */}
                         {isCreator && !isTicketClosed && (
                             <>
-
                                 <div>
                                     <CancelTicketButton ticketId={ticketId} />
                                 </div>
                             </>
-                        )}
-
-                        {/* Attachment Uploader — only for open tickets */}
-                        {!isTicketClosed && (
-                            <TicketAttachmentUploader ticketId={ticketId} />
                         )}
 
                         {/* Watchers */}
@@ -446,7 +450,7 @@ export default async function TicketDetailPage({ params }: { params: Promise<{ i
                         </div>
                     )}
                 </div>
-            </div>
+            </div >
         </div >
     );
 }
