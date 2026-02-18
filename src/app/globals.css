@@ -131,8 +131,8 @@
   /* Status colors - Mapped to Semantics */
   --status-open: var(--semantic-warning);
   --status-open-foreground: var(--semantic-warning-foreground);
-  --status-in-progress: var(--semantic-info);
-  --status-in-progress-foreground: var(--semantic-info-foreground);
+  --status-in-progress: var(--semantic-purple);
+  --status-in-progress-foreground: var(--semantic-purple-foreground);
   --status-resolved: var(--semantic-success);
   --status-resolved-foreground: var(--semantic-success-foreground);
   --status-pending-validation: var(--semantic-orange);
@@ -211,6 +211,9 @@
   --semantic-neutral: oklch(0.26 0 0);
   --semantic-neutral-foreground: oklch(0.90 0 0);
 
+  --semantic-purple: oklch(0.35 0.14 292);
+  --semantic-purple-foreground: oklch(0.95 0.05 292);
+
   --semantic-info: oklch(0.35 0.12 250);
   /* Standard Blue */
   --semantic-info-foreground: oklch(0.90 0.05 250);
@@ -234,8 +237,8 @@
   /* Status colors - Direct Mapping */
   --status-open: var(--semantic-warning);
   --status-open-foreground: var(--semantic-warning-foreground);
-  --status-in-progress: var(--semantic-info);
-  --status-in-progress-foreground: var(--semantic-info-foreground);
+  --status-in-progress: var(--semantic-purple);
+  --status-in-progress-foreground: var(--semantic-purple-foreground);
   --status-resolved: var(--semantic-success);
   --status-resolved-foreground: var(--semantic-success-foreground);
   --status-pending-validation: var(--semantic-orange);
@@ -248,9 +251,9 @@
   /* Priority colors - Direct Mapping */
   --priority-low: var(--semantic-neutral);
   --priority-low-foreground: var(--semantic-neutral-foreground);
-  --priority-medium: var(--semantic-info);
-  /* Mapped to Blue (Info) */
-  --priority-medium-foreground: var(--semantic-info-foreground);
+  --priority-medium: var(--semantic-purple);
+  /* Mapped to Purple */
+  --priority-medium-foreground: var(--semantic-purple-foreground);
   --priority-high: var(--semantic-orange);
   --priority-high-foreground: var(--semantic-orange-foreground);
   --priority-critical: var(--semantic-danger);

@@ -216,13 +216,11 @@ export async function UserDashboard({ userId }: UserDashboardProps) {
                             <Badge variant="secondary">{mergedWatchedTickets.length} elementos</Badge>
                         )}
                     </div>
-                    {mergedWatchedTickets.length > 0 && (
-                        <Button asChild variant="link" className="text-primary">
-                            <Link href="/dashboard/seguimiento">
-                                Ver todo
-                            </Link>
-                        </Button>
-                    )}
+                    <Button asChild variant="link" className="text-primary">
+                        <Link href="/dashboard/seguimiento">
+                            Ver todo el historial
+                        </Link>
+                    </Button>
                 </div>
 
                 <TicketsList
@@ -233,6 +231,6 @@ export async function UserDashboard({ userId }: UserDashboardProps) {
                     hideHeader={true}
                 />
             </div>
-        </div>
+        </div >
     );
 }

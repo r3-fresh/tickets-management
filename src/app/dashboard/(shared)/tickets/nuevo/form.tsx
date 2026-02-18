@@ -117,7 +117,6 @@ function useSidebarContext(
             subcategory: subcategory ? { name: subcategory.name, description: subcategory.description } : undefined,
             tips: [
                 "Describe el problema con el mayor detalle posible",
-                "Incluye pasos para reproducir el incidente si aplica",
                 "Adjunta capturas o enlaces relevantes en la descripción",
             ],
         };
@@ -583,7 +582,7 @@ export function NewTicketForm({
                                         <p className="text-sm font-medium">Notificar a</p>
                                     </div>
                                     <p className="text-xs text-muted-foreground mb-3">
-                                        Estas personas recibirán notificaciones sobre cada actualización del ticket
+                                        Estos usuarios podrán dar seguimiento al ticket
                                     </p>
                                     <UserSelector
                                         users={availableUsers}
@@ -722,9 +721,9 @@ export function NewTicketForm({
                         <div className="flex items-start gap-2 rounded-lg bg-amber-50 dark:bg-amber-950/20 border border-amber-200 dark:border-amber-900/50 px-3 py-2.5">
                             <AlertTriangle className="h-3.5 w-3.5 text-amber-600 dark:text-amber-500 shrink-0 mt-0.5" />
                             <div>
-                                <p className="text-[11px] font-medium text-amber-900 dark:text-amber-200">¿Es una emergencia?</p>
+                                <p className="text-[11px] font-medium text-amber-900 dark:text-amber-200">¿Es un caso crítico?</p>
                                 <p className="text-[11px] text-amber-800 dark:text-amber-300/80 mt-0.5 leading-relaxed">
-                                    Contáctanos directamente en los chats grupales después de crear el ticket.
+                                    Contáctanos directamente al chat grupal después de crear el ticket.
                                 </p>
                             </div>
                         </div>
@@ -737,7 +736,7 @@ export function NewTicketForm({
                             <p className="text-sm font-medium">Notificar a</p>
                         </div>
                         <p className="text-[11px] text-muted-foreground leading-relaxed">
-                            Estas personas recibirán notificaciones sobre cada actualización del ticket
+                            Estos usuarios podrán dar seguimiento al ticket
                         </p>
                         <UserSelector
                             users={availableUsers}

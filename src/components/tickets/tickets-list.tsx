@@ -161,7 +161,7 @@ export function TicketsList({
                                 <TableCell colSpan={9} className="h-24 text-center text-muted-foreground">
                                     {(totalCount ?? tickets.length) === 0
                                         ? isWatchedView
-                                            ? "No estás observando ningún ticket."
+                                            ? "No estás siguiendo ningún ticket."
                                             : "No has creado ningún ticket aún."
                                         : "No se encontraron tickets con los filtros aplicados."}
                                 </TableCell>

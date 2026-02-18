@@ -271,31 +271,20 @@ export async function AgentDashboard({ userId, attentionAreaId }: AgentDashboard
                             <Badge variant="secondary">{mergedWatchedTickets.length} elementos</Badge>
                         )}
                     </div>
-                    {mergedWatchedTickets.length > 0 && (
-                        <Button asChild variant="link" className="text-primary">
-                            <Link href="/dashboard/seguimiento">
-                                Ver todo
-                            </Link>
-                        </Button>
-                    )}
+                    <Button asChild variant="link" className="text-primary">
+                        <Link href="/dashboard/seguimiento">
+                            Ver todo el historial
+                        </Link>
+                    </Button>
                 </div>
 
-                {mergedWatchedTickets.length > 0 ? (
-                    <TicketsList
-                        tickets={mergedWatchedTickets}
-                        isAdmin={false}
-                        isWatchedView={true}
-                        hideFilters={true}
-                        hideHeader={true}
-                    />
-                ) : (
-                    <Card>
-                        <CardContent className="p-6 text-center text-muted-foreground">
-                            <Eye className="h-12 w-12 mx-auto mb-2 opacity-50" />
-                            <p>No estás siguiendo ningún ticket aún</p>
-                        </CardContent>
-                    </Card>
-                )}
+                <TicketsList
+                    tickets={mergedWatchedTickets}
+                    isAdmin={false}
+                    isWatchedView={true}
+                    hideFilters={true}
+                    hideHeader={true}
+                />
             </div>
         </div>
     );
