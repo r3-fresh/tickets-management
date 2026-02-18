@@ -15,9 +15,10 @@ import { YearFilter } from "@/components/tickets/year-filter";
 interface TicketFiltersProps {
     assignedUsers: Array<{ id: string; name: string }>;
     categories?: Array<{ id: number; name: string }>;
+    subcategories?: Array<{ id: number; name: string; categoryId: number | null }>;
 }
 
-export function TicketFilters({ assignedUsers, categories = [] }: TicketFiltersProps) {
+export function TicketFilters({ assignedUsers, categories = [], subcategories = [] }: TicketFiltersProps) {
     const router = useRouter();
     const searchParams = useSearchParams();
 
@@ -25,6 +26,7 @@ export function TicketFilters({ assignedUsers, categories = [] }: TicketFiltersP
     const status = searchParams.get("status") ?? "";
     const assignedTo = searchParams.get("assignedTo") ?? "";
     const category = searchParams.get("category") ?? "";
+    const subcategory = searchParams.get("subcategory") ?? "";
     const year = searchParams.get("year") ?? "all";
     const dateFrom = searchParams.get("dateFrom") ?? "";
     const dateTo = searchParams.get("dateTo") ?? "";
@@ -64,7 +66,15 @@ export function TicketFilters({ assignedUsers, categories = [] }: TicketFiltersP
     };
 
     const handleCategoryChange = (value: string) => {
-        updateParams({ category: value === "all" ? "" : value });
+        // Reset subcategory when category changes
+        updateParams({
+            category: value === "all" ? "" : value,
+            subcategory: ""
+        });
+    };
+
+    const handleSubcategoryChange = (value: string) => {
+        updateParams({ subcategory: value === "all" ? "" : value });
     };
 
     const handleYearChange = (value: string) => {
@@ -75,7 +85,12 @@ export function TicketFilters({ assignedUsers, categories = [] }: TicketFiltersP
         router.push("?", { scroll: false });
     };
 
-    const hasActiveFilters = status || assignedTo || dateRange || category || (year && year !== "all");
+    const hasActiveFilters = status || assignedTo || dateRange || category || subcategory || (year && year !== "all");
+
+    // Filter available subcategories based on selected category
+    const availableSubcategories = category && category !== 'all'
+        ? subcategories.filter(s => s.categoryId === Number(category))
+        : [];
 
     return (
         <div className="flex flex-wrap gap-3 items-center">
@@ -118,6 +133,22 @@ export function TicketFilters({ assignedUsers, categories = [] }: TicketFiltersP
                         {categories.map((cat) => (
                             <SelectItem key={cat.id} value={cat.id.toString()}>
                                 {cat.name}
+                            </SelectItem>
+                        ))}
+                    </SelectContent>
+                </Select>
+            )}
+
+            {category && availableSubcategories.length > 0 && (
+                <Select value={subcategory || "all"} onValueChange={handleSubcategoryChange}>
+                    <SelectTrigger className="w-[200px]">
+                        <SelectValue placeholder="Subcategoría" />
+                    </SelectTrigger>
+                    <SelectContent>
+                        <SelectItem value="all">Todas las subcategorías</SelectItem>
+                        {availableSubcategories.map((sub) => (
+                            <SelectItem key={sub.id} value={sub.id.toString()}>
+                                {sub.name}
                             </SelectItem>
                         ))}
                     </SelectContent>

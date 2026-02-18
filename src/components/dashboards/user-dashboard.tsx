@@ -225,22 +225,13 @@ export async function UserDashboard({ userId }: UserDashboardProps) {
                     )}
                 </div>
 
-                {mergedWatchedTickets.length > 0 ? (
-                    <TicketsList
-                        tickets={mergedWatchedTickets}
-                        isAdmin={false}
-                        isWatchedView={true}
-                        hideFilters={true}
-                        hideHeader={true}
-                    />
-                ) : (
-                    <Card>
-                        <CardContent className="p-6 text-center text-muted-foreground">
-                            <Eye className="h-12 w-12 mx-auto mb-2 opacity-50" />
-                            <p>No estás siguiendo ningún ticket aún</p>
-                        </CardContent>
-                    </Card>
-                )}
+                <TicketsList
+                    tickets={mergedWatchedTickets}
+                    isAdmin={false}
+                    isWatchedView={true}
+                    hideFilters={true}
+                    hideHeader={true}
+                />
             </div>
         </div>
     );

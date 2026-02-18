@@ -52,6 +52,7 @@ interface TicketsListProps {
     hideHeader?: boolean;
     assignedUsers?: Array<{ id: string; name: string }>;
     categories?: Array<{ id: number; name: string }>;
+    subcategories?: Array<{ id: number; name: string; categoryId: number | null }>;
 }
 
 export function TicketsList({
@@ -64,6 +65,7 @@ export function TicketsList({
     hideHeader = false,
     assignedUsers,
     categories,
+    subcategories,
 }: TicketsListProps) {
     const router = useRouter();
     const searchParams = useSearchParams();
@@ -130,7 +132,11 @@ export function TicketsList({
                         />
                     </div>
 
-                    <TicketFilters assignedUsers={assignedUsers ?? []} categories={categories} />
+                    <TicketFilters
+                        assignedUsers={assignedUsers ?? []}
+                        categories={categories}
+                        subcategories={subcategories}
+                    />
                 </>
             )}
 

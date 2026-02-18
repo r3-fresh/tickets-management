@@ -36,6 +36,7 @@ export default async function SeguimientoPage({ searchParams }: PageProps) {
         status: typeof params.status === "string" ? params.status : undefined,
         assignedTo: typeof params.assignedTo === "string" ? params.assignedTo : undefined,
         category: typeof params.category === "string" ? params.category : undefined,
+        subcategory: typeof params.subcategory === "string" ? params.subcategory : undefined,
         search: typeof params.search === "string" ? params.search : undefined,
         year: typeof params.year === "string" ? params.year : undefined,
         dateFrom: typeof params.dateFrom === "string" ? params.dateFrom : undefined,
@@ -94,6 +95,7 @@ export default async function SeguimientoPage({ searchParams }: PageProps) {
                 hideHeader={true}
                 assignedUsers={filterOptions.assignedUsers}
                 categories={filterOptions.categories}
+                subcategories={filterOptions.subcategories}
             />
         </div>
     );

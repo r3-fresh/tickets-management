@@ -1,5 +1,5 @@
 import { db } from "@/db";
-import { tickets, comments, ticketViews, ticketCategories, appSettings, users } from "@/db/schema";
+import { tickets, comments, ticketViews, ticketCategories, ticketSubcategories, appSettings, users } from "@/db/schema";
 import { eq, desc, sql, and, or, ilike, SQL, count as drizzleCount } from "drizzle-orm";
 
 /**
@@ -14,6 +14,7 @@ export interface TicketFilterParams {
     status?: string;
     assignedTo?: string;
     category?: string;
+    subcategory?: string;
     search?: string;
     year?: string;
     dateFrom?: string;
@@ -50,6 +51,10 @@ function buildTicketFilterConditions(filters: TicketFilterParams): SQL[] {
 
     if (filters.category) {
         conditions.push(eq(tickets.categoryId, Number(filters.category)));
+    }
+
+    if (filters.subcategory) {
+        conditions.push(eq(tickets.subcategoryId, Number(filters.subcategory)));
     }
 
     if (filters.search) {
@@ -317,17 +322,28 @@ export async function getTicketFilterOptions(baseWhere?: SQL) {
         .from(tickets)
         .innerJoin(ticketCategories, eq(tickets.categoryId, ticketCategories.id));
 
+    const subcategoryQuery = db
+        .selectDistinct({
+            id: ticketSubcategories.id,
+            name: ticketSubcategories.name,
+            categoryId: ticketSubcategories.categoryId,
+        })
+        .from(tickets)
+        .innerJoin(ticketSubcategories, eq(tickets.subcategoryId, ticketSubcategories.id));
+
     if (baseWhere) {
         assignedQuery.where(baseWhere);
         categoryQuery.where(baseWhere);
+        subcategoryQuery.where(baseWhere);
     }
 
-    const [assignedUsers, categoriesList] = await Promise.all([
+    const [assignedUsers, categoriesList, subcategoriesList] = await Promise.all([
         assignedQuery,
         categoryQuery,
+        subcategoryQuery,
     ]);
 
-    return { assignedUsers, categories: categoriesList };
+    return { assignedUsers, categories: categoriesList, subcategories: subcategoriesList };
 }
 
 /**
