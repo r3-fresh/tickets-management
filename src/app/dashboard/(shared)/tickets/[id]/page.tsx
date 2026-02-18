@@ -47,8 +47,7 @@ function AttachmentIcon({ mimeType }: { mimeType: string }) {
 }
 
 const RichTextEditor = dynamic(
-    () => import("@/components/shared/rich-text-editor").then(mod => ({ default: mod.RichTextEditor })),
-    { loading: () => <Skeleton className="h-24 rounded-md" /> }
+    () => import("@/components/shared/rich-text-editor").then(mod => ({ default: mod.RichTextEditor }))
 );
 
 export async function generateMetadata({ params }: { params: Promise<{ id: string }> }): Promise<Metadata> {

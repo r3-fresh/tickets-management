@@ -2,16 +2,8 @@ import { db } from "@/db";
 import { tickets, attentionAreas } from "@/db/schema";
 import { eq, desc, sql, and, not, count, inArray } from "drizzle-orm";
 import { queryTicketsWithUnread } from "@/db/queries";
-import dynamic from "next/dynamic";
+import { TicketsList } from "@/components/tickets/tickets-list";
 import { Breadcrumb } from "@/components/shared/breadcrumb";
-import { Skeleton } from "@/components/ui/skeleton";
-
-const TicketsList = dynamic(
-    () => import("@/components/tickets/tickets-list").then(mod => ({ default: mod.TicketsList })),
-    {
-        loading: () => <Skeleton className="h-64 rounded-lg" />,
-    }
-);
 import Link from "next/link";
 import {
     Card,

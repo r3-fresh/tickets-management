@@ -4,7 +4,6 @@ import { requireAuth } from "@/lib/auth/helpers";
 import { getAppSetting } from "@/db/queries";
 import dynamic from "next/dynamic";
 import { getActiveCategories, getActiveCampuses, getActiveWorkAreas, getActiveAttentionAreas } from "@/actions/config/get-config";
-import { Skeleton } from "@/components/ui/skeleton";
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
@@ -12,10 +11,7 @@ export const metadata: Metadata = {
 };
 
 const NewTicketForm = dynamic(
-    () => import("./form").then(mod => ({ default: mod.NewTicketForm })),
-    {
-        loading: () => <Skeleton className="h-96 rounded-lg" />,
-    }
+    () => import("./form").then(mod => ({ default: mod.NewTicketForm }))
 );
 
 export default async function NuevoTicketPage() {

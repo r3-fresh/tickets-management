@@ -4,21 +4,13 @@ import { queryTicketsPaginated, getTicketFilterOptions } from "@/db/queries";
 import type { TicketFilterParams } from "@/db/queries";
 import { getSession } from "@/lib/auth/helpers";
 import { eq, inArray } from "drizzle-orm";
-import dynamic from "next/dynamic";
+import { TicketsList } from "@/components/tickets/tickets-list";
 import { Breadcrumb } from "@/components/shared/breadcrumb";
-import { Skeleton } from "@/components/ui/skeleton";
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
     title: "Tickets del área",
 };
-
-const TicketsList = dynamic(
-    () => import("@/components/tickets/tickets-list").then(mod => ({ default: mod.TicketsList })),
-    {
-        loading: () => <Skeleton className="h-96 rounded-lg" />,
-    }
-);
 
 interface PageProps {
     searchParams: Promise<Record<string, string | string[] | undefined>>;
