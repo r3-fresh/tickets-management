@@ -53,9 +53,9 @@ export function UserValidationControls({ ticketId }: UserValidationControlsProps
         <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-50">
             <div 
                 className={cn(
-                    "rounded-2xl border-2 shadow-2xl transition-all duration-300 overflow-hidden",
+                    "rounded-2xl border shadow-2xl transition-all duration-300 overflow-hidden",
                     "bg-card backdrop-blur-sm",
-                    "border-status-pending-validation/40",
+                    "border-border",
                     "animate-in slide-in-from-bottom-4 fade-in duration-500",
                     isExpanded ? "w-[420px]" : "w-auto min-w-[280px]"
                 )}
@@ -63,19 +63,19 @@ export function UserValidationControls({ ticketId }: UserValidationControlsProps
                 {isExpanded ? (
                     <>
                         <div 
-                            className="flex items-center justify-between px-5 py-3.5 border-b border-status-pending-validation/20 bg-status-pending-validation/10 cursor-pointer"
+                            className="flex items-center justify-between px-5 py-3.5 border-b bg-muted/30 cursor-pointer"
                             onClick={() => setIsExpanded(false)}
                         >
                             <div className="flex items-center gap-3">
-                                <div className="flex items-center justify-center h-8 w-8 rounded-full bg-status-pending-validation/20">
-                                    <AlertCircle className="h-4 w-4 text-status-pending-validation-foreground" />
+                                <div className="flex items-center justify-center h-8 w-8 rounded-full bg-primary/10">
+                                    <AlertCircle className="h-4 w-4 text-primary" />
                                 </div>
                                 <div>
                                     <span className="text-sm font-semibold text-foreground block">
-                                        Requiere tu validación
+                                        Acción requerida
                                     </span>
                                     <span className="text-xs text-muted-foreground">
-                                        El agente ha marcado este ticket como resuelto
+                                        Confirma si la solución es correcta
                                     </span>
                                 </div>
                             </div>
@@ -84,7 +84,7 @@ export function UserValidationControls({ ticketId }: UserValidationControlsProps
                         
                         <div className="px-5 py-4">
                             <p className="text-sm text-muted-foreground mb-4 leading-relaxed">
-                                Por favor revisa el trabajo realizado y confirma si el ticket puede cerrarse o necesita ajustes adicionales.
+                                El responsable indicó que el ticket está resuelto. Revisa el trabajo realizado y confirma para cerrar o solicita mejoras.
                             </p>
                             
                             <div className="flex gap-3">
@@ -95,21 +95,20 @@ export function UserValidationControls({ ticketId }: UserValidationControlsProps
                                             disabled={isPending}
                                         >
                                             <CheckCircle2 className="mr-2 h-4 w-4" />
-                                            Aprobar y cerrar
+                                            Confirmar solución
                                         </Button>
                                     </AlertDialogTrigger>
                                     <AlertDialogContent>
                                         <AlertDialogHeader>
-                                            <AlertDialogTitle>¿Aprobar cierre del ticket?</AlertDialogTitle>
+                                            <AlertDialogTitle>¿Confirmar solución?</AlertDialogTitle>
                                             <AlertDialogDescription>
-                                                Confirmas que el ticket ha sido atendido satisfactoriamente y puede cerrarse.
-                                                Esta acción cambiará el estado del ticket a "Resuelto".
+                                                Al confirmar, el ticket se marcará como resuelto y se cerrará.
                                             </AlertDialogDescription>
                                         </AlertDialogHeader>
                                         <AlertDialogFooter>
                                             <AlertDialogCancel>Cancelar</AlertDialogCancel>
                                             <AlertDialogAction onClick={handleApprove}>
-                                                Sí, aprobar cierre
+                                                Confirmar
                                             </AlertDialogAction>
                                         </AlertDialogFooter>
                                     </AlertDialogContent>
@@ -123,15 +122,14 @@ export function UserValidationControls({ ticketId }: UserValidationControlsProps
                                             disabled={isPending}
                                         >
                                             <XCircle className="mr-2 h-4 w-4" />
-                                            Solicitar ajustes
+                                            Solicitar mejoras
                                         </Button>
                                     </AlertDialogTrigger>
                                     <AlertDialogContent>
                                         <AlertDialogHeader>
-                                            <AlertDialogTitle>¿Rechazar validación?</AlertDialogTitle>
+                                            <AlertDialogTitle>¿Solicitar mejoras?</AlertDialogTitle>
                                             <AlertDialogDescription>
-                                                El ticket regresará al estado "En progreso" para que el agente pueda realizar los ajustes necesarios.
-                                                Puedes agregar un comentario explicando qué ajustes se requieren.
+                                                El ticket volverá a "En progreso". Agrega un comentario indicando qué necesita ajustarse.
                                             </AlertDialogDescription>
                                         </AlertDialogHeader>
                                         <AlertDialogFooter>
@@ -140,7 +138,7 @@ export function UserValidationControls({ ticketId }: UserValidationControlsProps
                                                 onClick={handleReject} 
                                                 className="bg-destructive hover:bg-destructive/90 text-destructive-foreground"
                                             >
-                                                Sí, necesita ajustes
+                                                Solicitar mejoras
                                             </AlertDialogAction>
                                         </AlertDialogFooter>
                                     </AlertDialogContent>
@@ -151,14 +149,14 @@ export function UserValidationControls({ ticketId }: UserValidationControlsProps
                 ) : (
                     <button
                         onClick={() => setIsExpanded(true)}
-                        className="flex items-center gap-3 px-5 py-3.5 hover:bg-status-pending-validation/5 transition-colors w-full"
+                        className="flex items-center gap-3 px-5 py-3.5 hover:bg-muted/30 transition-colors w-full"
                     >
-                        <div className="flex items-center justify-center h-8 w-8 rounded-full bg-status-pending-validation/20">
-                            <AlertCircle className="h-4 w-4 text-status-pending-validation-foreground" />
+                        <div className="flex items-center justify-center h-8 w-8 rounded-full bg-primary/10">
+                            <AlertCircle className="h-4 w-4 text-primary" />
                         </div>
-                        <span className="text-sm font-semibold text-foreground">Validación pendiente</span>
+                        <span className="text-sm font-semibold text-foreground">Acción requerida</span>
                         <div className="ml-auto flex items-center gap-2">
-                            <div className="h-2 w-2 rounded-full bg-status-pending-validation animate-pulse" />
+                            <div className="h-2 w-2 rounded-full bg-primary animate-pulse" />
                             <ChevronUp className="h-5 w-5 text-muted-foreground" />
                         </div>
                     </button>
