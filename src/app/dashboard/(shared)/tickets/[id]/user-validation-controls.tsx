@@ -1,7 +1,6 @@
 "use client";
 
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { approveTicketValidation, rejectTicketValidation } from "@/actions/tickets";
 import { toast } from "sonner";
 import { useTransition } from "react";
@@ -18,7 +17,11 @@ import {
     AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 
-export function UserValidationControls({ ticketId }: { ticketId: number }) {
+interface UserValidationControlsProps {
+    ticketId: number;
+}
+
+export function UserValidationControls({ ticketId }: UserValidationControlsProps) {
     const [isPending, startTransition] = useTransition();
 
     const handleApprove = () => {
@@ -44,73 +47,85 @@ export function UserValidationControls({ ticketId }: { ticketId: number }) {
     };
 
     return (
-        <Card className="border-border bg-muted">
-            <CardHeader>
-                <CardTitle className="flex items-center gap-2 text-foreground">
-                    <AlertCircle className="h-5 w-5" />
-                    Validación requerida
-                </CardTitle>
-                <CardDescription className="text-muted-foreground">
-                    El agente ha culminado la atención. Por favor revisa y valida si el ticket puede cerrarse.
-                </CardDescription>
-            </CardHeader>
-            <CardContent className="flex gap-3">
-                <AlertDialog>
-                    <AlertDialogTrigger asChild>
-                        <Button
-                            variant="default"
-                            className="flex-1"
-                            disabled={isPending}
-                        >
-                            <CheckCircle2 className="mr-2 h-4 w-4" />
-                            Aprobar cierre
-                        </Button>
-                    </AlertDialogTrigger>
-                    <AlertDialogContent>
-                        <AlertDialogHeader>
-                            <AlertDialogTitle>¿Aprobar cierre del ticket?</AlertDialogTitle>
-                            <AlertDialogDescription>
-                                Confirmas que el ticket ha sido atendido satisfactoriamente y puede cerrarse.
-                                Esta acción cambiará el estado del ticket a "Resuelto".
-                            </AlertDialogDescription>
-                        </AlertDialogHeader>
-                        <AlertDialogFooter>
-                            <AlertDialogCancel>Cancelar</AlertDialogCancel>
-                            <AlertDialogAction onClick={handleApprove}>
-                                Sí, aprobar cierre
-                            </AlertDialogAction>
-                        </AlertDialogFooter>
-                    </AlertDialogContent>
-                </AlertDialog>
+        <div className="relative overflow-hidden rounded-xl border border-status-pending-validation/30 bg-status-pending-validation/5">
+            <div className="absolute left-0 top-0 bottom-0 w-1 bg-status-pending-validation" />
+            
+            <div className="px-4 py-3 border-b border-status-pending-validation/10 bg-status-pending-validation/5">
+                <div className="flex items-center gap-2">
+                    <AlertCircle className="h-4 w-4 text-status-pending-validation-foreground" />
+                    <span className="text-xs font-semibold text-status-pending-validation-foreground uppercase tracking-wide">
+                        Requiere tu validación
+                    </span>
+                </div>
+            </div>
+            
+            <div className="px-4 py-3">
+                <p className="text-xs text-muted-foreground mb-3">
+                    El agente indica que el ticket está resuelto. Revisa y confirma.
+                </p>
+                
+                <div className="flex flex-col gap-2">
+                    <AlertDialog>
+                        <AlertDialogTrigger asChild>
+                            <Button
+                                size="sm"
+                                className="w-full justify-start h-8 text-xs font-medium"
+                                disabled={isPending}
+                            >
+                                <CheckCircle2 className="mr-2 h-3.5 w-3.5" />
+                                Aprobar y cerrar
+                            </Button>
+                        </AlertDialogTrigger>
+                        <AlertDialogContent>
+                            <AlertDialogHeader>
+                                <AlertDialogTitle>¿Aprobar cierre del ticket?</AlertDialogTitle>
+                                <AlertDialogDescription>
+                                    Confirmas que el ticket ha sido atendido satisfactoriamente y puede cerrarse.
+                                    Esta acción cambiará el estado del ticket a "Resuelto".
+                                </AlertDialogDescription>
+                            </AlertDialogHeader>
+                            <AlertDialogFooter>
+                                <AlertDialogCancel>Cancelar</AlertDialogCancel>
+                                <AlertDialogAction onClick={handleApprove}>
+                                    Sí, aprobar cierre
+                                </AlertDialogAction>
+                            </AlertDialogFooter>
+                        </AlertDialogContent>
+                    </AlertDialog>
 
-                <AlertDialog>
-                    <AlertDialogTrigger asChild>
-                        <Button
-                            variant="outline"
-                            className="flex-1 border-border hover:bg-muted"
-                            disabled={isPending}
-                        >
-                            <XCircle className="mr-2 h-4 w-4" />
-                            Rechazar (necesita ajustes)
-                        </Button>
-                    </AlertDialogTrigger>
-                    <AlertDialogContent>
-                        <AlertDialogHeader>
-                            <AlertDialogTitle>¿Rechazar validación?</AlertDialogTitle>
-                            <AlertDialogDescription>
-                                El ticket regresará al estado "En progreso" para que el agente pueda realizar los ajustes necesarios.
-                                Puedes agregar un comentario explicando qué ajustes se requieren.
-                            </AlertDialogDescription>
-                        </AlertDialogHeader>
-                        <AlertDialogFooter>
-                            <AlertDialogCancel>Cancelar</AlertDialogCancel>
-                            <AlertDialogAction onClick={handleReject} className="bg-destructive hover:bg-destructive/90 text-destructive-foreground">
-                                Sí, necesita ajustes
-                            </AlertDialogAction>
-                        </AlertDialogFooter>
-                    </AlertDialogContent>
-                </AlertDialog>
-            </CardContent>
-        </Card>
+                    <AlertDialog>
+                        <AlertDialogTrigger asChild>
+                            <Button
+                                variant="ghost"
+                                size="sm"
+                                className="w-full justify-start h-8 text-xs font-medium text-muted-foreground hover:text-foreground"
+                                disabled={isPending}
+                            >
+                                <XCircle className="mr-2 h-3.5 w-3.5" />
+                                Solicitar ajustes
+                            </Button>
+                        </AlertDialogTrigger>
+                        <AlertDialogContent>
+                            <AlertDialogHeader>
+                                <AlertDialogTitle>¿Rechazar validación?</AlertDialogTitle>
+                                <AlertDialogDescription>
+                                    El ticket regresará al estado "En progreso" para que el agente pueda realizar los ajustes necesarios.
+                                    Puedes agregar un comentario explicando qué ajustes se requieren.
+                                </AlertDialogDescription>
+                            </AlertDialogHeader>
+                            <AlertDialogFooter>
+                                <AlertDialogCancel>Cancelar</AlertDialogCancel>
+                                <AlertDialogAction 
+                                    onClick={handleReject} 
+                                    className="bg-destructive hover:bg-destructive/90 text-destructive-foreground"
+                                >
+                                    Sí, necesita ajustes
+                                </AlertDialogAction>
+                            </AlertDialogFooter>
+                        </AlertDialogContent>
+                    </AlertDialog>
+                </div>
+            </div>
+        </div>
     );
 }
