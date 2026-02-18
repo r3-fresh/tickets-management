@@ -82,7 +82,10 @@ export default async function TicketDetailPage({ params }: { params: Promise<{ i
             area: true,
             attentionArea: true,
             assignedTo: true,
-            attachments: true,
+            attachments: {
+                with: { uploadedBy: true },
+                orderBy: (a, { asc }) => [asc(a.createdAt)],
+            },
             comments: {
                 with: { author: true },
                 orderBy: [desc(comments.createdAt)]
@@ -201,7 +204,12 @@ export default async function TicketDetailPage({ params }: { params: Promise<{ i
                                                         <p className="text-sm font-medium truncate group-hover:underline decoration-muted-foreground/50 underline-offset-4 text-foreground">
                                                             {file.fileName}
                                                         </p>
-                                                        <p className="text-xs text-muted-foreground">{formatFileSize(file.fileSize)}</p>
+                                                        <p className="text-xs text-muted-foreground">
+                                                            {formatFileSize(file.fileSize)}
+                                                            {file.uploadedBy && (
+                                                                <span className="ml-1.5 opacity-70">· {file.uploadedBy.name}</span>
+                                                            )}
+                                                        </p>
                                                     </div>
                                                     <ExternalLinkIcon className="h-3.5 w-3.5 text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity" />
                                                 </a>
