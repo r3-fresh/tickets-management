@@ -50,43 +50,34 @@ export function UserValidationControls({ ticketId }: UserValidationControlsProps
     };
 
     return (
-        <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-50">
+        <div className="fixed top-6 left-1/2 -translate-x-1/2 z-50">
             <div 
                 className={cn(
                     "rounded-2xl border shadow-2xl transition-all duration-300 overflow-hidden",
                     "bg-card backdrop-blur-sm",
                     "border-border",
-                    "animate-in slide-in-from-bottom-4 fade-in duration-500",
-                    isExpanded ? "w-[420px]" : "w-auto min-w-[280px]"
+                    "animate-in slide-in-from-top-4 fade-in duration-500",
+                    isExpanded ? "w-[380px]" : "w-auto min-w-[260px]"
                 )}
             >
                 {isExpanded ? (
                     <>
                         <div 
-                            className="flex items-center justify-between px-5 py-3.5 border-b bg-muted/30 cursor-pointer"
+                            className="flex items-center justify-between px-5 py-3 border-b bg-muted/30 cursor-pointer"
                             onClick={() => setIsExpanded(false)}
                         >
                             <div className="flex items-center gap-3">
                                 <div className="flex items-center justify-center h-8 w-8 rounded-full bg-primary/10">
                                     <AlertCircle className="h-4 w-4 text-primary" />
                                 </div>
-                                <div>
-                                    <span className="text-sm font-semibold text-foreground block">
-                                        Acción requerida
-                                    </span>
-                                    <span className="text-xs text-muted-foreground">
-                                        Confirma si la solución es correcta
-                                    </span>
-                                </div>
+                                <span className="text-sm font-semibold text-foreground">
+                                    Acción requerida
+                                </span>
                             </div>
                             <ChevronDown className="h-5 w-5 text-muted-foreground shrink-0" />
                         </div>
                         
                         <div className="px-5 py-4">
-                            <p className="text-sm text-muted-foreground mb-4 leading-relaxed">
-                                El responsable indicó que el ticket está resuelto. Revisa el trabajo realizado y confirma para cerrar o solicita mejoras.
-                            </p>
-                            
                             <div className="flex gap-3">
                                 <AlertDialog>
                                     <AlertDialogTrigger asChild>
@@ -118,7 +109,7 @@ export function UserValidationControls({ ticketId }: UserValidationControlsProps
                                     <AlertDialogTrigger asChild>
                                         <Button
                                             variant="outline"
-                                            className="flex-1 h-10"
+                                            className="flex-1 h-10 border-destructive/50 text-destructive hover:bg-destructive hover:text-white dark:hover:text-white"
                                             disabled={isPending}
                                         >
                                             <XCircle className="mr-2 h-4 w-4" />
@@ -136,7 +127,7 @@ export function UserValidationControls({ ticketId }: UserValidationControlsProps
                                             <AlertDialogCancel>Cancelar</AlertDialogCancel>
                                             <AlertDialogAction 
                                                 onClick={handleReject} 
-                                                className="bg-destructive hover:bg-destructive/90 text-destructive-foreground"
+                                                className="bg-destructive hover:bg-destructive/90 text-white"
                                             >
                                                 Solicitar mejoras
                                             </AlertDialogAction>
