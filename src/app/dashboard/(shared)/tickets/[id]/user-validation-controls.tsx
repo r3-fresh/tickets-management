@@ -79,7 +79,7 @@ export function UserValidationControls({ ticketId }: UserValidationControlsProps
                         
                         <div className="px-5 py-4">
                             <p className="text-sm text-muted-foreground mb-4 leading-relaxed">
-                                El responsable indicó que el ticket está resuelto. Revisa el trabajo realizado y confirma para cerrar o solicita mejoras.
+                                El responsable informó que el ticket fue resuelto. Por favor, valida el trabajo y confirma el cierre, o solicita los ajustes que consideres necesarios.
                             </p>
                             
                             <div className="flex gap-3">
