@@ -14,13 +14,13 @@ interface TicketAttachmentUploaderProps {
 }
 
 export function TicketAttachmentUploader({ ticketId }: TicketAttachmentUploaderProps) {
-    // Each mount gets its own token; we reset it after a successful link
+    // Each mount gets its own token; we reset it after a successful batch upload
     const [uploadToken, setUploadToken] = useState(() => crypto.randomUUID());
 
     const handleFilesChange = useCallback(
         async (attachmentIds: string[]) => {
-            // Called by FileUpload whenever a file finishes uploading (or is removed).
-            // We only act when there are newly uploaded files.
+            // Called whenever a file finishes uploading.
+            // We link immediately so the user sees progress in the ticket attachment list.
             if (attachmentIds.length === 0) return;
 
             const result = await addTicketAttachmentsAction(ticketId, uploadToken);
@@ -29,12 +29,17 @@ export function TicketAttachmentUploader({ ticketId }: TicketAttachmentUploaderP
                 toast.error(result.error);
             } else {
                 toast.success("Archivo adjuntado al ticket");
-                // Reset token so the next upload gets a fresh session
-                setUploadToken(crypto.randomUUID());
             }
         },
         [ticketId, uploadToken]
     );
+
+    const handleUploadComplete = useCallback(() => {
+        // Called when ALL files in the current batch have finished processing.
+        // We reset the uploader to clear the list and generate a new token.
+        // Small delay to let the user see "Complete" briefly? No, immediate is requested.
+        setUploadToken(crypto.randomUUID());
+    }, []);
 
     return (
         <div className="bg-sidebar border border-border/50 rounded-xl p-4 space-y-3">
@@ -44,8 +49,10 @@ export function TicketAttachmentUploader({ ticketId }: TicketAttachmentUploaderP
             </label>
             <Suspense fallback={<div className="h-16 animate-pulse rounded-md bg-muted" />}>
                 <FileUpload
+                    key={uploadToken}
                     uploadToken={uploadToken}
                     onFilesChange={handleFilesChange}
+                    onUploadComplete={handleUploadComplete}
                 />
             </Suspense>
         </div>

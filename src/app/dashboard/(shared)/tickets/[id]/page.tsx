@@ -24,6 +24,7 @@ import { CopyTicketButton } from "./copy-ticket-button";
 import { UserValidationControls } from "./user-validation-controls";
 import { CommentForm } from "./comment-form";
 import { TicketAttachmentUploader } from "./ticket-attachment-uploader";
+import { DeleteAttachmentButton } from "./delete-attachment-button";
 import dynamic from "next/dynamic";
 import type { Metadata } from "next";
 
@@ -190,31 +191,45 @@ export default async function TicketDetailPage({ params }: { params: Promise<{ i
                                             <p className="text-sm font-medium">Archivos adjuntos</p>
                                         </div>
                                         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                                            {ticket.attachments.map((file) => (
-                                                <a
-                                                    key={file.id}
-                                                    href={file.driveViewLink}
-                                                    target="_blank"
-                                                    rel="noopener noreferrer"
-                                                    className="flex items-center gap-3 p-3 rounded-lg border bg-background/50 hover:bg-accent/50 hover:border-accent-foreground/20 transition-all group"
-                                                >
-                                                    <div className="bg-muted p-2.5 rounded-md shrink-0 text-muted-foreground group-hover:text-foreground transition-colors">
-                                                        <AttachmentIcon mimeType={file.mimeType} />
+                                            {ticket.attachments.map((file) => {
+                                                const canDelete = isAdmin || isAgentForArea || file.uploadedById === session.user.id;
+                                                return (
+                                                    <div
+                                                        key={file.id}
+                                                        className="relative group flex items-start p-3 rounded-lg border bg-background/50 hover:bg-accent/50 hover:border-accent-foreground/20 transition-all"
+                                                    >
+                                                        <a
+                                                            href={file.driveViewLink}
+                                                            target="_blank"
+                                                            rel="noopener noreferrer"
+                                                            className="flex items-center gap-3 flex-1 min-w-0"
+                                                        >
+                                                            <div className="bg-muted p-2.5 rounded-md shrink-0 text-muted-foreground group-hover:text-foreground transition-colors">
+                                                                <AttachmentIcon mimeType={file.mimeType} />
+                                                            </div>
+                                                            <div className="flex-1 min-w-0 pr-6">
+                                                                <p className="text-sm font-medium truncate group-hover:underline decoration-muted-foreground/50 underline-offset-4 text-foreground">
+                                                                    {file.fileName}
+                                                                </p>
+                                                                <p className="text-xs text-muted-foreground">
+                                                                    {formatFileSize(file.fileSize)}
+                                                                    {file.uploadedBy && (
+                                                                        <span className="ml-1.5 opacity-70">· {file.uploadedBy.name}</span>
+                                                                    )}
+                                                                </p>
+                                                            </div>
+                                                            <ExternalLinkIcon className="h-3.5 w-3.5 text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity absolute top-3 right-3 pointer-events-none" />
+                                                        </a>
+                                                        {canDelete && (
+                                                            <DeleteAttachmentButton
+                                                                attachmentId={file.id}
+                                                                ticketId={ticketId}
+                                                                fileName={file.fileName}
+                                                            />
+                                                        )}
                                                     </div>
-                                                    <div className="flex-1 min-w-0 pr-2">
-                                                        <p className="text-sm font-medium truncate group-hover:underline decoration-muted-foreground/50 underline-offset-4 text-foreground">
-                                                            {file.fileName}
-                                                        </p>
-                                                        <p className="text-xs text-muted-foreground">
-                                                            {formatFileSize(file.fileSize)}
-                                                            {file.uploadedBy && (
-                                                                <span className="ml-1.5 opacity-70">· {file.uploadedBy.name}</span>
-                                                            )}
-                                                        </p>
-                                                    </div>
-                                                    <ExternalLinkIcon className="h-3.5 w-3.5 text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity" />
-                                                </a>
-                                            ))}
+                                                );
+                                            })}
                                         </div>
                                     </div>
                                 </>

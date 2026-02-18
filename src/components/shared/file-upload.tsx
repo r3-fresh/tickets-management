@@ -13,9 +13,10 @@ registerPlugin(FilePondPluginFileValidateSize, FilePondPluginFileValidateType);
 interface FileUploadProps {
     uploadToken: string;
     onFilesChange?: (attachmentIds: string[]) => void;
+    onUploadComplete?: () => void;
 }
 
-export function FileUpload({ uploadToken, onFilesChange }: FileUploadProps) {
+export function FileUpload({ uploadToken, onFilesChange, onUploadComplete }: FileUploadProps) {
     const [files, setFiles] = useState<File[]>([]);
     const attachmentIdsRef = useRef<Set<string>>(new Set());
 
@@ -76,6 +77,9 @@ export function FileUpload({ uploadToken, onFilesChange }: FileUploadProps) {
                 labelMaxFileSize="El tamaño máximo es {filesize}"
                 labelFileTypeNotAllowed="Tipo de archivo no permitido"
                 fileValidateTypeLabelExpectedTypes="Se esperan {allButLastType} o {lastType}"
+                onprocessfiles={() => {
+                    onUploadComplete?.();
+                }}
             />
         </div>
     );

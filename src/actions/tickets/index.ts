@@ -5,3 +5,4 @@ export { updateWatchersAction } from "./watchers";
 export { markTicketAsViewed } from "./view-tracking";
 export { approveTicketValidation, rejectTicketValidation } from "./validation";
 export { addTicketAttachmentsAction } from "./add-attachments";
+export { deleteTicketAttachmentAction } from "./delete-attachment";
