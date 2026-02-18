@@ -6,6 +6,7 @@ import { getSession } from "@/lib/auth/helpers";
 import { desc, inArray } from "drizzle-orm";
 import dynamic from "next/dynamic";
 import { Breadcrumb } from "@/components/shared/breadcrumb";
+import { Skeleton } from "@/components/ui/skeleton";
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
@@ -15,7 +16,7 @@ export const metadata: Metadata = {
 const AdminTicketsTable = dynamic(
     () => import("@/components/admin/admin-tickets-table").then(mod => ({ default: mod.AdminTicketsTable })),
     {
-        loading: () => <div className="h-96 animate-pulse rounded-lg bg-muted" />,
+        loading: () => <Skeleton className="h-96 rounded-lg" />,
     }
 );
 

@@ -1,10 +1,12 @@
+import { Skeleton } from "@/components/ui/skeleton";
+
 export default function DashboardLoading() {
     return (
         <div className="space-y-6">
             {/* Header */}
             <div className="space-y-2">
-                <div className="h-8 w-48 animate-pulse rounded bg-muted" />
-                <div className="h-4 w-72 animate-pulse rounded bg-muted" />
+                <Skeleton className="h-8 w-48" />
+                <Skeleton className="h-4 w-72" />
             </div>
 
             {/* Stats cards */}
@@ -12,16 +14,16 @@ export default function DashboardLoading() {
                 {Array.from({ length: 4 }).map((_, i) => (
                     <div key={i} className="rounded-lg border bg-card p-6 space-y-3">
                         <div className="flex items-center justify-between">
-                            <div className="h-4 w-24 animate-pulse rounded bg-muted" />
-                            <div className="h-8 w-8 animate-pulse rounded-full bg-muted" />
+                            <Skeleton className="h-4 w-24" />
+                            <Skeleton className="h-8 w-8 rounded-full" />
                         </div>
-                        <div className="h-8 w-16 animate-pulse rounded bg-muted" />
+                        <Skeleton className="h-8 w-16" />
                     </div>
                 ))}
             </div>
 
             {/* Content area */}
-            <div className="h-64 animate-pulse rounded-lg bg-muted" />
+            <Skeleton className="h-64 rounded-lg" />
         </div>
     );
 }

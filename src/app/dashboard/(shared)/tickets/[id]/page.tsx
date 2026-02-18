@@ -11,6 +11,7 @@ import { StatusBadge } from "@/components/shared/status-badge";
 import { PriorityBadge } from "@/components/shared/priority-badge";
 import { UserAvatar } from "@/components/shared/user-avatar";
 import { Breadcrumb } from "@/components/shared/breadcrumb";
+import { Skeleton } from "@/components/ui/skeleton";
 import {
     FileIcon, ImageIcon, FileTextIcon, FileSpreadsheetIcon, FilmIcon, ExternalLinkIcon, PaperclipIcon,
     MessageSquareIcon, FileText, ChevronDown, Monitor, User, Clock, Calendar, Hash, Tag, ArrowRight, Eye
@@ -47,7 +48,7 @@ function AttachmentIcon({ mimeType }: { mimeType: string }) {
 
 const RichTextEditor = dynamic(
     () => import("@/components/shared/rich-text-editor").then(mod => ({ default: mod.RichTextEditor })),
-    { loading: () => <div className="h-24 animate-pulse rounded-md bg-muted" /> }
+    { loading: () => <Skeleton className="h-24 rounded-md" /> }
 );
 
 export async function generateMetadata({ params }: { params: Promise<{ id: string }> }): Promise<Metadata> {

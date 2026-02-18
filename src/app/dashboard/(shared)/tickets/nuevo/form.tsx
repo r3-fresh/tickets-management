@@ -6,6 +6,7 @@ import { createTicketSchema, CreateTicketSchema } from "@/lib/validation/schemas
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
+import { Skeleton } from "@/components/ui/skeleton";
 import { toast } from "sonner";
 import { createTicketAction } from "@/actions/tickets";
 import { useState, useTransition, useMemo, lazy, Suspense } from "react";
@@ -569,7 +570,7 @@ export function NewTicketForm({
                                         <p className="text-xs text-muted-foreground mb-3">
                                             Adjunta capturas de pantalla, documentos u otros archivos relevantes. Máximo 50 MB por archivo.
                                         </p>
-                                        <Suspense fallback={<div className="h-20 animate-pulse rounded-md bg-muted" />}>
+                                        <Suspense fallback={<Skeleton className="h-20 rounded-md" />}>
                                             <FileUpload uploadToken={uploadToken} />
                                         </Suspense>
                                     </div>

@@ -1,22 +1,24 @@
+import { Skeleton } from "@/components/ui/skeleton";
+
 export default function MisTicketsLoading() {
     return (
         <div className="space-y-6">
             {/* Breadcrumb */}
-            <div className="h-4 w-28 animate-pulse rounded bg-muted" />
+            <Skeleton className="h-4 w-28" />
 
             {/* Header */}
             <div className="flex justify-between items-start">
                 <div className="space-y-2">
-                    <div className="h-8 w-40 animate-pulse rounded bg-muted" />
-                    <div className="h-4 w-64 animate-pulse rounded bg-muted" />
+                    <Skeleton className="h-8 w-40" />
+                    <Skeleton className="h-4 w-64" />
                 </div>
-                <div className="h-9 w-40 animate-pulse rounded-md bg-muted" />
+                <Skeleton className="h-9 w-40" />
             </div>
 
             {/* Filters skeleton */}
             <div className="flex flex-wrap gap-3">
                 {Array.from({ length: 3 }).map((_, i) => (
-                    <div key={i} className="h-9 w-32 animate-pulse rounded-md bg-muted" />
+                    <Skeleton key={i} className="h-9 w-32" />
                 ))}
             </div>
 
@@ -25,7 +27,7 @@ export default function MisTicketsLoading() {
                 <div className="border-b p-4">
                     <div className="grid grid-cols-6 gap-4">
                         {Array.from({ length: 6 }).map((_, i) => (
-                            <div key={i} className="h-4 animate-pulse rounded bg-muted" />
+                            <Skeleton key={i} className="h-4" />
                         ))}
                     </div>
                 </div>
@@ -33,7 +35,7 @@ export default function MisTicketsLoading() {
                     <div key={i} className="border-b p-4 last:border-b-0">
                         <div className="grid grid-cols-6 gap-4">
                             {Array.from({ length: 6 }).map((_, j) => (
-                                <div key={j} className="h-4 animate-pulse rounded bg-muted" />
+                                <Skeleton key={j} className="h-4" />
                             ))}
                         </div>
                     </div>

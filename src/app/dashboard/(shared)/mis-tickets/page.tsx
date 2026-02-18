@@ -6,6 +6,7 @@ import { requireAuth } from "@/lib/auth/helpers";
 import { eq, inArray } from "drizzle-orm";
 import dynamic from "next/dynamic";
 import { Breadcrumb } from "@/components/shared/breadcrumb";
+import { Skeleton } from "@/components/ui/skeleton";
 import Link from "next/link";
 import type { Metadata } from "next";
 
@@ -16,7 +17,7 @@ export const metadata: Metadata = {
 const TicketsList = dynamic(
     () => import("@/components/tickets/tickets-list").then(mod => ({ default: mod.TicketsList })),
     {
-        loading: () => <div className="h-96 animate-pulse rounded-lg bg-muted" />,
+        loading: () => <Skeleton className="h-96 rounded-lg" />,
     }
 );
 import { Button } from "@/components/ui/button";

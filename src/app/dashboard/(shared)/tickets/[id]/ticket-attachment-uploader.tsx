@@ -4,6 +4,7 @@ import { useState, lazy, Suspense, useCallback } from "react";
 import { addTicketAttachmentsAction } from "@/actions/tickets";
 import { Paperclip } from "lucide-react";
 import { toast } from "sonner";
+import { Skeleton } from "@/components/ui/skeleton";
 
 const FileUpload = lazy(() =>
     import("@/components/shared/file-upload").then(mod => ({ default: mod.FileUpload }))
@@ -47,7 +48,7 @@ export function TicketAttachmentUploader({ ticketId }: TicketAttachmentUploaderP
                 <Paperclip className="w-3 h-3" />
                 Archivos adjuntos
             </label>
-            <Suspense fallback={<div className="h-16 animate-pulse rounded-md bg-muted" />}>
+            <Suspense fallback={<Skeleton className="h-16 rounded-md" />}>
                 <FileUpload
                     key={uploadToken}
                     uploadToken={uploadToken}

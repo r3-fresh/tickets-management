@@ -4,6 +4,7 @@ import { asc } from "drizzle-orm";
 import { getAppSetting } from "@/db/queries";
 import dynamic from "next/dynamic";
 import { Breadcrumb } from "@/components/shared/breadcrumb";
+import { Skeleton } from "@/components/ui/skeleton";
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
@@ -13,7 +14,7 @@ export const metadata: Metadata = {
 const AdminSettingsTabs = dynamic(
     () => import("@/components/admin/admin-settings-tabs").then(mod => ({ default: mod.AdminSettingsTabs })),
     {
-        loading: () => <div className="h-96 animate-pulse rounded-lg bg-muted" />,
+        loading: () => <Skeleton className="h-96 rounded-lg" />,
     }
 );
 
