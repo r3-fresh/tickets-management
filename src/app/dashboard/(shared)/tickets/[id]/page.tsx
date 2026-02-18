@@ -120,7 +120,7 @@ export default async function TicketDetailPage({ params }: { params: Promise<{ i
     const canComment = !isTicketClosed;
 
     return (
-        <div className="mx-auto max-w-[1600px] space-y-8 pb-20 animate-in fade-in duration-500">
+        <div className="mx-auto max-w-[1600px] space-y-8 pb-10 animate-in fade-in duration-500">
             <MarkAsViewed ticketId={ticketId} />
 
             {/* Top Navigation */}
@@ -316,7 +316,7 @@ export default async function TicketDetailPage({ params }: { params: Promise<{ i
 
                         {/* Empty State */}
                         {ticket.comments.length === 0 && (
-                            <div className="text-center py-12 px-4 border border-dashed rounded-lg bg-muted/5">
+                            <div className="text-center py-8 px-4 border border-dashed rounded-lg bg-muted/5">
                                 <div className="mx-auto h-12 w-12 rounded-full bg-muted/20 flex items-center justify-center mb-3">
                                     <MessageSquareIcon className="h-6 w-6 text-muted-foreground/50" />
                                 </div>
