@@ -51,7 +51,7 @@ export function getTicketCreatedTemplate(params: TicketCreatedTemplateParams): s
         <p style="margin: 15px 0;">Recuerda que puedes dar seguimiento a tu requerimiento a través del siguiente botón:</p>
         
         <div style="text-align: center; margin: 20px 0;">
-            <a href="${params.ticketUrl}" style="display: inline-block; background-color: #4F46E5; color: white; padding: 12px 30px; text-decoration: none; border-radius: 6px; font-weight: bold;">Ver detalle del ticket</a>
+            <a href="${params.ticketUrl}" style="display: inline-block; background-color: #4F46E5; color: white; padding: 12px 30px; text-decoration: none; border-radius: 6px; font-weight: bold;">Ver detalles del ticket</a>
         </div>
     `;
 

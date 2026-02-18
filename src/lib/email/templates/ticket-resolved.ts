@@ -31,14 +31,7 @@ export function getTicketResolvedTemplate(params: TicketResolvedTemplateParams):
             </p>
         </div>
 
-        <div style="background-color: #F9FAFB; padding: 15px; margin: 20px 0;">
-            <strong>Resumen:</strong>
-            <ul style="margin: 10px 0; padding-left: 20px;">
-                <li style="margin: 8px 0;"><strong>Título:</strong> ${title}</li>
-                <li style="margin: 8px 0;"><strong>Categoría:</strong> ${category}</li>
-                <li style="margin: 8px 0;"><strong>Subcategoría:</strong> ${subcategory}</li>
-            </ul>
-        </div>
+
         
         <div style="text-align: center; margin: 20px 0;">
             <a href="${params.ticketUrl}" style="display: inline-block; background-color: #4F46E5; color: white; padding: 12px 30px; text-decoration: none; border-radius: 6px; font-weight: bold;">Ver detalles del ticket</a>

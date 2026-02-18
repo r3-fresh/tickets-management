@@ -30,14 +30,7 @@ export function getTicketAssignedTemplate(params: TicketAssignedTemplateParams):
             <p style="margin: 0; color: #1E40AF; font-weight: 500;">Tu solicitud está siendo atendida por nuestro equipo de soporte especializado.</p>
         </div>
 
-        <div style="background-color: #F9FAFB; padding: 15px; margin: 20px 0;">
-            <strong>Detalles:</strong>
-            <ul style="margin: 10px 0; padding-left: 20px;">
-                <li style="margin: 8px 0;"><strong>Título:</strong> ${title}</li>
-                <li style="margin: 8px 0;"><strong>Categoría:</strong> ${category}</li>
-                <li style="margin: 8px 0;"><strong>Subcategoría:</strong> ${subcategory}</li>
-            </ul>
-        </div>
+
         
         <p style="margin: 15px 0;">Estamos trabajando en tu solicitud y te contactaremos pronto si necesitamos más información. Puedes dar seguimiento en el siguiente botón:</p>
         

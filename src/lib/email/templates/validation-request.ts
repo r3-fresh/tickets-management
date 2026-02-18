@@ -29,15 +29,7 @@ export function getValidationRequestTemplate(params: ValidationRequestTemplatePa
         <p style="margin: 15px 0;">El agente encargado ha culminado la atención del ticket <strong>${ticketCode}</strong> 
         y requiere tu validación.</p>
         
-        <div style="background-color: #F9FAFB; border-left: 4px solid #4F46E5; padding: 15px; margin: 20px 0;">
-            <strong>Detalles del ticket:</strong>
-            <ul style="margin: 10px 0; padding-left: 20px;">
-                <li style="margin: 8px 0;"><strong>Código:</strong> ${ticketCode}</li>
-                <li style="margin: 8px 0;"><strong>Título:</strong> ${title}</li>
-                <li style="margin: 8px 0;"><strong>Categoría:</strong> ${category}</li>
-                <li style="margin: 8px 0;"><strong>Subcategoría:</strong> ${subcategory}</li>
-            </ul>
-        </div>
+
         
         ${message ? `
         <div style="margin: 20px 0; padding: 15px; background-color: #f3f4f6; border-radius: 4px; border: 1px solid #e5e7eb;">
