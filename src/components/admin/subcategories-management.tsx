@@ -331,8 +331,10 @@ export function SubcategoriesManagement({ initialSubcategories, categories }: Su
                                             {subcategory.category?.name || categories.find(c => c.id === subcategory.categoryId)?.name}
                                         </TableCell>
                                         <TableCell className="font-medium">{subcategory.name}</TableCell>
-                                        <TableCell className="text-sm text-muted-foreground">
-                                            {subcategory.description || "-"}
+                                        <TableCell className="text-sm text-muted-foreground max-w-[250px]">
+                                            <span className="block truncate" title={subcategory.description || ""}>
+                                                {subcategory.description || "-"}
+                                            </span>
                                         </TableCell>
                                         <TableCell>
                                             <Switch

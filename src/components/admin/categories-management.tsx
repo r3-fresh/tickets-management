@@ -320,8 +320,10 @@ export function AdminCategoriesManagement({
                                             ? attentionAreas.find((a) => a.id === category.attentionAreaId)?.name || "N/A"
                                             : "Todas"}
                                     </TableCell>
-                                    <TableCell className="text-sm text-muted-foreground">
-                                        {category.description || "-"}
+                                    <TableCell className="text-sm text-muted-foreground max-w-[250px]">
+                                        <span className="block truncate" title={category.description || ""}>
+                                            {category.description || "-"}
+                                        </span>
                                     </TableCell>
                                     <TableCell className="text-sm">
                                         {category.subcategories?.length || 0} subcategoría(s)
