@@ -48,7 +48,6 @@ export function Pagination({
                         value={itemsPerPage.toString()}
                         onValueChange={(value) => {
                             onItemsPerPageChange(Number(value));
-                            onPageChange(1); // Reset to first page when changing items per page
                         }}
                     >
                         <SelectTrigger className="h-8 w-[70px]">

@@ -91,7 +91,7 @@ export function TicketsList({
     }, [updateParams]);
 
     const handleItemsPerPageChange = useCallback((perPage: number) => {
-        updateParams({ perPage: perPage.toString(), page: "" });
+        updateParams({ perPage: perPage.toString(), page: "1" });
     }, [updateParams]);
 
     // Debounce de búsqueda: actualiza URL después de 400ms sin escribir

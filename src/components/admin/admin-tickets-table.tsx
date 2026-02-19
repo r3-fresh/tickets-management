@@ -73,7 +73,7 @@ export function AdminTicketsTable({ tickets, totalCount, assignedUsers, categori
     }, [updateParams]);
 
     const handleItemsPerPageChange = useCallback((perPage: number) => {
-        updateParams({ perPage: perPage.toString(), page: "" });
+        updateParams({ perPage: perPage.toString(), page: "1" });
     }, [updateParams]);
 
     const debouncedSearch = useDebounce((value: string) => {
