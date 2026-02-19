@@ -39,7 +39,7 @@ export function TicketAttachmentUploader({ ticketId }: TicketAttachmentUploaderP
         // Wait briefly so the user can see the FilePond success state before resetting.
         setTimeout(() => {
             setUploadToken(crypto.randomUUID());
-        }, 3000);
+        }, 2000);
     }, []);
 
     return (
