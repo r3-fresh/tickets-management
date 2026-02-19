@@ -11,7 +11,7 @@ export const metadata: Metadata = {
 };
 
 const NewTicketForm = dynamic(
-    () => import("./form").then(mod => ({ default: mod.NewTicketForm }))
+    () => import("@/components/tickets/ticket-form").then(mod => ({ default: mod.NewTicketForm }))
 );
 
 export default async function NuevoTicketPage() {

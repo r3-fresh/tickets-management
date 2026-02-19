@@ -1,9 +1,9 @@
 import { Suspense } from "react";
 import { getSession } from "@/lib/auth/helpers";
 import { redirect } from "next/navigation";
-import { AdminDashboard } from "@/components/dashboards/admin-dashboard";
-import { AgentDashboard } from "@/components/dashboards/agent-dashboard";
-import { UserDashboard } from "@/components/dashboards/user-dashboard";
+import { AdminDashboard } from "@/components/dashboard/admin-dashboard";
+import { AgentDashboard } from "@/components/dashboard/agent-dashboard";
+import { UserDashboard } from "@/components/dashboard/user-dashboard";
 import { Skeleton } from "@/components/ui/skeleton";
 import type { Metadata } from "next";
 

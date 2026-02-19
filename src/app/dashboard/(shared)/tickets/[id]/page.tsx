@@ -17,15 +17,15 @@ import {
     MessageSquareIcon, FileText, ChevronDown, Monitor, User, Clock, Calendar, Hash, Tag, ArrowRight, Eye
 } from "lucide-react";
 import { cn } from "@/lib/utils/cn";
-import { AdminTicketControls } from "./admin-ticket-controls";
-import { MarkAsViewed } from "./mark-as-viewed";
-import { WatchersManager } from "./watchers-manager";
-import { CancelTicketButton } from "./cancel-ticket-button";
-import { CopyTicketButton } from "./copy-ticket-button";
-import { UserValidationControls } from "./user-validation-controls";
-import { CommentForm } from "./comment-form";
-import { TicketAttachmentUploader } from "./ticket-attachment-uploader";
-import { DeleteAttachmentButton } from "./delete-attachment-button";
+import { AdminTicketControls } from "@/components/tickets/admin-ticket-controls";
+import { MarkAsViewed } from "@/components/tickets/mark-as-viewed";
+import { WatchersManager } from "@/components/tickets/watchers-manager";
+import { CancelTicketButton } from "@/components/tickets/cancel-ticket-button";
+import { CopyTicketButton } from "@/components/tickets/copy-ticket-button";
+import { UserValidationControls } from "@/components/tickets/user-validation-controls";
+import { CommentForm } from "@/components/tickets/comment-form";
+import { TicketAttachmentUploader } from "@/components/tickets/ticket-attachment-uploader";
+import { DeleteAttachmentButton } from "@/components/tickets/delete-attachment-button";
 import dynamic from "next/dynamic";
 import type { Metadata } from "next";
 

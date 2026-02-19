@@ -1,7 +1,7 @@
 "use client";
 
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { SettingsForm } from "./form";
+import { SettingsForm } from "./config-form";
 import { AgentCategoriesManagement } from "@/components/agent/categories-management";
 import { AgentSubcategoriesManagement } from "@/components/agent/subcategories-management";
 

@@ -2,7 +2,7 @@ import { db } from "@/db";
 import { attentionAreas, ticketCategories, ticketSubcategories } from "@/db/schema";
 import { getSession } from "@/lib/auth/helpers";
 import { eq, asc } from "drizzle-orm";
-import { SettingsTabs } from "./settings-tabs";
+import { SettingsTabs } from "@/components/agent/config-settings-tabs";
 import { Breadcrumb } from "@/components/shared/breadcrumb";
 import type { Metadata } from "next";
 

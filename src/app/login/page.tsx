@@ -1,7 +1,7 @@
 import { auth } from "@/lib/auth/server";
 import { headers } from "next/headers";
 import { redirect } from "next/navigation";
-import { LoginForm } from "./login-form";
+import { LoginForm } from "@/components/auth/login-form";
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
