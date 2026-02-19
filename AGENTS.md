@@ -217,7 +217,9 @@ if (!result.success) {
 - `@radix-ui/*` - Componentes primitivos accesibles
 - `sonner` - Notificaciones toast
 - `lucide-react` - Iconos
-- `date-fns` - Manejo de fechas
+- `dayjs` - Manejo de fechas
+- `tiptap` - Editor de texto enriquecido
+- `filepond` - Gestión de archivos
 
 ## 🚨 Notas Importantes
 
@@ -240,3 +242,10 @@ if (!result.success) {
   - Acciones de admin: 30 por minuto por admin
 - Rate limiter ubicado en: `src/lib/utils/rate-limit.ts`
 - Para crear nuevos limiters: `createRateLimiter('MODERATE')` o `createRateLimiter('STRICT')`
+
+## 📧 Sistema de Correos
+
+- Se utiliza **Gmail API** (googleapis) para el envío de correos
+- Configuración en `src/lib/email/gmail-client.ts`
+- Plantillas de correo en `src/lib/email/templates/`
+- El envío de correos usa `after()` para no bloquear respuestas

@@ -15,6 +15,7 @@ Sistema de gestión de tickets construido con **Next.js 16**, **TypeScript**, **
 - 🎫 **Tickets**: Estados, prioridades, asignación y seguimiento
 - 💬 **Comentarios**: Sistema en tiempo real con notificaciones
 - 📊 **Dashboards**: Personalizados por rol con estadísticas
+- 📧 **Emails**: Gmail API para notificaciones
 - 🎨 **UI Moderna**: Tailwind CSS + shadcn/ui + modo oscuro
 - ⚡ **Performance**: Direct rendering, zero delay
 - 🛡️ **Seguridad**: Rate limiting, validación Zod, CSRF protection
