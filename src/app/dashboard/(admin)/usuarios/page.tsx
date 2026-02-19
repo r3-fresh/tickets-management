@@ -20,7 +20,7 @@ export default async function UsuariosPage({ searchParams }: PageProps) {
     const params = await searchParams;
     const search = typeof params.search === "string" ? params.search : undefined;
     const page = typeof params.page === "string" ? Number(params.page) : 1;
-    const perPage = typeof params.perPage === "string" ? Number(params.perPage) : 25;
+    const perPage = typeof params.perPage === "string" ? Number(params.perPage) : 10;
 
     const { getActiveAttentionAreas } = await import("@/actions/config/get-config");
     const [paginatedUsers, attentionAreas] = await Promise.all([

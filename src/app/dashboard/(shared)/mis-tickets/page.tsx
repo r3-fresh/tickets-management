@@ -33,7 +33,7 @@ export default async function MisTicketsPage({ searchParams }: PageProps) {
         dateFrom: typeof params.dateFrom === "string" ? params.dateFrom : undefined,
         dateTo: typeof params.dateTo === "string" ? params.dateTo : undefined,
         page: typeof params.page === "string" ? Number(params.page) : 1,
-        perPage: typeof params.perPage === "string" ? Number(params.perPage) : 25,
+        perPage: typeof params.perPage === "string" ? Number(params.perPage) : 10,
     };
 
     const baseWhere = eq(tickets.createdById, session.user.id);

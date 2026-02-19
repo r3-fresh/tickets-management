@@ -38,7 +38,7 @@ export function RolesTable({ users, totalCount, currentUserId, attentionAreas }:
     const searchParams = useSearchParams();
 
     const currentPage = Number(searchParams.get("page") ?? "1");
-    const itemsPerPage = Number(searchParams.get("perPage") ?? "25");
+    const itemsPerPage = Number(searchParams.get("perPage") ?? "10");
     const searchQuery = searchParams.get("search") ?? "";
 
     const updateParams = useCallback((updates: Record<string, string>) => {
