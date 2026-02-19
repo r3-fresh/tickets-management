@@ -104,7 +104,7 @@ export function TicketsList({
     }, [debouncedSearch]);
 
     return (
-        <div className="space-y-4">
+        <div className="flex flex-col gap-4">
             {!hideHeader && (
                 <div className="flex items-center justify-between">
                     <h1 className="text-3xl font-bold tracking-tight">
@@ -123,14 +123,12 @@ export function TicketsList({
 
             {!hideFilters && (
                 <>
-                    <div className="mb-4">
-                        <Input
-                            placeholder="Buscar por código o título..."
-                            defaultValue={searchQuery}
-                            onChange={handleSearchChange}
-                            className="max-w-sm bg-transparent"
-                        />
-                    </div>
+                    <Input
+                        placeholder="Buscar por código o título..."
+                        defaultValue={searchQuery}
+                        onChange={handleSearchChange}
+                        className="max-w-sm bg-transparent"
+                    />
 
                     <TicketFilters
                         assignedUsers={assignedUsers ?? []}

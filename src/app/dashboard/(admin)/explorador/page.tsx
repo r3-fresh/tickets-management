@@ -59,7 +59,7 @@ export default async function ExploradorPage({ searchParams }: PageProps) {
     });
 
     return (
-        <div className="space-y-6">
+        <div className="flex flex-col gap-6">
             <Breadcrumb items={[{ label: "Explorador de tickets" }]} />
 
             <div>

@@ -85,15 +85,13 @@ export function AdminTicketsTable({ tickets, totalCount, assignedUsers, categori
     }, [debouncedSearch]);
 
     return (
-        <div className="space-y-4">
-            <div className="mb-4">
-                <Input
-                    placeholder="Buscar por código o título..."
-                    defaultValue={searchQuery}
-                    onChange={handleSearchChange}
-                    className="max-w-sm bg-transparent"
-                />
-            </div>
+        <div className="flex flex-col gap-4">
+            <Input
+                placeholder="Buscar por código o título..."
+                defaultValue={searchQuery}
+                onChange={handleSearchChange}
+                className="max-w-sm bg-transparent"
+            />
 
             <TicketFilters assignedUsers={assignedUsers} categories={categories} />
 

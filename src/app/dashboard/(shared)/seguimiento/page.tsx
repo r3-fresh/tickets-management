@@ -68,7 +68,7 @@ export default async function SeguimientoPage({ searchParams }: PageProps) {
     });
 
     return (
-        <div className="space-y-6">
+        <div className="flex flex-col gap-6">
             {/* Breadcrumbs */}
             <Breadcrumb items={[{ label: "En seguimiento" }]} />
 
