@@ -246,8 +246,10 @@ export function AgentCategoriesManagement({ categories }: AgentCategoriesManagem
                                 categories.map((category) => (
                                     <TableRow key={category.id}>
                                         <TableCell className="font-medium">{category.name}</TableCell>
-                                        <TableCell className="text-sm text-muted-foreground">
-                                            {category.description || "-"}
+                                        <TableCell className="text-sm text-muted-foreground max-w-[250px]">
+                                            <span className="block truncate" title={category.description || ""}>
+                                                {category.description || "-"}
+                                            </span>
                                         </TableCell>
                                         <TableCell className="text-sm">
                                             {category.subcategories?.length || 0} subcategoría(s)

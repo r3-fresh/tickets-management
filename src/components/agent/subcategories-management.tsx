@@ -313,8 +313,10 @@ export function AgentSubcategoriesManagement({
                                             {subcategory.category?.name || "N/A"}
                                         </TableCell>
                                         <TableCell>{subcategory.name}</TableCell>
-                                        <TableCell className="text-sm text-muted-foreground">
-                                            {subcategory.description || "-"}
+                                        <TableCell className="text-sm text-muted-foreground max-w-[250px]">
+                                            <span className="block truncate" title={subcategory.description || ""}>
+                                                {subcategory.description || "-"}
+                                            </span>
                                         </TableCell>
                                         <TableCell>
                                             <Switch
