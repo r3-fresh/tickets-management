@@ -118,12 +118,12 @@ export default function DashboardLayout({
     }
 
     return (
-        <div className="flex h-screen bg-background">
+        <div className="flex h-dvh overflow-hidden bg-background">
             {/* --- DESKTOP SIDEBAR --- */}
             <aside
                 aria-label="Menú principal"
                 className={cn(
-                    "hidden md:flex flex-col transition-all duration-300 ease-in-out z-20 border-r border-sidebar-border",
+                    "hidden md:flex flex-col shrink-0 h-full overflow-hidden transition-all duration-300 ease-in-out z-20 border-r border-sidebar-border",
                     "bg-sidebar text-sidebar-foreground",
                     isCollapsed ? "w-20" : "w-72"
                 )}
@@ -319,7 +319,7 @@ export default function DashboardLayout({
             <aside
                 aria-label="Menú principal"
                 className={cn(
-                    "fixed inset-y-0 left-0 z-50 w-72 transform bg-sidebar text-sidebar-foreground shadow-2xl transition-transform duration-300 ease-in-out md:hidden",
+                    "fixed inset-y-0 left-0 z-50 w-72 h-full overflow-hidden transform bg-sidebar text-sidebar-foreground shadow-2xl transition-transform duration-300 ease-in-out md:hidden",
                     isSidebarOpen ? "translate-x-0" : "-translate-x-full"
                 )}
             >
@@ -334,7 +334,7 @@ export default function DashboardLayout({
                     </button>
                 </div>
 
-                <div className="flex flex-col h-full overflow-y-auto pb-20">
+                <div className="flex flex-col h-full overflow-y-auto">
                     {/* Mobile Profile */}
                     <div className="p-6 border-b border-sidebar-border flex flex-col items-center relative">
                         <div className="absolute top-4 right-4">
@@ -439,7 +439,7 @@ export default function DashboardLayout({
             </aside>
 
             {/* --- MAIN HEADER (Mobile Only) & CONTENT --- */}
-            <div className="flex flex-1 flex-col overflow-hidden min-w-0">
+            <div className="flex flex-1 flex-col min-w-0 overflow-hidden">
                 <header className="flex h-16 shrink-0 items-center justify-between border-b border-border bg-card px-4 shadow-sm md:hidden">
                     <button
                         onClick={() => setIsSidebarOpen(true)}
@@ -453,7 +453,7 @@ export default function DashboardLayout({
                     <div className="w-6" />
                 </header>
 
-                <main className="flex-1 min-h-0 overflow-y-auto p-4 lg:p-8">
+                <main className="flex-1 overflow-y-auto p-4 lg:p-8">
                     {children}
                 </main>
             </div>
