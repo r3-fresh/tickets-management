@@ -36,9 +36,10 @@ export function TicketAttachmentUploader({ ticketId }: TicketAttachmentUploaderP
 
     const handleUploadComplete = useCallback(() => {
         // Called when ALL files in the current batch have finished processing.
-        // We reset the uploader to clear the list and generate a new token.
-        // Small delay to let the user see "Complete" briefly? No, immediate is requested.
-        setUploadToken(crypto.randomUUID());
+        // Wait briefly so the user can see the FilePond success state before resetting.
+        setTimeout(() => {
+            setUploadToken(crypto.randomUUID());
+        }, 3000);
     }, []);
 
     return (
