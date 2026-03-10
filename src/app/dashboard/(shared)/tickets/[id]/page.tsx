@@ -80,8 +80,6 @@ export default async function TicketDetailPage({ params }: { params: Promise<{ i
             createdBy: true,
             category: true,
             subcategory: true,
-            campus: true,
-            area: true,
             attentionArea: true,
             assignedTo: true,
             attachments: {
@@ -374,10 +372,6 @@ export default async function TicketDetailPage({ params }: { params: Promise<{ i
                             </div>
 
                             <div className="space-y-4">
-                                <div>
-                                    <label className="text-[11px] font-medium text-muted-foreground uppercase block mb-1">Campus</label>
-                                    <div className="text-sm text-foreground">{ticket.campus?.name || "—"}</div>
-                                </div>
                                 <div>
                                     <label className="text-[11px] font-medium text-muted-foreground uppercase block mb-1">Área</label>
                                     <div className="text-sm text-foreground">{ticket.attentionArea?.name || "—"}</div>

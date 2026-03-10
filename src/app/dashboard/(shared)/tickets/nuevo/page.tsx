@@ -3,7 +3,7 @@ import { users } from "@/db/schema";
 import { requireAuth } from "@/lib/auth/helpers";
 import { getAppSetting } from "@/db/queries";
 import dynamic from "next/dynamic";
-import { getActiveCategories, getActiveCampuses, getActiveWorkAreas, getActiveAttentionAreas } from "@/actions/config/get-config";
+import { getActiveCategories, getActiveAttentionAreas } from "@/actions/config/get-config";
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
@@ -22,8 +22,6 @@ export default async function NuevoTicketPage() {
         availableUsers,
         allowNewTicketsSetting,
         categories,
-        campuses,
-        workAreas,
         attentionAreas,
         disabledMessage,
     ] = await Promise.all([
@@ -35,8 +33,6 @@ export default async function NuevoTicketPage() {
         }).from(users),
         getAppSetting("allow_new_tickets"),
         getActiveCategories(),
-        getActiveCampuses(),
-        getActiveWorkAreas(),
         getActiveAttentionAreas(),
         getAppSetting("ticket_disabled_message"),
     ]);
@@ -48,8 +44,6 @@ export default async function NuevoTicketPage() {
             availableUsers={availableUsers}
             allowNewTickets={allowNewTickets}
             categories={categories}
-            campuses={campuses}
-            workAreas={workAreas}
             attentionAreas={attentionAreas}
             disabledMessage={disabledMessage}
         />

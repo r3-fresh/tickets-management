@@ -30,8 +30,6 @@ interface Ticket {
     subcategoryId: number | null;
     categoryId: number | null;
     categoryName: string | null;
-    areaId: number | null;
-    campusId: number | null;
     priority: string;
     status: string;
     createdAt: Date;

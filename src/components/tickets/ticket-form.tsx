@@ -54,16 +54,6 @@ interface Category {
     }>;
 }
 
-interface Campus {
-    id: number;
-    name: string;
-}
-
-interface WorkArea {
-    id: number;
-    name: string;
-}
-
 interface AttentionArea {
     id: number;
     name: string;
@@ -74,8 +64,6 @@ interface NewTicketFormProps {
     availableUsers: User[];
     allowNewTickets?: boolean;
     categories: Category[];
-    campuses: Campus[];
-    workAreas: WorkArea[];
     attentionAreas: AttentionArea[];
     disabledMessage?: string | null;
 }
@@ -131,7 +119,6 @@ function useFormProgress(formValues: Partial<CreateTicketSchema>, hasDescription
             { label: "Clasificación", done: Boolean(formValues.attentionAreaId && formValues.categoryId) },
             { label: "Descripción", done: hasDescription },
             { label: "Prioridad", done: Boolean(formValues.priority) },
-            { label: "Ubicación", done: Boolean(formValues.areaId || formValues.campusId) },
         ];
         const completed = fields.filter(f => f.done).length;
         return { fields, completed, total: fields.length };
@@ -142,8 +129,6 @@ export function NewTicketForm({
     availableUsers,
     allowNewTickets = true,
     categories,
-    campuses,
-    workAreas,
     attentionAreas,
     disabledMessage
 }: NewTicketFormProps) {
@@ -455,80 +440,7 @@ export function NewTicketForm({
                                     </div>
                                 </div>
 
-                                {/* ── Card 2: Ubicación ── */}
-                                <div className="mt-5 rounded-xl border border-border bg-card p-5">
-                                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                                        <FormField
-                                            control={form.control}
-                                            name="areaId"
-                                            render={({ field }) => (
-                                                <FormItem>
-                                                    <FormLabel className="text-sm font-medium">
-                                                        Área de procedencia <span className="text-muted-foreground">*</span>
-                                                    </FormLabel>
-                                                    <p className="text-xs text-muted-foreground mb-1">
-                                                        El departamento o área al que perteneces
-                                                    </p>
-                                                    <Select
-                                                        onValueChange={(val) => field.onChange(val ? Number(val) : undefined)}
-                                                        value={field.value?.toString() ?? ""}
-                                                        required
-                                                    >
-                                                        <FormControl>
-                                                            <SelectTrigger className="text-xs border-border/80">
-                                                                <SelectValue placeholder="¿De qué departamento eres?" />
-                                                            </SelectTrigger>
-                                                        </FormControl>
-                                                        <SelectContent>
-                                                            {workAreas.map((area) => (
-                                                                <SelectItem key={area.id} value={area.id.toString()} className="text-xs">
-                                                                    {area.name}
-                                                                </SelectItem>
-                                                            ))}
-                                                        </SelectContent>
-                                                    </Select>
-                                                    <FormMessage />
-                                                </FormItem>
-                                            )}
-                                        />
-
-                                        <FormField
-                                            control={form.control}
-                                            name="campusId"
-                                            render={({ field }) => (
-                                                <FormItem>
-                                                    <FormLabel className="text-sm font-medium">
-                                                        Campus <span className="text-muted-foreground">*</span>
-                                                    </FormLabel>
-                                                    <p className="text-xs text-muted-foreground mb-1">
-                                                        La sede donde te encuentras físicamente
-                                                    </p>
-                                                    <Select
-                                                        onValueChange={(val) => field.onChange(val ? Number(val) : undefined)}
-                                                        value={field.value?.toString() ?? ""}
-                                                        required
-                                                    >
-                                                        <FormControl>
-                                                            <SelectTrigger className="text-xs border-border/80">
-                                                                <SelectValue placeholder="¿En qué sede te encuentras?" />
-                                                            </SelectTrigger>
-                                                        </FormControl>
-                                                        <SelectContent>
-                                                            {campuses.map((campus) => (
-                                                                <SelectItem key={campus.id} value={campus.id.toString()} className="text-xs">
-                                                                    {campus.name}
-                                                                </SelectItem>
-                                                            ))}
-                                                        </SelectContent>
-                                                    </Select>
-                                                    <FormMessage />
-                                                </FormItem>
-                                            )}
-                                        />
-                                    </div>
-                                </div>
-
-                                {/* ── Card 3: Descripción + Archivos adjuntos (juntos al final) ── */}
+                                {/* ── Card 2: Descripción + Archivos adjuntos (juntos al final) ── */}
                                 <div className="mt-5 rounded-xl border border-border bg-card">
                                     {/* Descripción */}
                                     <div className="px-6 pt-5 pb-4">
