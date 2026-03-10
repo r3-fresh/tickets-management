@@ -33,7 +33,7 @@ export async function userCancelTicketAction(ticketId: number) {
             })
             .where(eq(tickets.id, ticketId));
 
-        revalidatePath(`/dashboard/tickets/${ticketId}`);
+        revalidatePath(`/dashboard/tickets/${ticket.ticketCode}`);
         revalidatePath("/dashboard/tickets");
         return { success: true };
     } catch (error) {

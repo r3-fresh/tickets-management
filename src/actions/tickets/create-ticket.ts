@@ -173,5 +173,5 @@ export async function createTicketAction(formData: FormData) {
     }
 
     // Redirect to ticket detail page (outside try-catch to avoid catching NEXT_REDIRECT)
-    redirect(`/dashboard/tickets/${ticketId}`);
+    redirect(`/dashboard/tickets/${ticketCode}`);
 }

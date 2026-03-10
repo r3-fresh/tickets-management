@@ -92,7 +92,7 @@ export async function approveTicketValidation(ticketId: number) {
             });
         }
 
-        revalidatePath(`/dashboard/tickets/${ticketId}`);
+        revalidatePath(`/dashboard/tickets/${ticket.ticketCode}`);
         revalidatePath("/dashboard/tickets");
         return { success: true };
     } catch (error) {
@@ -182,7 +182,7 @@ export async function rejectTicketValidation(ticketId: number) {
             });
         }
 
-        revalidatePath(`/dashboard/tickets/${ticketId}`);
+        revalidatePath(`/dashboard/tickets/${ticket.ticketCode}`);
         revalidatePath("/dashboard/tickets");
         return { success: true };
     } catch (error) {
@@ -282,7 +282,7 @@ export async function requestValidation(ticketId: number, message?: string) {
             });
         }
 
-        revalidatePath(`/dashboard/tickets/${ticketId}`);
+        revalidatePath(`/dashboard/tickets/${ticket.ticketCode}`);
         revalidatePath("/dashboard/admin/tickets");
         return { success: true };
     } catch (error) {

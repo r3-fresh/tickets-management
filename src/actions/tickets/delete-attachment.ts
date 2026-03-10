@@ -1,7 +1,7 @@
 "use server";
 
 import { db } from "@/db";
-import { ticketAttachments } from "@/db/schema";
+import { ticketAttachments, tickets } from "@/db/schema";
 import { requireAuth } from "@/lib/auth/helpers";
 import { revalidatePath } from "next/cache";
 import { eq, and } from "drizzle-orm";
@@ -43,6 +43,12 @@ export async function deleteTicketAttachmentAction(attachmentId: string, ticketI
     // Delete from DB
     await db.delete(ticketAttachments).where(eq(ticketAttachments.id, attachmentId));
 
-    revalidatePath(`/dashboard/tickets/${ticketId}`);
+    // Obtener ticketCode para revalidar la ruta correcta
+    const ticket = await db.query.tickets.findFirst({
+        where: eq(tickets.id, ticketId),
+        columns: { ticketCode: true },
+    });
+
+    revalidatePath(`/dashboard/tickets/${ticket?.ticketCode ?? ticketId}`);
     return { success: true };
 }

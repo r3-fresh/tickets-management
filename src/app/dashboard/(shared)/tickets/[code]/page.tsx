@@ -50,13 +50,11 @@ const RichTextEditor = dynamic(
     () => import("@/components/shared/rich-text-editor").then(mod => ({ default: mod.RichTextEditor }))
 );
 
-export async function generateMetadata({ params }: { params: Promise<{ id: string }> }): Promise<Metadata> {
-    const { id } = await params;
-    const ticketId = Number(id);
-    if (isNaN(ticketId)) return { title: "Ticket no encontrado" };
+export async function generateMetadata({ params }: { params: Promise<{ code: string }> }): Promise<Metadata> {
+    const { code } = await params;
 
     const ticket = await db.query.tickets.findFirst({
-        where: eq(tickets.id, ticketId),
+        where: eq(tickets.ticketCode, code),
         columns: { ticketCode: true, title: true },
     });
 
@@ -67,15 +65,12 @@ export async function generateMetadata({ params }: { params: Promise<{ id: strin
 
 /* --- Main Page Component --- */
 
-export default async function TicketDetailPage({ params }: { params: Promise<{ id: string }> }) {
+export default async function TicketDetailPage({ params }: { params: Promise<{ code: string }> }) {
     const session = await requireAuth();
-    const { id } = await params;
-    const ticketId = Number(id);
-
-    if (isNaN(ticketId)) notFound();
+    const { code } = await params;
 
     const ticket = await db.query.tickets.findFirst({
-        where: eq(tickets.id, ticketId),
+        where: eq(tickets.ticketCode, code),
         with: {
             createdBy: true,
             category: true,
@@ -119,7 +114,7 @@ export default async function TicketDetailPage({ params }: { params: Promise<{ i
 
     return (
         <div className="mx-auto max-w-[1600px] space-y-8 pb-10 animate-in fade-in duration-500">
-            <MarkAsViewed ticketId={ticketId} />
+            <MarkAsViewed ticketId={ticket.id} />
 
             {/* Top Navigation */}
             <div>
@@ -226,7 +221,7 @@ export default async function TicketDetailPage({ params }: { params: Promise<{ i
                                                             {canDelete && (
                                                                 <DeleteAttachmentButton
                                                                     attachmentId={file.id}
-                                                                    ticketId={ticketId}
+                                                                    ticketId={ticket.id}
                                                                     fileName={file.fileName}
                                                                 />
                                                             )}
@@ -269,7 +264,7 @@ export default async function TicketDetailPage({ params }: { params: Promise<{ i
                                 {/* Comment Form (Top) */}
                                 {canComment && (
                                     <div className="pb-8 pl-2">
-                                        <CommentForm ticketId={ticketId} />
+                                        <CommentForm ticketId={ticket.id} />
                                     </div>
                                 )}
 
@@ -387,12 +382,12 @@ export default async function TicketDetailPage({ params }: { params: Promise<{ i
                                     Usuarios notificados
                                 </label>
                                 {!isTicketClosed && (
-                                    <WatchersManager
-                                        ticketId={ticketId}
-                                        currentWatchers={ticket.watchers || []}
-                                        currentUserId={session.user.id}
-                                        allUsers={allUsers}
-                                    />
+                                <WatchersManager
+                                    ticketId={ticket.id}
+                                    currentWatchers={ticket.watchers || []}
+                                    currentUserId={session.user.id}
+                                    allUsers={allUsers}
+                                />
                                 )}
                             </div>
                             <div className="flex flex-col gap-2">
@@ -410,7 +405,7 @@ export default async function TicketDetailPage({ params }: { params: Promise<{ i
                         {/* Attachment Uploader — only for open tickets */}
                         {!isTicketClosed && (
                             <div className="mb-4">
-                                <TicketAttachmentUploader ticketId={ticketId} />
+                                <TicketAttachmentUploader ticketId={ticket.id} />
                             </div>
                         )}
 
@@ -418,7 +413,7 @@ export default async function TicketDetailPage({ params }: { params: Promise<{ i
                         {isCreator && !isTicketClosed && (
                             <>
                                 <div>
-                                    <CancelTicketButton ticketId={ticketId} />
+                                    <CancelTicketButton ticketId={ticket.id} />
                                 </div>
                             </>
                         )}
@@ -447,7 +442,7 @@ export default async function TicketDetailPage({ params }: { params: Promise<{ i
                                 </div>
                                 <div className="p-3">
                                     <AdminTicketControls
-                                        ticketId={ticketId}
+                                        ticketId={ticket.id}
                                         currentStatus={ticket.status}
                                         isAssigned={!!ticket.assignedToId}
                                     />

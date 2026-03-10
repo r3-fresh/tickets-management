@@ -9,6 +9,14 @@ import { translatePriority, translateStatus } from '../utils/format';
 
 const BASE_URL = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000';
 
+/**
+ * Extrae el código de visualización del ticket (sin el slug del área).
+ * Ejemplo: "tsi-2026-0001" → "2026-0001"
+ */
+function getDisplayCode(ticketCode: string): string {
+    return ticketCode.replace(/^[a-z]+-/, '');
+}
+
 // --- Shared Types ---
 
 interface TicketContext {
@@ -57,7 +65,7 @@ export interface SendTicketCreatedEmailParams extends TicketContext {
 }
 
 export async function sendTicketCreatedEmail(params: SendTicketCreatedEmailParams) {
-    const ticketUrl = `${BASE_URL}/dashboard/tickets/${params.ticketId}`;
+    const ticketUrl = `${BASE_URL}/dashboard/tickets/${params.ticketCode}`;
     const priorityLabel = translatePriority(params.priority);
 
     const htmlContent = getTicketCreatedTemplate({
@@ -85,7 +93,7 @@ export async function sendTicketCreatedEmail(params: SendTicketCreatedEmailParam
     const result = await sendGmailEmail({
         to,
         cc: cc.length > 0 ? cc : undefined,
-        subject: `Ticket #${params.ticketCode} | ${params.title}`,
+        subject: `Ticket #${getDisplayCode(params.ticketCode)} | ${params.title}`,
         htmlContent,
         senderName: params.attentionAreaName,
         customMessageId: params.initialMessageId || undefined,
@@ -109,7 +117,7 @@ export interface SendUserCommentEmailParams extends TicketContext {
 }
 
 export async function sendUserCommentEmail(params: SendUserCommentEmailParams) {
-    const ticketUrl = `${BASE_URL}/dashboard/tickets/${params.ticketId}`;
+    const ticketUrl = `${BASE_URL}/dashboard/tickets/${params.ticketCode}`;
     const statusLabel = translateStatus(params.status);
     const priorityLabel = translatePriority(params.priority);
 
@@ -145,7 +153,7 @@ export async function sendUserCommentEmail(params: SendUserCommentEmailParams) {
     return await sendGmailEmail({
         to,
         cc: cc.length > 0 ? cc : undefined,
-        subject: `Ticket #${params.ticketCode} | ${params.title}`,
+        subject: `Ticket #${getDisplayCode(params.ticketCode)} | ${params.title}`,
         htmlContent,
         senderName: params.attentionAreaName,
         // Threading
@@ -165,7 +173,7 @@ export interface SendValidationRequestEmailParams extends TicketContext {
 }
 
 export async function sendValidationRequestEmail(params: SendValidationRequestEmailParams) {
-    const ticketUrl = `${BASE_URL}/dashboard/tickets/${params.ticketId}`;
+    const ticketUrl = `${BASE_URL}/dashboard/tickets/${params.ticketCode}`;
 
     const htmlContent = getValidationRequestTemplate({
         userName: params.creatorName,
@@ -195,7 +203,7 @@ export async function sendValidationRequestEmail(params: SendValidationRequestEm
     return await sendGmailEmail({
         to,
         cc: cc.length > 0 ? cc : undefined,
-        subject: `Ticket #${params.ticketCode} | ${params.title}`, // Unified subject for threading
+        subject: `Ticket #${getDisplayCode(params.ticketCode)} | ${params.title}`, // Unified subject for threading
         htmlContent,
         senderName: params.attentionAreaName,
         // Threading
@@ -216,7 +224,7 @@ export interface SendTicketAssignedEmailParams extends TicketContext {
 }
 
 export async function sendTicketAssignedEmail(params: SendTicketAssignedEmailParams) {
-    const ticketUrl = `${BASE_URL}/dashboard/tickets/${params.ticketId}`;
+    const ticketUrl = `${BASE_URL}/dashboard/tickets/${params.ticketCode}`;
 
     const htmlContent = getTicketAssignedTemplate({
         userName: params.creatorName,
@@ -242,7 +250,7 @@ export async function sendTicketAssignedEmail(params: SendTicketAssignedEmailPar
     return await sendGmailEmail({
         to,
         cc: cc.length > 0 ? cc : undefined,
-        subject: `Ticket #${params.ticketCode} | ${params.title}`, // Unified subject for threading
+        subject: `Ticket #${getDisplayCode(params.ticketCode)} | ${params.title}`, // Unified subject for threading
         htmlContent,
         senderName: params.attentionAreaName,
         threadId: params.emailThreadId || undefined,
@@ -257,7 +265,7 @@ export interface SendTicketResolvedEmailParams extends TicketContext {
 }
 
 export async function sendTicketResolvedEmail(params: SendTicketResolvedEmailParams) {
-    const ticketUrl = `${BASE_URL}/dashboard/tickets/${params.ticketId}`;
+    const ticketUrl = `${BASE_URL}/dashboard/tickets/${params.ticketCode}`;
 
     const htmlContent = getTicketResolvedTemplate({
         userName: params.creatorName,
@@ -282,7 +290,7 @@ export async function sendTicketResolvedEmail(params: SendTicketResolvedEmailPar
     return await sendGmailEmail({
         to,
         cc: cc.length > 0 ? cc : undefined,
-        subject: `Ticket #${params.ticketCode} | ${params.title}`, // Unified subject for threading
+        subject: `Ticket #${getDisplayCode(params.ticketCode)} | ${params.title}`, // Unified subject for threading
         htmlContent,
         senderName: params.attentionAreaName,
         threadId: params.emailThreadId || undefined,
@@ -297,7 +305,7 @@ export interface SendTicketRejectedEmailParams extends TicketContext {
 }
 
 export async function sendTicketRejectedEmail(params: SendTicketRejectedEmailParams) {
-    const ticketUrl = `${BASE_URL}/dashboard/tickets/${params.ticketId}`;
+    const ticketUrl = `${BASE_URL}/dashboard/tickets/${params.ticketCode}`;
 
     const htmlContent = getTicketRejectedTemplate({
         userName: params.creatorName,
@@ -322,7 +330,7 @@ export async function sendTicketRejectedEmail(params: SendTicketRejectedEmailPar
     return await sendGmailEmail({
         to,
         cc: cc.length > 0 ? cc : undefined,
-        subject: `Ticket #${params.ticketCode} | ${params.title}`, // Unified subject for threading
+        subject: `Ticket #${getDisplayCode(params.ticketCode)} | ${params.title}`, // Unified subject for threading
         htmlContent,
         senderName: params.attentionAreaName,
         threadId: params.emailThreadId || undefined,

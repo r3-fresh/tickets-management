@@ -20,7 +20,7 @@ export async function addTicketAttachmentsAction(ticketId: number, uploadToken: 
     // Verify ticket exists
     const ticket = await db.query.tickets.findFirst({
         where: eq(tickets.id, ticketId),
-        columns: { id: true, status: true },
+        columns: { id: true, status: true, ticketCode: true },
     });
 
     if (!ticket) {
@@ -42,6 +42,6 @@ export async function addTicketAttachmentsAction(ticketId: number, uploadToken: 
             )
         );
 
-    revalidatePath(`/dashboard/tickets/${ticketId}`);
+    revalidatePath(`/dashboard/tickets/${ticket.ticketCode}`);
     return { success: true };
 }

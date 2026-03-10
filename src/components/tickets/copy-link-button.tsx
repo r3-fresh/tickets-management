@@ -4,9 +4,9 @@ import { Button } from "@/components/ui/button";
 import { Link as LinkIcon } from "lucide-react";
 import { toast } from "sonner";
 
-export function CopyLinkButton({ ticketId }: { ticketId: number }) {
+export function CopyLinkButton({ ticketCode }: { ticketCode: string }) {
     const handleCopy = () => {
-        const url = `${window.location.origin}/dashboard/tickets/${ticketId}`;
+        const url = `${window.location.origin}/dashboard/tickets/${ticketCode}`;
         navigator.clipboard.writeText(url);
         toast.success("Enlace copiado al portapapeles");
     };

@@ -169,7 +169,7 @@ export function TicketsList({
                                         {ticket.ticketCode || `#${ticket.id}`}
                                     </TableCell>
                                     <TableCell>
-                                        <Link href={`/dashboard/tickets/${ticket.id}`} className="hover:underline font-medium text-foreground block truncate max-w-[300px] md:max-w-[400px]" title={ticket.title}>
+                                        <Link href={`/dashboard/tickets/${ticket.ticketCode}`} className="hover:underline font-medium text-foreground block truncate max-w-[300px] md:max-w-[400px]" title={ticket.title}>
                                             {ticket.title}
                                         </Link>
                                         {ticket.categoryName && (
@@ -219,7 +219,7 @@ export function TicketsList({
                                         {formatDate(ticket.createdAt)}
                                     </TableCell>
                                     <TableCell className="text-center">
-                                        <CopyLinkButton ticketId={ticket.id} />
+                                        <CopyLinkButton ticketCode={ticket.ticketCode} />
                                     </TableCell>
                                 </TableRow>
                             ))
