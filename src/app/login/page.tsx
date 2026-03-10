@@ -5,17 +5,17 @@ import { LoginForm } from "@/components/auth/login-form";
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
-    title: "Iniciar sesión",
+  title: "Iniciar sesión",
 };
 
 export default async function LoginPage() {
-    const session = await auth.api.getSession({
-        headers: await headers(),
-    });
+  const session = await auth.api.getSession({
+    headers: await headers(),
+  });
 
-    if (session?.user) {
-        redirect("/dashboard");
-    }
+  if (session?.user) {
+    redirect("/dashboard");
+  }
 
-    return <LoginForm />;
+  return <LoginForm />;
 }

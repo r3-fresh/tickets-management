@@ -7,67 +7,67 @@ import { Breadcrumb } from "@/components/shared/breadcrumb";
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
-    title: "Configuración del área",
+  title: "Configuración del área",
 };
 
 export default async function ConfiguracionAgentePage() {
-    // Authorization handled by (agent) layout
-    const session = await getSession();
-    if (!session?.user) return null;
+  // Authorization handled by (agent) layout
+  const session = await getSession();
+  if (!session?.user) return null;
 
-    if (!session.user.attentionAreaId) {
-        return <div>Error: No tienes área asignada.</div>;
-    }
+  if (!session.user.attentionAreaId) {
+    return <div>Error: No tienes área asignada.</div>;
+  }
 
-    // areaConfig and categories are independent — run in parallel
-    const [areaConfig, categories] = await Promise.all([
-        db.query.attentionAreas.findFirst({
-            where: eq(attentionAreas.id, session.user.attentionAreaId),
-        }),
-        db.query.ticketCategories.findMany({
-            where: eq(ticketCategories.attentionAreaId, session.user.attentionAreaId),
-            with: {
-                subcategories: {
-                    orderBy: [asc(ticketSubcategories.displayOrder)],
-                },
-            },
-            orderBy: [asc(ticketCategories.displayOrder)],
-        }),
-    ]);
-
-    if (!areaConfig) {
-        return <div>Error: No se encontró la configuración del área.</div>;
-    }
-
-    // Subcategories depend on categories result
-    const subcategories = await db.query.ticketSubcategories.findMany({
-        where: (subcategories, { inArray }) =>
-            inArray(subcategories.categoryId, categories.map(c => c.id)),
-        with: {
-            category: true,
+  // areaConfig and categories are independent — run in parallel
+  const [areaConfig, categories] = await Promise.all([
+    db.query.attentionAreas.findFirst({
+      where: eq(attentionAreas.id, session.user.attentionAreaId),
+    }),
+    db.query.ticketCategories.findMany({
+      where: eq(ticketCategories.attentionAreaId, session.user.attentionAreaId),
+      with: {
+        subcategories: {
+          orderBy: [asc(ticketSubcategories.displayOrder)],
         },
-        orderBy: [asc(ticketSubcategories.categoryId), asc(ticketSubcategories.displayOrder)],
-    });
+      },
+      orderBy: [asc(ticketCategories.displayOrder)],
+    }),
+  ]);
 
-    return (
-        <div className="space-y-6">
-            {/* Breadcrumbs */}
-            <Breadcrumb items={[{ label: "Configuración del área" }]} />
+  if (!areaConfig) {
+    return <div>Error: No se encontró la configuración del área.</div>;
+  }
 
-            {/* Header */}
-            <div>
-                <h1 className="text-3xl font-bold tracking-tight">Configuración del área</h1>
-                <p className="text-muted-foreground mt-1">
-                    Administra las preferencias para {areaConfig.name}
-                </p>
-            </div>
+  // Subcategories depend on categories result
+  const subcategories = await db.query.ticketSubcategories.findMany({
+    where: (subcategories, { inArray }) =>
+      inArray(subcategories.categoryId, categories.map(c => c.id)),
+    with: {
+      category: true,
+    },
+    orderBy: [asc(ticketSubcategories.categoryId), asc(ticketSubcategories.displayOrder)],
+  });
 
-            <SettingsTabs
-                initialData={areaConfig}
-                categories={categories}
-                subcategories={subcategories}
-                areaId={session.user.attentionAreaId}
-            />
-        </div>
-    );
+  return (
+    <div className="space-y-6">
+      {/* Breadcrumbs */}
+      <Breadcrumb items={[{ label: "Configuración del área" }]} />
+
+      {/* Header */}
+      <div>
+        <h1 className="text-3xl font-bold tracking-tight">Configuración del área</h1>
+        <p className="text-muted-foreground mt-1">
+          Administra las preferencias para {areaConfig.name}
+        </p>
+      </div>
+
+      <SettingsTabs
+        initialData={areaConfig}
+        categories={categories}
+        subcategories={subcategories}
+        areaId={session.user.attentionAreaId}
+      />
+    </div>
+  );
 }

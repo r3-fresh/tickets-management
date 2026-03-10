@@ -15,163 +15,163 @@ import { createRateLimiter } from "@/lib/utils/rate-limit";
 const ticketRateLimiter = createRateLimiter('MODERATE');
 
 export async function createTicketAction(formData: FormData) {
-    const session = await requireAuth();
+  const session = await requireAuth();
 
-    // Aplicar rate limiting
-    const rateLimitResult = ticketRateLimiter(session.user.id);
-    if (!rateLimitResult.success) {
-        const resetDate = new Date(rateLimitResult.reset);
-        const resetTime = resetDate.toLocaleTimeString('es-ES', { 
-            hour: '2-digit', 
-            minute: '2-digit' 
-        });
-        return { 
-            error: `Has alcanzado el límite de creación de tickets. Por favor, espera hasta las ${resetTime} para crear más tickets.` 
-        };
-    }
-
-    const rawData = {
-        title: formData.get("title"),
-        description: formData.get("description"),
-        priority: formData.get("priority"),
-        categoryId: formData.get("categoryId"),
-        subcategoryId: formData.get("subcategoryId"),
-        attentionAreaId: formData.get("attentionAreaId"),
+  // Aplicar rate limiting
+  const rateLimitResult = ticketRateLimiter(session.user.id);
+  if (!rateLimitResult.success) {
+    const resetDate = new Date(rateLimitResult.reset);
+    const resetTime = resetDate.toLocaleTimeString('es-ES', {
+      hour: '2-digit',
+      minute: '2-digit'
+    });
+    return {
+      error: `Has alcanzado el límite de creación de tickets. Por favor, espera hasta las ${resetTime} para crear más tickets.`
     };
+  }
 
-    const result = createTicketSchema.safeParse(rawData);
+  const rawData = {
+    title: formData.get("title"),
+    description: formData.get("description"),
+    priority: formData.get("priority"),
+    categoryId: formData.get("categoryId"),
+    subcategoryId: formData.get("subcategoryId"),
+    attentionAreaId: formData.get("attentionAreaId"),
+  };
 
-    if (!result.success) {
-        return { error: "Datos inválidos", details: result.error.flatten() };
+  const result = createTicketSchema.safeParse(rawData);
+
+  if (!result.success) {
+    return { error: "Datos inválidos", details: result.error.flatten() };
+  }
+
+  const { title, description, priority, categoryId, subcategoryId, attentionAreaId } = result.data;
+
+  // Validate if Attention Area is accepting tickets
+  const targetArea = await db.query.attentionAreas.findFirst({
+    where: eq(attentionAreas.id, attentionAreaId),
+  });
+
+  if (!targetArea) {
+    return { error: "Área de atención inválida" };
+  }
+
+  if (!targetArea.isAcceptingTickets) {
+    return {
+      error: "Esta área no está aceptando tickets en este momento.",
+    };
+  }
+
+  // Parse watchers (user IDs)
+  let watcherList: string[] = [];
+  const watchersData = formData.get("watchers");
+  if (watchersData) {
+    try {
+      watcherList = JSON.parse(watchersData as string);
+    } catch (e) {
+      console.error("Error parsing watchers:", e);
     }
+  }
 
-    const { title, description, priority, categoryId, subcategoryId, attentionAreaId } = result.data;
+  let ticketId: number;
+  let ticketCode: string;
 
-    // Validate if Attention Area is accepting tickets
-    const targetArea = await db.query.attentionAreas.findFirst({
-        where: eq(attentionAreas.id, attentionAreaId),
+  try {
+    // Inserción atómica: genera el código y crea el ticket en una sola transacción
+    const { insertTicketWithCode } = await import("@/lib/utils/ticket-code");
+    const newTicket = await insertTicketWithCode({
+      title,
+      description,
+      priority,
+      status: TICKET_STATUS.OPEN,
+      createdById: session.user.id,
+      categoryId,
+      subcategoryId,
+      attentionAreaId,
+      watchers: watcherList,
     });
 
-    if (!targetArea) {
-        return { error: "Área de atención inválida" };
+    ticketId = newTicket.id;
+    ticketCode = newTicket.ticketCode;
+
+    // Vincular archivos adjuntos al ticket (si se subieron)
+    const uploadToken = formData.get("uploadToken") as string | null;
+    if (uploadToken) {
+      await db.update(ticketAttachments)
+        .set({ ticketId: ticketId, uploadToken: null })
+        .where(
+          and(
+            eq(ticketAttachments.uploadToken, uploadToken),
+            eq(ticketAttachments.uploadedById, session.user.id),
+            isNull(ticketAttachments.ticketId)
+          )
+        );
     }
 
-    if (!targetArea.isAcceptingTickets) {
-        return {
-            error: "Esta área no está aceptando tickets en este momento.",
-        };
-    }
+    // Defer email notification after response is sent to user
+    after(async () => {
+      try {
+        // Get category, subcategory, watcher, and agent data in parallel
+        const [category, subcategory, watcherData, agentData] = await Promise.all([
+          db.query.ticketCategories.findFirst({
+            where: eq(ticketCategories.id, categoryId),
+          }),
+          db.query.ticketSubcategories.findFirst({
+            where: eq(ticketSubcategories.id, subcategoryId),
+          }),
+          watcherList.length > 0
+            ? db.select({ email: users.email })
+              .from(users)
+              .where(inArray(users.id, watcherList))
+            : Promise.resolve([] as { email: string }[]),
+          db.select({ email: users.email })
+            .from(users)
+            .where(and(
+              eq(users.role, 'agent'),
+              eq(users.attentionAreaId, attentionAreaId)
+            )),
+        ]);
 
-    // Parse watchers (user IDs)
-    let watcherList: string[] = [];
-    const watchersData = formData.get("watchers");
-    if (watchersData) {
-        try {
-            watcherList = JSON.parse(watchersData as string);
-        } catch (e) {
-            console.error("Error parsing watchers:", e);
-        }
-    }
+        const watcherEmails = watcherData.map(w => w.email);
 
-    let ticketId: number;
-    let ticketCode: string;
-
-    try {
-        // Inserción atómica: genera el código y crea el ticket en una sola transacción
-        const { insertTicketWithCode } = await import("@/lib/utils/ticket-code");
-        const newTicket = await insertTicketWithCode({
-            title,
-            description,
-            priority,
-            status: TICKET_STATUS.OPEN,
-            createdById: session.user.id,
-            categoryId,
-            subcategoryId,
-            attentionAreaId,
-            watchers: watcherList,
+        const emailResult = await sendTicketCreatedEmail({
+          ticketCode,
+          title,
+          description,
+          priority,
+          categoryName: category?.name || 'Sin categoría',
+          subcategoryName: subcategory?.name || 'Sin subcategoría',
+          createdAt: new Date(),
+          ticketId,
+          creatorEmail: session.user.email,
+          creatorName: session.user.name,
+          agentEmails: agentData.map(a => a.email),
+          watcherEmails,
+          attentionAreaName: targetArea.name,
         });
 
-        ticketId = newTicket.id;
-        ticketCode = newTicket.ticketCode;
-
-        // Vincular archivos adjuntos al ticket (si se subieron)
-        const uploadToken = formData.get("uploadToken") as string | null;
-        if (uploadToken) {
-            await db.update(ticketAttachments)
-                .set({ ticketId: ticketId, uploadToken: null })
-                .where(
-                    and(
-                        eq(ticketAttachments.uploadToken, uploadToken),
-                        eq(ticketAttachments.uploadedById, session.user.id),
-                        isNull(ticketAttachments.ticketId)
-                    )
-                );
+        if (emailResult.success) {
+          // Update ticket with threading info
+          // 1. Thread ID (Gmail Native)
+          // 2. Initial Message ID (RFC Header for recipients) - NEW ROBUST METHOD
+          await db.update(tickets)
+            .set({
+              emailThreadId: emailResult.data?.threadId,
+              initialMessageId: emailResult.data?.rfcMessageId // Captured from actual sent email
+            })
+            .where(eq(tickets.id, ticketId));
         }
+      } catch (emailError) {
+        // Log error but don't fail ticket creation
+        console.error("Error sending email:", emailError);
+      }
+    });
 
-        // Defer email notification after response is sent to user
-        after(async () => {
-            try {
-                // Get category, subcategory, watcher, and agent data in parallel
-                const [category, subcategory, watcherData, agentData] = await Promise.all([
-                    db.query.ticketCategories.findFirst({
-                        where: eq(ticketCategories.id, categoryId),
-                    }),
-                    db.query.ticketSubcategories.findFirst({
-                        where: eq(ticketSubcategories.id, subcategoryId),
-                    }),
-                    watcherList.length > 0
-                        ? db.select({ email: users.email })
-                            .from(users)
-                            .where(inArray(users.id, watcherList))
-                        : Promise.resolve([] as { email: string }[]),
-                    db.select({ email: users.email })
-                        .from(users)
-                        .where(and(
-                            eq(users.role, 'agent'),
-                            eq(users.attentionAreaId, attentionAreaId)
-                        )),
-                ]);
+  } catch (error) {
+    console.error("Error creating ticket:", error);
+    return { error: "Error interno del servidor al crear el ticket" };
+  }
 
-                const watcherEmails = watcherData.map(w => w.email);
-
-                const emailResult = await sendTicketCreatedEmail({
-                    ticketCode,
-                    title,
-                    description,
-                    priority,
-                    categoryName: category?.name || 'Sin categoría',
-                    subcategoryName: subcategory?.name || 'Sin subcategoría',
-                    createdAt: new Date(),
-                    ticketId,
-                    creatorEmail: session.user.email,
-                    creatorName: session.user.name,
-                    agentEmails: agentData.map(a => a.email),
-                    watcherEmails,
-                    attentionAreaName: targetArea.name,
-                });
-
-                if (emailResult.success) {
-                    // Update ticket with threading info
-                    // 1. Thread ID (Gmail Native)
-                    // 2. Initial Message ID (RFC Header for recipients) - NEW ROBUST METHOD
-                    await db.update(tickets)
-                        .set({
-                            emailThreadId: emailResult.data?.threadId,
-                            initialMessageId: emailResult.data?.rfcMessageId // Captured from actual sent email
-                        })
-                        .where(eq(tickets.id, ticketId));
-                }
-            } catch (emailError) {
-                // Log error but don't fail ticket creation
-                console.error("Error sending email:", emailError);
-            }
-        });
-
-    } catch (error) {
-        console.error("Error creating ticket:", error);
-        return { error: "Error interno del servidor al crear el ticket" };
-    }
-
-    // Redirect to ticket detail page (outside try-catch to avoid catching NEXT_REDIRECT)
-    redirect(`/dashboard/tickets/${ticketCode}`);
+  // Redirect to ticket detail page (outside try-catch to avoid catching NEXT_REDIRECT)
+  redirect(`/dashboard/tickets/${ticketCode}`);
 }

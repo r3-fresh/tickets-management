@@ -12,64 +12,64 @@ dayjs.locale("es");
 dayjs.tz.setDefault(PERU_TIMEZONE);
 
 export function formatDate(date: Date | string | null | undefined): string {
-    if (!date) return "-";
-    return dayjs(date).tz(PERU_TIMEZONE).format("DD/MM/YYYY HH:mm");
+  if (!date) return "-";
+  return dayjs(date).tz(PERU_TIMEZONE).format("DD/MM/YYYY HH:mm");
 }
 
 export function formatDateShort(date: Date | string | null | undefined): string {
-    if (!date) return "-";
-    return dayjs(date).tz(PERU_TIMEZONE).format("DD/MM/YYYY");
+  if (!date) return "-";
+  return dayjs(date).tz(PERU_TIMEZONE).format("DD/MM/YYYY");
 }
 
 export function formatTime(date: Date | string | null | undefined): string {
-    if (!date) return "-";
-    return dayjs(date).tz(PERU_TIMEZONE).format("HH:mm");
+  if (!date) return "-";
+  return dayjs(date).tz(PERU_TIMEZONE).format("HH:mm");
 }
 
 export function formatDateTime(date: Date | string | null | undefined): string {
-    if (!date) return "-";
-    return dayjs(date).tz(PERU_TIMEZONE).format("D [de] MMMM [de] YYYY, HH:mm");
+  if (!date) return "-";
+  return dayjs(date).tz(PERU_TIMEZONE).format("D [de] MMMM [de] YYYY, HH:mm");
 }
 
 export function formatForInput(date: Date | string | null | undefined): string {
-    if (!date) return "";
-    return dayjs(date).tz(PERU_TIMEZONE).format("YYYY-MM-DD");
+  if (!date) return "";
+  return dayjs(date).tz(PERU_TIMEZONE).format("YYYY-MM-DD");
 }
 
 export function formatForDisplay(date: Date | string | null | undefined): string {
-    if (!date) return "-";
-    return dayjs(date).tz(PERU_TIMEZONE).format("DD MMM YYYY");
+  if (!date) return "-";
+  return dayjs(date).tz(PERU_TIMEZONE).format("DD MMM YYYY");
 }
 
 export function formatRange(
-    startDate: Date | string | null | undefined,
-    endDate: Date | string | null | undefined
+  startDate: Date | string | null | undefined,
+  endDate: Date | string | null | undefined
 ): string {
-    if (!startDate) return "-";
-    const start = dayjs(startDate).tz(PERU_TIMEZONE);
-    if (!endDate) return start.format("DD MMM YYYY");
-    const end = dayjs(endDate).tz(PERU_TIMEZONE);
-    return `${start.format("DD MMM")} - ${end.format("DD MMM YYYY")}`;
+  if (!startDate) return "-";
+  const start = dayjs(startDate).tz(PERU_TIMEZONE);
+  if (!endDate) return start.format("DD MMM YYYY");
+  const end = dayjs(endDate).tz(PERU_TIMEZONE);
+  return `${start.format("DD MMM")} - ${end.format("DD MMM YYYY")}`;
 }
 
 export function differenceInDays(date: Date | string, baseDate: Date | string = new Date()): number {
-    return dayjs(baseDate).diff(dayjs(date), "day");
+  return dayjs(baseDate).diff(dayjs(date), "day");
 }
 
 export function nowInPeru(): dayjs.Dayjs {
-    return dayjs().tz(PERU_TIMEZONE);
+  return dayjs().tz(PERU_TIMEZONE);
 }
 
 export function toPeruTime(date: Date | string): dayjs.Dayjs {
-    return dayjs(date).tz(PERU_TIMEZONE);
+  return dayjs(date).tz(PERU_TIMEZONE);
 }
 
 export function formatDateWithTimezone(
-    date: Date | string | null | undefined,
-    formatStr: string = "DD/MM/YYYY HH:mm"
+  date: Date | string | null | undefined,
+  formatStr: string = "DD/MM/YYYY HH:mm"
 ): string {
-    if (!date) return "-";
-    return dayjs(date).tz(PERU_TIMEZONE).format(formatStr);
+  if (!date) return "-";
+  return dayjs(date).tz(PERU_TIMEZONE).format(formatStr);
 }
 
 export { dayjs, PERU_TIMEZONE };

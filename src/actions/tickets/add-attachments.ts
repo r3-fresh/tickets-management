@@ -11,37 +11,37 @@ import { eq, and, isNull } from "drizzle-orm";
  * to an existing ticket. Only the uploader can link their own files.
  */
 export async function addTicketAttachmentsAction(ticketId: number, uploadToken: string) {
-    const session = await requireAuth();
+  const session = await requireAuth();
 
-    if (!ticketId || !uploadToken) {
-        return { error: "Parámetros inválidos" };
-    }
+  if (!ticketId || !uploadToken) {
+    return { error: "Parámetros inválidos" };
+  }
 
-    // Verify ticket exists
-    const ticket = await db.query.tickets.findFirst({
-        where: eq(tickets.id, ticketId),
-        columns: { id: true, status: true, ticketCode: true },
-    });
+  // Verify ticket exists
+  const ticket = await db.query.tickets.findFirst({
+    where: eq(tickets.id, ticketId),
+    columns: { id: true, status: true, ticketCode: true },
+  });
 
-    if (!ticket) {
-        return { error: "Ticket no encontrado" };
-    }
+  if (!ticket) {
+    return { error: "Ticket no encontrado" };
+  }
 
-    if (ticket.status === "resolved" || ticket.status === "voided") {
-        return { error: "No se pueden adjuntar archivos a un ticket cerrado" };
-    }
+  if (ticket.status === "resolved" || ticket.status === "voided") {
+    return { error: "No se pueden adjuntar archivos a un ticket cerrado" };
+  }
 
-    // Link pending attachments uploaded by this user with this token to the ticket
-    await db.update(ticketAttachments)
-        .set({ ticketId, uploadToken: null })
-        .where(
-            and(
-                eq(ticketAttachments.uploadToken, uploadToken),
-                eq(ticketAttachments.uploadedById, session.user.id),
-                isNull(ticketAttachments.ticketId)
-            )
-        );
+  // Link pending attachments uploaded by this user with this token to the ticket
+  await db.update(ticketAttachments)
+    .set({ ticketId, uploadToken: null })
+    .where(
+      and(
+        eq(ticketAttachments.uploadToken, uploadToken),
+        eq(ticketAttachments.uploadedById, session.user.id),
+        isNull(ticketAttachments.ticketId)
+      )
+    );
 
-    revalidatePath(`/dashboard/tickets/${ticket.ticketCode}`);
-    return { success: true };
+  revalidatePath(`/dashboard/tickets/${ticket.ticketCode}`);
+  return { success: true };
 }

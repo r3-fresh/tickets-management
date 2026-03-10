@@ -9,16 +9,16 @@ export type UserRole = 'user' | 'admin' | 'agent';
 // AppUser extends the BetterAuth User and adds our custom role field
 // BetterAuthUser already includes id, name, email, etc.
 export interface AppUser extends BetterAuthUser {
-    id: string; // Explicitly include id for clarity
-    name: string; // Explicitly include name
-    email: string; // Explicitly include email
-    role: UserRole;
-    isActive: boolean; // User activation status
-    attentionAreaId?: number; // Optional: Only for agents
+  id: string; // Explicitly include id for clarity
+  name: string; // Explicitly include name
+  email: string; // Explicitly include email
+  role: UserRole;
+  isActive: boolean; // User activation status
+  attentionAreaId?: number; // Optional: Only for agents
 }
 
 export interface AppSession extends BetterAuthSession {
-    user: AppUser;
+  user: AppUser;
 }
 
 // ============================================

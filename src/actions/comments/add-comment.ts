@@ -14,99 +14,99 @@ import { createRateLimiter } from "@/lib/utils/rate-limit";
 const commentRateLimiter = createRateLimiter('MODERATE');
 
 export async function addCommentAction(formData: FormData) {
-    const session = await requireAuth();
+  const session = await requireAuth();
 
-    // Aplicar rate limiting
-    const rateLimitResult = commentRateLimiter(`comment-${session.user.id}`);
-    if (!rateLimitResult.success) {
-        return { error: "Estás enviando comentarios muy rápido. Por favor, espera un momento." };
+  // Aplicar rate limiting
+  const rateLimitResult = commentRateLimiter(`comment-${session.user.id}`);
+  if (!rateLimitResult.success) {
+    return { error: "Estás enviando comentarios muy rápido. Por favor, espera un momento." };
+  }
+
+  const ticketId = Number(formData.get("ticketId"));
+  const content = formData.get("content") as string;
+
+  if (!ticketId || !content || content.trim().length === 0) {
+    return { error: "Comentario inválido" };
+  }
+
+  try {
+    // Get full ticket details including creator
+    const ticket = await db.query.tickets.findFirst({
+      where: eq(tickets.id, ticketId),
+      with: {
+        category: true,
+        subcategory: true,
+        attentionArea: true,
+        createdBy: true,
+      },
+    });
+
+    if (!ticket) return { error: "Ticket no encontrado" };
+
+    if (ticket.status === TICKET_STATUS.RESOLVED || ticket.status === TICKET_STATUS.VOIDED) {
+      return { error: "No se puede comentar en un ticket cerrado" };
     }
 
-    const ticketId = Number(formData.get("ticketId"));
-    const content = formData.get("content") as string;
+    await db.insert(comments).values({
+      ticketId,
+      userId: session.user.id,
+      content,
+      isInternal: false,
+    });
 
-    if (!ticketId || !content || content.trim().length === 0) {
-        return { error: "Comentario inválido" };
-    }
+    // Defer email notification after response is sent to user
+    if (ticket.attentionAreaId) {
+      const ticketData = ticket;
+      const userEmail = session.user.email;
+      const userName = session.user.name;
+      after(async () => {
+        try {
+          // Get agents and watchers in parallel
+          const [agentData, watcherData] = await Promise.all([
+            db.select({ email: users.email })
+              .from(users)
+              .where(and(
+                eq(users.role, 'agent'),
+                eq(users.attentionAreaId, ticketData.attentionAreaId!)
+              )),
+            ticketData.watchers && ticketData.watchers.length > 0
+              ? db.select({ email: users.email })
+                .from(users)
+                .where(inArray(users.id, ticketData.watchers))
+              : Promise.resolve([] as { email: string }[]),
+          ]);
 
-    try {
-        // Get full ticket details including creator
-        const ticket = await db.query.tickets.findFirst({
-            where: eq(tickets.id, ticketId),
-            with: {
-                category: true,
-                subcategory: true,
-                attentionArea: true,
-                createdBy: true,
-            },
-        });
+          const watcherEmails = watcherData.map(w => w.email);
 
-        if (!ticket) return { error: "Ticket no encontrado" };
-
-        if (ticket.status === TICKET_STATUS.RESOLVED || ticket.status === TICKET_STATUS.VOIDED) {
-            return { error: "No se puede comentar en un ticket cerrado" };
+          await sendUserCommentEmail({
+            ticketCode: ticketData.ticketCode,
+            title: ticketData.title,
+            status: ticketData.status,
+            priority: ticketData.priority,
+            categoryName: ticketData.category?.name || 'Sin categoría',
+            subcategoryName: ticketData.subcategory?.name || 'Sin subcategoría',
+            ticketId: ticketData.id,
+            comment: content,
+            userEmail,
+            userName,
+            creatorEmail: ticketData.createdBy.email,
+            creatorName: ticketData.createdBy.name,
+            agentEmails: agentData.map(a => a.email),
+            watcherEmails: watcherEmails,
+            attentionAreaName: ticketData.attentionArea?.name || 'Hub de Información',
+            emailThreadId: ticketData.emailThreadId,
+            initialMessageId: ticketData.initialMessageId,
+          });
+        } catch (emailError) {
+          console.error("Error sending comment notification email:", emailError);
         }
-
-        await db.insert(comments).values({
-            ticketId,
-            userId: session.user.id,
-            content,
-            isInternal: false,
-        });
-
-        // Defer email notification after response is sent to user
-        if (ticket.attentionAreaId) {
-            const ticketData = ticket;
-            const userEmail = session.user.email;
-            const userName = session.user.name;
-            after(async () => {
-                try {
-                    // Get agents and watchers in parallel
-                    const [agentData, watcherData] = await Promise.all([
-                        db.select({ email: users.email })
-                            .from(users)
-                            .where(and(
-                                eq(users.role, 'agent'),
-                                eq(users.attentionAreaId, ticketData.attentionAreaId!)
-                            )),
-                        ticketData.watchers && ticketData.watchers.length > 0
-                            ? db.select({ email: users.email })
-                                .from(users)
-                                .where(inArray(users.id, ticketData.watchers))
-                            : Promise.resolve([] as { email: string }[]),
-                    ]);
-
-                    const watcherEmails = watcherData.map(w => w.email);
-
-                    await sendUserCommentEmail({
-                        ticketCode: ticketData.ticketCode,
-                        title: ticketData.title,
-                        status: ticketData.status,
-                        priority: ticketData.priority,
-                        categoryName: ticketData.category?.name || 'Sin categoría',
-                        subcategoryName: ticketData.subcategory?.name || 'Sin subcategoría',
-                        ticketId: ticketData.id,
-                        comment: content,
-                        userEmail,
-                        userName,
-                        creatorEmail: ticketData.createdBy.email,
-                        creatorName: ticketData.createdBy.name,
-                        agentEmails: agentData.map(a => a.email),
-                        watcherEmails: watcherEmails,
-                        attentionAreaName: ticketData.attentionArea?.name || 'Hub de Información',
-                        emailThreadId: ticketData.emailThreadId,
-                        initialMessageId: ticketData.initialMessageId,
-                    });
-                } catch (emailError) {
-                    console.error("Error sending comment notification email:", emailError);
-                }
-            });
-        }
-
-        revalidatePath(`/dashboard/tickets/${ticket.ticketCode}`);
-        return { success: true };
-    } catch (error) {
-        console.error("Error adding comment:", error);
-        return { error: "Error al guardar el comentario" };
+      });
     }
+
+    revalidatePath(`/dashboard/tickets/${ticket.ticketCode}`);
+    return { success: true };
+  } catch (error) {
+    console.error("Error adding comment:", error);
+    return { error: "Error al guardar el comentario" };
+  }
 }

@@ -5,20 +5,20 @@ import { Link as LinkIcon } from "lucide-react";
 import { toast } from "sonner";
 
 export function CopyLinkButton({ ticketCode }: { ticketCode: string }) {
-    const handleCopy = () => {
-        const url = `${window.location.origin}/dashboard/tickets/${ticketCode}`;
-        navigator.clipboard.writeText(url);
-        toast.success("Enlace copiado al portapapeles");
-    };
+  const handleCopy = () => {
+    const url = `${window.location.origin}/dashboard/tickets/${ticketCode}`;
+    navigator.clipboard.writeText(url);
+    toast.success("Enlace copiado al portapapeles");
+  };
 
-    return (
-        <Button
-            variant="ghost"
-            size="sm"
-            onClick={handleCopy}
-            title="Copiar enlace"
-        >
-            <LinkIcon className="h-4 w-4" />
-        </Button>
-    );
+  return (
+    <Button
+      variant="ghost"
+      size="sm"
+      onClick={handleCopy}
+      title="Copiar enlace"
+    >
+      <LinkIcon className="h-4 w-4" />
+    </Button>
+  );
 }

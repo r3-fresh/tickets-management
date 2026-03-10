@@ -249,3 +249,34 @@ if (!result.success) {
 - Configuración en `src/lib/email/gmail-client.ts`
 - Plantillas de correo en `src/lib/email/templates/`
 - El envío de correos usa `after()` para no bloquear respuestas
+
+## 🗺️ Plan de Desarrollo
+
+El plan completo con todas las fases está documentado en:
+`docs/plans/2026-03-10-corrections-and-features-plan.md`
+
+### Estado actual
+- **Fases 2a-2c:** Completadas (eliminación campus/work_areas, códigos de ticket con slug, URLs con ticketCode, emails sin slug)
+- **Fase 3:** Pendiente - Correcciones inmediatas (emails, dashboards, límite 5MB)
+- **Fase 4:** Pendiente - Formularios por área de atención
+- **Fase 5:** Pendiente - Prioridades configurables por área
+- **Fase 6:** Pendiente - Módulo de proveedores y tickets derivados
+- **Fase 7:** Pendiente - Sección Actividad y derivaciones
+
+### Reglas de desarrollo
+- Cada fase se implementa en una **branch independiente**
+- Se requiere **aprobación del usuario** antes de merge a main
+- Después del merge se elimina la branch
+- Base de datos es **Neon (nueva, vacía)** — no hay datos legacy que preservar
+- La migración de datos del viejo DB al nuevo será al final de todo
+
+### Decisiones de arquitectura tomadas
+- **Códigos de ticket:** `{slug}-{year}-{sequence}` con tabla `ticket_sequence` (contador nunca decrementa)
+- **URLs:** `/dashboard/tickets/{ticketCode}` (no ID numérico)
+- **Email subjects:** `Ticket #2026-0001 | Título` (sin slug de área, helper `getDisplayCode()`)
+- **Áreas de atención:** Solo 3 áreas fijas (TSI, Difusión, Fondo Editorial), no crecerán
+- **Campos de Difusión:** Columnas nullable en tabla `tickets` (no JSON)
+- **Prioridades por área:** Tabla `priority_config` con 4 filas por área (descripción + SLA editables)
+- **Proveedores:** Tabla configurable por área, tickets derivados como módulo independiente con enlace opcional
+- **Actividad:** Renombrar "Comentarios" a "Actividad", agregar `type` a comments (comment/derivation/system)
+- **Proxy:** El proyecto usa `proxy.ts` en la raíz (Next.js 16), NO `middleware.ts`

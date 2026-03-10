@@ -8,26 +8,26 @@ config({ path: path.resolve(process.cwd(), '.env.local') });
 
 // Verify environment variables
 if (!process.env.GOOGLE_CLIENT_ID || !process.env.GOOGLE_CLIENT_SECRET) {
-    console.error('❌ Error: Faltan variables de entorno');
-    console.error('');
-    console.error('Variables encontradas:');
-    console.error(`GOOGLE_CLIENT_ID: ${process.env.GOOGLE_CLIENT_ID ? '✓' : '✗'}`);
-    console.error(`GOOGLE_CLIENT_SECRET: ${process.env.GOOGLE_CLIENT_SECRET ? '✓' : '✗'}`);
-    console.error('');
-    console.error('Asegúrate de tener estas variables en .env.local');
-    process.exit(1);
+  console.error('❌ Error: Faltan variables de entorno');
+  console.error('');
+  console.error('Variables encontradas:');
+  console.error(`GOOGLE_CLIENT_ID: ${process.env.GOOGLE_CLIENT_ID ? '✓' : '✗'}`);
+  console.error(`GOOGLE_CLIENT_SECRET: ${process.env.GOOGLE_CLIENT_SECRET ? '✓' : '✗'}`);
+  console.error('');
+  console.error('Asegúrate de tener estas variables en .env.local');
+  process.exit(1);
 }
 
 const oauth2Client = new google.auth.OAuth2(
-    process.env.GOOGLE_CLIENT_ID,
-    process.env.GOOGLE_CLIENT_SECRET,
-    `${process.env.BETTER_AUTH_URL || 'http://localhost:3000'}/api/auth/callback/google`
+  process.env.GOOGLE_CLIENT_ID,
+  process.env.GOOGLE_CLIENT_SECRET,
+  `${process.env.BETTER_AUTH_URL || 'http://localhost:3000'}/api/auth/callback/google`
 );
 
 const SCOPES = [
-    'https://www.googleapis.com/auth/gmail.send',
-    'https://www.googleapis.com/auth/gmail.readonly', // Needed for threading (messages.get)
-    'https://www.googleapis.com/auth/drive.file', // Upload files to Google Drive
+  'https://www.googleapis.com/auth/gmail.send',
+  'https://www.googleapis.com/auth/gmail.readonly', // Needed for threading (messages.get)
+  'https://www.googleapis.com/auth/drive.file', // Upload files to Google Drive
 ];
 
 console.log('='.repeat(60));
@@ -37,9 +37,9 @@ console.log();
 
 // Generate auth URL
 const authUrl = oauth2Client.generateAuthUrl({
-    access_type: 'offline',
-    scope: SCOPES,
-    prompt: 'consent', // Force to get refresh token
+  access_type: 'offline',
+  scope: SCOPES,
+  prompt: 'consent', // Force to get refresh token
 });
 
 console.log('1️⃣  Abre esta URL en tu navegador:');
@@ -60,38 +60,38 @@ console.log('='.repeat(60));
 console.log();
 
 const rl = readline.createInterface({
-    input: process.stdin,
-    output: process.stdout,
+  input: process.stdin,
+  output: process.stdout,
 });
 
 rl.question('Pega el código aquí: ', async (code) => {
-    try {
-        console.log();
-        console.log('⏳ Obteniendo tokens...');
-        console.log();
+  try {
+    console.log();
+    console.log('⏳ Obteniendo tokens...');
+    console.log();
 
-        const { tokens } = await oauth2Client.getToken(code);
+    const { tokens } = await oauth2Client.getToken(code);
 
-        console.log('✅ ¡Éxito! Refresh Token obtenido:');
-        console.log();
-        console.log('─'.repeat(60));
-        console.log(tokens.refresh_token);
-        console.log('─'.repeat(60));
-        console.log();
-        console.log('📝 Agrega esto a tu .env.local:');
-        console.log();
-        console.log(`GMAIL_REFRESH_TOKEN="${tokens.refresh_token}"`);
-        console.log();
-        console.log('⚠️  IMPORTANTE: Este token es sensible, no lo compartas.');
-        console.log();
-    } catch (error: any) {
-        console.error('❌ Error al obtener el token:');
-        console.error(error.message);
-        console.log();
-        console.log('💡 Asegúrate de:');
-        console.log('   1. Haber copiado el código completo');
-        console.log('   2. Haber iniciado sesión con cendoc@continental.edu.pe');
-        console.log('   3. Haber agregado el scope gmail.send en Google Cloud Console');
-    }
-    rl.close();
+    console.log('✅ ¡Éxito! Refresh Token obtenido:');
+    console.log();
+    console.log('─'.repeat(60));
+    console.log(tokens.refresh_token);
+    console.log('─'.repeat(60));
+    console.log();
+    console.log('📝 Agrega esto a tu .env.local:');
+    console.log();
+    console.log(`GMAIL_REFRESH_TOKEN="${tokens.refresh_token}"`);
+    console.log();
+    console.log('⚠️  IMPORTANTE: Este token es sensible, no lo compartas.');
+    console.log();
+  } catch (error: any) {
+    console.error('❌ Error al obtener el token:');
+    console.error(error.message);
+    console.log();
+    console.log('💡 Asegúrate de:');
+    console.log('   1. Haber copiado el código completo');
+    console.log('   2. Haber iniciado sesión con cendoc@continental.edu.pe');
+    console.log('   3. Haber agregado el scope gmail.send en Google Cloud Console');
+  }
+  rl.close();
 });
