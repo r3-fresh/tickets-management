@@ -1,6 +1,6 @@
 
 
-import { pgTable, text, timestamp, boolean, uuid, serial, integer, jsonb, unique, type AnyPgColumn } from "drizzle-orm/pg-core";
+import { pgTable, text, timestamp, boolean, uuid, serial, integer, jsonb, unique, type AnyPgColumn, smallint } from "drizzle-orm/pg-core";
 import { relations } from "drizzle-orm";
 
 // --- AUTH SCHEMA (Better-Auth Compatible) ---
@@ -96,7 +96,7 @@ export const ticketSubcategories = pgTable("ticket_subcategory", {
 
 export const tickets = pgTable("ticket", {
     id: serial("id").primaryKey(),
-    ticketCode: text("ticket_code").notNull().unique(), // Format: YYYY-####
+    ticketCode: text("ticket_code").notNull().unique(), // Format: {area_slug}-YYYY-#### (e.g., tsi-2026-0001)
     title: text("title").notNull(),
     description: text("description").notNull(),
     status: text("status").notNull().default("open"), // 'open', 'in_progress', 'pending_validation', 'resolved', 'voided'
@@ -257,9 +257,28 @@ export const attentionAreas = pgTable("attention_area", {
     updatedAt: timestamp("updated_at").defaultNow().notNull(),
 });
 
+// --- TICKET SEQUENCE (counter per area + year) ---
+
+export const ticketSequence = pgTable("ticket_sequence", {
+    id: serial("id").primaryKey(),
+    attentionAreaId: integer("attention_area_id").notNull().references(() => attentionAreas.id),
+    year: smallint("year").notNull(),
+    lastNumber: integer("last_number").notNull().default(0),
+}, (table) => ({
+    uniqueAreaYear: unique().on(table.attentionAreaId, table.year),
+}));
+
+export const ticketSequenceRelations = relations(ticketSequence, ({ one }) => ({
+    attentionArea: one(attentionAreas, {
+        fields: [ticketSequence.attentionAreaId],
+        references: [attentionAreas.id],
+    }),
+}));
+
 export const attentionAreasRelations = relations(attentionAreas, ({ many }) => ({
     users: many(users),
     tickets: many(tickets),
     categories: many(ticketCategories),
+    sequences: many(ticketSequence),
 }));
 
