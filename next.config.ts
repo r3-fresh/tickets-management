@@ -19,11 +19,6 @@ const nextConfig: NextConfig = {
     },
   },
 
-  // Permitir uploads de hasta 50MB
-  experimental: {
-    proxyClientMaxBodySize: '55mb',
-  },
-
   // Optimización de paquetes externos en server components (Next.js 16)
   serverExternalPackages: ['@node-rs/argon2', 'bcrypt'],
 };

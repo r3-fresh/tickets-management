@@ -5,9 +5,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { SettingsForm } from "@/components/admin/settings-form";
 import { AdminCategoriesManagement as CategoriesManagement } from "@/components/admin/categories-management";
 import { SubcategoriesManagement } from "@/components/admin/subcategories-management";
-import { CampusManagement } from "@/components/admin/campus-management";
-import { WorkAreasManagement } from "@/components/admin/work-areas-management";
-import { Tag, Grid3x3, MapPin, Briefcase, Settings } from "lucide-react";
+import { Tag, Grid3x3, Settings } from "lucide-react";
 
 interface Category {
     id: number;
@@ -30,20 +28,6 @@ interface Subcategory {
     };
 }
 
-interface Campus {
-    id: number;
-    name: string;
-    code: string | null;
-    isActive: boolean;
-}
-
-interface WorkArea {
-    id: number;
-    name: string;
-    description: string | null;
-    isActive: boolean;
-}
-
 import { AttentionAreasList } from "@/components/admin/attention-areas-list";
 
 interface AttentionArea {
@@ -58,8 +42,6 @@ interface AdminSettingsTabsProps {
     initialDisabledMessage?: string;
     initialCategories: Category[];
     initialSubcategories: Subcategory[];
-    initialCampus: Campus[];
-    initialAreas: WorkArea[];
     initialAttentionAreas: AttentionArea[];
 }
 
@@ -68,13 +50,11 @@ export function AdminSettingsTabs({
     initialDisabledMessage,
     initialCategories,
     initialSubcategories,
-    initialCampus,
-    initialAreas,
     initialAttentionAreas
 }: AdminSettingsTabsProps) {
     return (
         <Tabs defaultValue="general" className="space-y-4">
-            <TabsList className="grid w-full grid-cols-6">
+            <TabsList className="grid w-full grid-cols-4">
                 <TabsTrigger value="general" className="cursor-pointer">General</TabsTrigger>
                 <TabsTrigger value="categories" className="cursor-pointer">
                     <Tag className="h-4 w-4 mr-2" />
@@ -83,14 +63,6 @@ export function AdminSettingsTabs({
                 <TabsTrigger value="subcategories" className="cursor-pointer">
                     <Grid3x3 className="h-4 w-4 mr-2" />
                     Subcategorías
-                </TabsTrigger>
-                <TabsTrigger value="campus" className="cursor-pointer">
-                    <MapPin className="h-4 w-4 mr-2" />
-                    Campus
-                </TabsTrigger>
-                <TabsTrigger value="work-areas" className="cursor-pointer">
-                    <Briefcase className="h-4 w-4 mr-2" />
-                    Áreas de trabajo
                 </TabsTrigger>
                 <TabsTrigger value="attention-areas" className="cursor-pointer">
                     <Settings className="h-4 w-4 mr-2" />
@@ -145,34 +117,6 @@ export function AdminSettingsTabs({
                             initialSubcategories={initialSubcategories}
                             categories={initialCategories}
                         />
-                    </CardContent>
-                </Card>
-            </TabsContent>
-
-            <TabsContent value="campus" className="space-y-4">
-                <Card>
-                    <CardHeader>
-                        <CardTitle>Campus</CardTitle>
-                        <CardDescription>
-                            Gestiona las ubicaciones de campus disponibles
-                        </CardDescription>
-                    </CardHeader>
-                    <CardContent>
-                        <CampusManagement initialCampus={initialCampus} />
-                    </CardContent>
-                </Card>
-            </TabsContent>
-
-            <TabsContent value="work-areas" className="space-y-4">
-                <Card>
-                    <CardHeader>
-                        <CardTitle>Áreas de trabajo</CardTitle>
-                        <CardDescription>
-                            Gestiona las áreas de trabajo (ubicaciones físicas/departamentos del usuario)
-                        </CardDescription>
-                    </CardHeader>
-                    <CardContent>
-                        <WorkAreasManagement initialAreas={initialAreas} />
                     </CardContent>
                 </Card>
             </TabsContent>

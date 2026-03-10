@@ -36,8 +36,6 @@ export async function createTicketAction(formData: FormData) {
         priority: formData.get("priority"),
         categoryId: formData.get("categoryId"),
         subcategoryId: formData.get("subcategoryId"),
-        campusId: formData.get("campusId"),
-        areaId: formData.get("areaId"),
         attentionAreaId: formData.get("attentionAreaId"),
     };
 
@@ -47,7 +45,7 @@ export async function createTicketAction(formData: FormData) {
         return { error: "Datos inválidos", details: result.error.flatten() };
     }
 
-    const { title, description, priority, categoryId, subcategoryId, campusId, areaId, attentionAreaId } = result.data;
+    const { title, description, priority, categoryId, subcategoryId, attentionAreaId } = result.data;
 
     // Validate if Attention Area is accepting tickets
     const targetArea = await db.query.attentionAreas.findFirst({
@@ -89,8 +87,6 @@ export async function createTicketAction(formData: FormData) {
             createdById: session.user.id,
             categoryId,
             subcategoryId,
-            campusId: campusId || null,
-            areaId: areaId || null,
             attentionAreaId,
             watchers: watcherList,
         });
@@ -177,5 +173,5 @@ export async function createTicketAction(formData: FormData) {
     }
 
     // Redirect to ticket detail page (outside try-catch to avoid catching NEXT_REDIRECT)
-    redirect(`/dashboard/tickets/${ticketId}`);
+    redirect(`/dashboard/tickets/${ticketCode}`);
 }

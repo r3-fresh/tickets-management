@@ -77,7 +77,7 @@ export async function assignTicketToSelf(ticketId: number) {
             });
         }
 
-        revalidatePath(`/dashboard/tickets/${ticketId}`);
+        revalidatePath(`/dashboard/tickets/${ticket?.ticketCode ?? ticketId}`);
         revalidatePath("/dashboard/admin/tickets");
         revalidatePath("/dashboard/agente");
         return { success: true };
@@ -91,6 +91,12 @@ export async function unassignTicket(ticketId: number) {
     const session = await requireAgent();
 
     try {
+        // Obtener ticketCode antes de actualizar
+        const ticket = await db.query.tickets.findFirst({
+            where: eq(tickets.id, ticketId),
+            columns: { ticketCode: true },
+        });
+
         await db.update(tickets)
             .set({
                 assignedToId: null,
@@ -98,7 +104,7 @@ export async function unassignTicket(ticketId: number) {
             })
             .where(eq(tickets.id, ticketId));
 
-        revalidatePath(`/dashboard/tickets/${ticketId}`);
+        revalidatePath(`/dashboard/tickets/${ticket?.ticketCode ?? ticketId}`);
         revalidatePath("/dashboard/admin/tickets");
         revalidatePath("/dashboard/agente");
         return { success: true };
@@ -115,7 +121,7 @@ export async function updateTicketStatus(ticketId: number, newStatus: TicketStat
         // Obtener el estado actual del ticket para validar la transición
         const ticket = await db.query.tickets.findFirst({
             where: eq(tickets.id, ticketId),
-            columns: { status: true },
+            columns: { status: true, ticketCode: true },
         });
 
         if (!ticket) {
@@ -138,7 +144,7 @@ export async function updateTicketStatus(ticketId: number, newStatus: TicketStat
             })
             .where(eq(tickets.id, ticketId));
 
-        revalidatePath(`/dashboard/tickets/${ticketId}`);
+        revalidatePath(`/dashboard/tickets/${ticket.ticketCode}`);
         revalidatePath("/dashboard/admin/tickets");
         revalidatePath("/dashboard/agente");
         return { success: true };

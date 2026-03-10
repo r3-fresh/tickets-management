@@ -1,6 +1,6 @@
 
 
-import { pgTable, text, timestamp, boolean, uuid, serial, integer, jsonb, unique, type AnyPgColumn } from "drizzle-orm/pg-core";
+import { pgTable, text, timestamp, boolean, uuid, serial, integer, jsonb, unique, type AnyPgColumn, smallint } from "drizzle-orm/pg-core";
 import { relations } from "drizzle-orm";
 
 // --- AUTH SCHEMA (Better-Auth Compatible) ---
@@ -92,31 +92,11 @@ export const ticketSubcategories = pgTable("ticket_subcategory", {
     updatedAt: timestamp("updated_at").defaultNow().notNull(),
 });
 
-export const campusLocations = pgTable("campus_location", {
-    id: serial("id").primaryKey(),
-    name: text("name").notNull(),
-    code: text("code"),
-    isActive: boolean("is_active").notNull().default(true),
-    displayOrder: integer("display_order").notNull().default(0),
-    createdAt: timestamp("created_at").defaultNow().notNull(),
-    updatedAt: timestamp("updated_at").defaultNow().notNull(),
-});
-
-export const workAreas = pgTable("work_area", {
-    id: serial("id").primaryKey(),
-    name: text("name").notNull(),
-    description: text("description"),
-    isActive: boolean("is_active").notNull().default(true),
-    displayOrder: integer("display_order").notNull().default(0),
-    createdAt: timestamp("created_at").defaultNow().notNull(),
-    updatedAt: timestamp("updated_at").defaultNow().notNull(),
-});
-
 // --- TICKETS ---
 
 export const tickets = pgTable("ticket", {
     id: serial("id").primaryKey(),
-    ticketCode: text("ticket_code").notNull().unique(), // Format: YYYY-####
+    ticketCode: text("ticket_code").notNull().unique(), // Format: {area_slug}-YYYY-#### (e.g., tsi-2026-0001)
     title: text("title").notNull(),
     description: text("description").notNull(),
     status: text("status").notNull().default("open"), // 'open', 'in_progress', 'pending_validation', 'resolved', 'voided'
@@ -128,10 +108,7 @@ export const tickets = pgTable("ticket", {
     // FK references to configuration tables
     categoryId: integer("category_id").references(() => ticketCategories.id),
     subcategoryId: integer("subcategory_id").references(() => ticketSubcategories.id),
-    campusId: integer("campus_id").references(() => campusLocations.id),
-    areaId: integer("area_id").references(() => workAreas.id), // Requester Area
-
-    // NEW: Target Attention Area
+    // Target Attention Area
     attentionAreaId: integer("attention_area_id").references(() => attentionAreas.id),
 
     watchers: text("watchers").array(), // User IDs que monitorean el ticket
@@ -212,14 +189,6 @@ export const ticketsRelations = relations(tickets, ({ one, many }) => ({
         fields: [tickets.subcategoryId],
         references: [ticketSubcategories.id],
     }),
-    campus: one(campusLocations, {
-        fields: [tickets.campusId],
-        references: [campusLocations.id],
-    }),
-    area: one(workAreas, {
-        fields: [tickets.areaId],
-        references: [workAreas.id],
-    }),
     comments: many(comments),
     attachments: many(ticketAttachments),
 }));
@@ -274,14 +243,6 @@ export const ticketSubcategoriesRelations = relations(ticketSubcategories, ({ on
     tickets: many(tickets),
 }));
 
-export const campusLocationsRelations = relations(campusLocations, ({ many }) => ({
-    tickets: many(tickets),
-}));
-
-
-export const workAreasRelations = relations(workAreas, ({ many }) => ({
-    tickets: many(tickets),
-}));
 
 export const attentionAreas = pgTable("attention_area", {
     id: serial("id").primaryKey(),
@@ -296,9 +257,28 @@ export const attentionAreas = pgTable("attention_area", {
     updatedAt: timestamp("updated_at").defaultNow().notNull(),
 });
 
+// --- TICKET SEQUENCE (counter per area + year) ---
+
+export const ticketSequence = pgTable("ticket_sequence", {
+    id: serial("id").primaryKey(),
+    attentionAreaId: integer("attention_area_id").notNull().references(() => attentionAreas.id),
+    year: smallint("year").notNull(),
+    lastNumber: integer("last_number").notNull().default(0),
+}, (table) => ({
+    uniqueAreaYear: unique().on(table.attentionAreaId, table.year),
+}));
+
+export const ticketSequenceRelations = relations(ticketSequence, ({ one }) => ({
+    attentionArea: one(attentionAreas, {
+        fields: [ticketSequence.attentionAreaId],
+        references: [attentionAreas.id],
+    }),
+}));
+
 export const attentionAreasRelations = relations(attentionAreas, ({ many }) => ({
     users: many(users),
     tickets: many(tickets),
     categories: many(ticketCategories),
+    sequences: many(ticketSequence),
 }));
 

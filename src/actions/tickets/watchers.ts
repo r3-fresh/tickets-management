@@ -17,6 +17,7 @@ export async function updateWatchersAction(ticketId: number, watchers: string[])
             where: eq(tickets.id, ticketId),
             columns: {
                 id: true,
+                ticketCode: true,
                 createdById: true,
                 assignedToId: true,
                 attentionAreaId: true,
@@ -43,7 +44,7 @@ export async function updateWatchersAction(ticketId: number, watchers: string[])
             .set({ watchers: watchers })
             .where(eq(tickets.id, ticketId));
 
-        revalidatePath(`/dashboard/tickets/${ticketId}`);
+        revalidatePath(`/dashboard/tickets/${ticket.ticketCode}`);
         return { success: true };
     } catch (error) {
         console.error("Error updating watchers:", error);

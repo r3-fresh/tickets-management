@@ -1,7 +1,7 @@
 "use server";
 
 import { db } from "@/db";
-import { ticketCategories, ticketSubcategories, campusLocations, workAreas, attentionAreas } from "@/db/schema";
+import { ticketCategories, ticketSubcategories, attentionAreas } from "@/db/schema";
 import { requireAuth } from "@/lib/auth/helpers";
 
 export async function getActiveCategories() {
@@ -36,38 +36,6 @@ export async function getActiveCategories() {
         return categories;
     } catch (error) {
         console.error("Error fetching categories:", error);
-        return [];
-    }
-}
-
-export async function getActiveCampuses() {
-    await requireAuth();
-
-    try {
-        const campuses = await db.query.campusLocations.findMany({
-            where: (campus, { eq }) => eq(campus.isActive, true),
-            orderBy: (campus, { asc }) => [asc(campus.displayOrder)],
-        });
-
-        return campuses;
-    } catch (error) {
-        console.error("Error fetching campuses:", error);
-        return [];
-    }
-}
-
-export async function getActiveWorkAreas() {
-    await requireAuth();
-
-    try {
-        const areas = await db.query.workAreas.findMany({
-            where: (areas, { eq }) => eq(areas.isActive, true),
-            orderBy: (areas, { asc }) => [asc(areas.displayOrder)],
-        });
-
-        return areas;
-    } catch (error) {
-        console.error("Error fetching work areas:", error);
         return [];
     }
 }

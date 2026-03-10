@@ -1,36 +1,53 @@
 import { db } from "@/db";
-import { tickets } from "@/db/schema";
-import { sql } from "drizzle-orm";
+import { tickets, ticketSequence, attentionAreas } from "@/db/schema";
+import { sql, eq, and } from "drizzle-orm";
 
 /**
  * Inserta un ticket con código atómico generado por la BD.
- * Formato: YYYY-#### (ej: 2026-0001). Se reinicia cada año.
+ * Formato: {slug}-YYYY-#### (ej: tsi-2026-0001). Se reinicia cada año por área.
  *
- * Usa una transacción que calcula el siguiente número secuencial
- * con CAST+SUBSTRING (ordenamiento numérico, no lexicográfico)
- * y reintenta hasta 3 veces ante colisión del constraint UNIQUE.
+ * Usa una transacción con SELECT ... FOR UPDATE sobre la fila del contador
+ * para garantizar secuencialidad sin colisiones. Reintenta hasta 3 veces
+ * como red de seguridad ante conflictos de constraint UNIQUE.
  */
 export async function insertTicketWithCode(
     values: Omit<typeof tickets.$inferInsert, "ticketCode">
 ): Promise<{ id: number; ticketCode: string }> {
     const maxRetries = 3;
-    const yearPrefix = `${new Date().getFullYear()}-`;
+    const currentYear = new Date().getFullYear();
+
+    if (!values.attentionAreaId) {
+        throw new Error("Se requiere un área de atención para generar el código de ticket");
+    }
+
+    const areaId = values.attentionAreaId;
 
     for (let attempt = 1; attempt <= maxRetries; attempt++) {
         try {
             const [result] = await db.transaction(async (tx) => {
-                // Obtener el máximo número secuencial del año actual (numérico, no lexicográfico)
-                const maxResult = await tx.execute(
-                    sql`SELECT COALESCE(MAX(CAST(SUBSTRING(ticket_code FROM 6) AS INTEGER)), 0) AS max_num
-                        FROM ticket
-                        WHERE ticket_code LIKE ${yearPrefix + "%"}`
+                // 1. Obtener el slug del área de atención
+                const area = await tx.query.attentionAreas.findFirst({
+                    where: eq(attentionAreas.id, areaId),
+                    columns: { slug: true },
+                });
+
+                if (!area) {
+                    throw new Error(`Área de atención con ID ${areaId} no encontrada`);
+                }
+
+                // 2. Obtener o crear el contador para esta área+año con bloqueo de fila
+                const sequenceResult = await tx.execute(
+                    sql`INSERT INTO ticket_sequence (attention_area_id, year, last_number)
+                        VALUES (${areaId}, ${currentYear}, 1)
+                        ON CONFLICT (attention_area_id, year)
+                        DO UPDATE SET last_number = ticket_sequence.last_number + 1
+                        RETURNING last_number`
                 );
 
-                const maxNum = Number(maxResult.rows[0].max_num);
-                const nextNum = maxNum + 1;
-                const ticketCode = `${yearPrefix}${nextNum.toString().padStart(4, "0")}`;
+                const nextNum = Number(sequenceResult.rows[0].last_number);
+                const ticketCode = `${area.slug}-${currentYear}-${nextNum.toString().padStart(4, "0")}`;
 
-                // Insertar dentro de la misma transacción
+                // 3. Insertar el ticket con el código generado
                 return tx
                     .insert(tickets)
                     .values({ ...values, ticketCode })

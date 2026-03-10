@@ -29,8 +29,6 @@ interface Ticket {
     subcategoryId: number | null;
     categoryName: string | null;
     categoryId: number | null;
-    areaId: number | null;
-    campusId: number | null;
     priority: string;
     status: string;
     createdAt: Date;
@@ -127,7 +125,7 @@ export function AdminTicketsTable({ tickets, totalCount, assignedUsers, categori
                                         </TableCell>
                                         <TableCell>
                                             <Link 
-                                                href={`/dashboard/tickets/${ticket.id}`} 
+                                                href={`/dashboard/tickets/${ticket.ticketCode}`} 
                                                 className="hover:underline font-medium text-foreground block truncate max-w-[250px]" 
                                                 title={ticket.title}
                                             >
@@ -180,7 +178,7 @@ export function AdminTicketsTable({ tickets, totalCount, assignedUsers, categori
                                             {formatDate(ticket.createdAt)}
                                         </TableCell>
                                         <TableCell className="text-center">
-                                            <CopyLinkButton ticketId={ticket.id} />
+                                            <CopyLinkButton ticketCode={ticket.ticketCode} />
                                         </TableCell>
                                     </TableRow>
                                 );

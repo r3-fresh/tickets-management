@@ -1,33 +1,61 @@
 import { db } from "@/db";
-import { ticketCategories, ticketSubcategories, campusLocations, workAreas, appSettings, attentionAreas } from "@/db/schema";
+import { ticketCategories, ticketSubcategories, appSettings, attentionAreas } from "@/db/schema";
 
 async function seed() {
     console.log("🌱 Seeding database...");
 
     try {
-        // 1. Seed Categories
+        // 1. Seed Attention Areas (must be before categories for FK reference)
+        console.log("🎯 Seeding attention areas...");
+        const attentionAreasList = await db.insert(attentionAreas).values([
+            {
+                name: "Tecnologías y Sistemas de Información",
+                slug: "tsi",
+                isAcceptingTickets: true
+            },
+            {
+                name: "Fondo Editorial",
+                slug: "fe",
+                isAcceptingTickets: false
+            },
+            {
+                name: "Difusión",
+                slug: "dif",
+                isAcceptingTickets: false
+            }
+        ]).onConflictDoNothing().returning({ id: attentionAreas.id, name: attentionAreas.name });
+
+        console.log(`✅ Created ${attentionAreasList.length} attention areas`);
+
+        // Get TSI area ID for linking categories
+        const tsiArea = attentionAreasList.find(a => a.name.includes("Tecnologías"));
+
+        // 2. Seed Categories (linked to attention areas)
         console.log("📁 Seeding categories...");
         const categories = await db.insert(ticketCategories).values([
             {
                 name: "Sistema de Gestión Bibliotecaria",
                 description: "Problemas del sistema bibliotecario",
-                displayOrder: 1
+                displayOrder: 1,
+                attentionAreaId: tsiArea?.id ?? null,
             },
             {
                 name: "Plataformas Web",
                 description: "Problemas de las diferentes páginas web",
-                displayOrder: 2
+                displayOrder: 2,
+                attentionAreaId: tsiArea?.id ?? null,
             },
             {
                 name: "Sistematización y Reportería",
                 description: "Problemas referentes a la reportería",
-                displayOrder: 3
+                displayOrder: 3,
+                attentionAreaId: tsiArea?.id ?? null,
             },
         ]).returning({ id: ticketCategories.id, name: ticketCategories.name });
 
         console.log(`✅ Created ${categories.length} categories`);
 
-        // 2. Seed Subcategories
+        // 3. Seed Subcategories
         console.log("📂 Seeding subcategories...");
         const subcategories = await db.insert(ticketSubcategories).values([
             // Sistema de Gestión Bibliotecaria
@@ -87,51 +115,7 @@ async function seed() {
 
         console.log(`✅ Created ${subcategories.length} subcategories`);
 
-        // 3. Seed Campus Locations
-        console.log("🏫 Seeding campus locations...");
-        const campusData = await db.insert(campusLocations).values([
-            { name: "Corporativo", code: "COR", displayOrder: 1 },
-            { name: "Huancayo", code: "HYO", displayOrder: 2 },
-            { name: "Los Olivos", code: "LIM", displayOrder: 3 },
-            { name: "Miraflores", code: "MIR", displayOrder: 4 },
-            { name: "Arequipa", code: "AQP", displayOrder: 5 },
-            { name: "Cusco", code: "CUS", displayOrder: 6 },
-            { name: "Instituto", code: "ICC", displayOrder: 7 },
-            { name: "Ica", code: "ICA", displayOrder: 8 },
-            { name: "Ayacucho", code: "AYA", displayOrder: 9 },
-            { name: "Virtual", code: "VIR", displayOrder: 10 },
-        ]).returning();
-
-        console.log(`✅ Created ${campusData.length} campus locations`);
-
-        // 4. Seed Work Areas
-        console.log("💼 Seeding work areas...");
-        const areas = await db.insert(workAreas).values([
-            {
-                name: "Servicios presenciales",
-                description: "Servicios de atención presencial",
-                displayOrder: 1
-            },
-            {
-                name: "Servicios Virtuales",
-                description: "Servicios de atención virtual",
-                displayOrder: 2
-            },
-            {
-                name: "Apoyo a la investigación",
-                description: "Servicios de apoyo a la investigación",
-                displayOrder: 3
-            },
-            {
-                name: "Gestión de recursos de información",
-                description: "Gestión de recursos e información",
-                displayOrder: 4
-            },
-        ]).returning();
-
-        console.log(`✅ Created ${areas.length} work areas`);
-
-        // 5. Seed App Settings
+        // 4. Seed App Settings
         console.log("⚙️  Seeding app settings...");
         await db.insert(appSettings).values([
             {
@@ -145,28 +129,6 @@ async function seed() {
         ]).onConflictDoNothing();
 
         console.log("✅ App settings configured");
-
-        // 6. Seed Attention Areas
-        console.log("🎯 Seeding attention areas...");
-        await db.insert(attentionAreas).values([
-            {
-                name: "Tecnologías y Sistemas de Información",
-                slug: "tsi",
-                isAcceptingTickets: true
-            },
-            {
-                name: "Fondo Editorial",
-                slug: "fe",
-                isAcceptingTickets: false
-            },
-            {
-                name: "Difusión",
-                slug: "dif",
-                isAcceptingTickets: false
-            }
-        ]).onConflictDoNothing();
-
-        console.log("✅ Attention areas seeded");
 
         console.log("\n🎉 Database seeded successfully!");
         console.log("\n📝 Next steps:");

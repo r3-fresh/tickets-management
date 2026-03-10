@@ -103,7 +103,7 @@ export async function addCommentAction(formData: FormData) {
             });
         }
 
-        revalidatePath(`/dashboard/tickets/${ticketId}`);
+        revalidatePath(`/dashboard/tickets/${ticket.ticketCode}`);
         return { success: true };
     } catch (error) {
         console.error("Error adding comment:", error);
