@@ -2,35 +2,29 @@ import { getBaseTemplate } from './base-template';
 import { escapeHtml } from '../escape-html';
 
 export interface TicketAssignedTemplateParams {
-    userName: string;
-    ticketCode: string;
-    title: string;
-    category: string;
-    subcategory: string;
-    agentName: string;
-    ticketUrl: string;
-    attentionAreaName?: string;
+  userName: string;
+  ticketCode: string;
+  agentName: string;
+  ticketUrl: string;
+  attentionAreaName?: string;
 }
 
 export function getTicketAssignedTemplate(params: TicketAssignedTemplateParams): string {
-    const userName = escapeHtml(params.userName);
-    const ticketCode = escapeHtml(params.ticketCode);
-    const title = escapeHtml(params.title);
-    const category = escapeHtml(params.category);
-    const subcategory = escapeHtml(params.subcategory);
+  const userName = escapeHtml(params.userName);
+  const ticketCode = escapeHtml(params.ticketCode);
 
-    const content = `
+  const agentName = escapeHtml(params.agentName);
+
+  const content = `
         <h2 style="color: #333; font-size: 20px; margin-top: 0; text-align: center;">Ticket asignado</h2>
         
         <p style="margin: 15px 0;">Hola <strong>${userName}</strong>,</p>
         
-        <p style="margin: 15px 0;">Te informamos que tu ticket <strong>#${ticketCode}</strong> ha sido asignado a un agente de soporte y está en proceso de atención.</p>
+        <p style="margin: 15px 0;">Te informamos que tu ticket <strong>#${ticketCode}</strong> ha sido asignado y está en proceso de atención.</p>
         
         <div style="background-color: #DBEAFE; border-left: 4px solid #3B82F6; padding: 15px; margin: 20px 0; border-radius: 4px;">
-            <p style="margin: 0; color: #1E40AF; font-weight: 500;">Tu solicitud está siendo atendida por nuestro equipo de soporte especializado.</p>
+            <p style="margin: 0; color: #1E40AF; font-weight: 500;">Tu solicitud está siendo atendida por <strong>${agentName}</strong>.</p>
         </div>
-
-
         
         <p style="margin: 15px 0;">Estamos trabajando en tu solicitud y te contactaremos pronto si necesitamos más información. Puedes dar seguimiento en el siguiente botón:</p>
         
@@ -39,5 +33,5 @@ export function getTicketAssignedTemplate(params: TicketAssignedTemplateParams):
         </div>
     `;
 
-    return getBaseTemplate(content, params.attentionAreaName);
+  return getBaseTemplate(content, params.attentionAreaName);
 }

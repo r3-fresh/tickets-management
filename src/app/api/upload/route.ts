@@ -5,7 +5,7 @@ import { ticketAttachments } from "@/db/schema";
 import { uploadFileToDrive, deleteFileFromDrive } from "@/lib/drive/client";
 import { eq, and, isNull } from "drizzle-orm";
 
-const MAX_FILE_SIZE = 50 * 1024 * 1024; // 50MB
+const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5MB
 
 /**
  * POST /api/upload
@@ -37,7 +37,7 @@ export async function POST(request: NextRequest) {
 
         if (file.size > MAX_FILE_SIZE) {
             return NextResponse.json(
-                { error: `El archivo excede el límite de 50MB` },
+                { error: `El archivo excede el límite de 5 MB` },
                 { status: 413 }
             );
         }

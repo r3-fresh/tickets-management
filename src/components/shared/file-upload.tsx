@@ -32,7 +32,7 @@ export function FileUpload({ uploadToken, onFilesChange, onUploadComplete }: Fil
                     setFiles(fileItems.map((fi) => fi.file as File));
                 }}
                 allowMultiple={true}
-                maxFileSize="50MB"
+                maxFileSize="5MB"
                 name="file"
                 credits={false}
                 server={{

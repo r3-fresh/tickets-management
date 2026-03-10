@@ -2,32 +2,32 @@ import { getBaseTemplate } from './base-template';
 import { escapeHtml } from '../escape-html';
 
 export interface TicketCreatedTemplateParams {
-    userName: string;
-    ticketCode: string;
-    category: string;
-    subcategory: string;
-    title: string;
-    description: string;
-    priority: string;
-    createdAt: string;
-    ticketUrl: string;
-    attentionAreaName?: string;
+  userName: string;
+  ticketCode: string;
+  category: string;
+  subcategory: string;
+  title: string;
+  description: string;
+  priority: string;
+  createdAt: string;
+  ticketUrl: string;
+  attentionAreaName?: string;
 }
 
 export function getTicketCreatedTemplate(params: TicketCreatedTemplateParams): string {
-    const userName = escapeHtml(params.userName);
-    const ticketCode = escapeHtml(params.ticketCode);
-    const category = escapeHtml(params.category);
-    const subcategory = escapeHtml(params.subcategory);
-    const title = escapeHtml(params.title);
-    const description = escapeHtml(params.description);
-    const priority = escapeHtml(params.priority);
-    const createdAt = escapeHtml(params.createdAt);
+  const userName = escapeHtml(params.userName);
+  const ticketCode = escapeHtml(params.ticketCode);
+  const category = escapeHtml(params.category);
+  const subcategory = escapeHtml(params.subcategory);
+  const title = escapeHtml(params.title);
+  const description = params.description;
+  const priority = escapeHtml(params.priority);
+  const createdAt = escapeHtml(params.createdAt);
 
-    const content = `
+  const content = `
         <h2 style="color: #333; font-size: 20px; margin-top: 0; text-align: center;">Nueva solicitud de atención</h2>
         
-        <p style="margin: 15px 0;">Estimado <strong>${userName}</strong>:</p>
+        <p style="margin: 15px 0;">Hola <strong>${userName}</strong>,</p>
         
         <p style="margin: 15px 0;">Gracias por registrar tu requerimiento a través de nuestro formulario. 
         En breve estaremos atendiendo tu pedido, el cual detallamos a continuación.</p>
@@ -55,5 +55,5 @@ export function getTicketCreatedTemplate(params: TicketCreatedTemplateParams): s
         </div>
     `;
 
-    return getBaseTemplate(content, params.attentionAreaName);
+  return getBaseTemplate(content, params.attentionAreaName);
 }

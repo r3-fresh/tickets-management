@@ -27,7 +27,7 @@ interface UserDashboardProps {
     userId: string;
 }
 
-const ACTIVE_STATUSES = ["open", "in_progress", "pending_validation"] as const;
+const ACTIVE_STATUSES = ["open", "in_progress"] as const;
 
 export async function UserDashboard({ userId }: UserDashboardProps) {
     // --- All independent queries in parallel ---

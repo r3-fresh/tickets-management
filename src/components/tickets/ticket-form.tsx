@@ -479,7 +479,7 @@ export function NewTicketForm({
                                             <span className="text-xs text-muted-foreground">(opcional)</span>
                                         </div>
                                         <p className="text-xs text-muted-foreground mb-3">
-                                            Adjunta capturas de pantalla, documentos u otros archivos relevantes. Máximo 50 MB por archivo.
+                                            Adjunta capturas de pantalla, documentos u otros archivos relevantes. Máximo 5 MB por archivo.
                                         </p>
                                         <Suspense fallback={null}>
                                             <FileUpload uploadToken={uploadToken} />

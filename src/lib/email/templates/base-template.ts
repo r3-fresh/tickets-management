@@ -3,7 +3,7 @@
 export const LOGO_URL = 'https://ci6.googleusercontent.com/proxy/h9njXK3mllYy_7gMz4cP0NM0BxxxRAQ5ioBxUdJYtmRv1hU1TSKJAaP584AykBcLNRJYOWbMuHYUF-QuDxeR7mO6OnxqnzarGgxD7KrJ-yEq2NCsjb2bW9jfqhdh9YxzU5Wz5p5cfYz6qqDybm1KzlxFs0XQdBT7ILg=s0-d-e1-ft#https://gallery.mailchimp.com/656fbe8d69172395c3bfc518a/images/1aef640b-0bc8-4eea-84d5-74078777589a.png';
 
 export function getBaseTemplate(content: string, attentionAreaName: string = 'Hub de Información'): string {
-    return `
+  return `
 <!DOCTYPE html>
 <html lang="es">
 <head>

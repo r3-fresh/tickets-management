@@ -28,7 +28,7 @@ interface AgentDashboardProps {
     attentionAreaId: number;
 }
 
-const ACTIVE_STATUSES = ["open", "in_progress", "pending_validation"] as const;
+const ACTIVE_STATUSES = ["open", "in_progress"] as const;
 
 export async function AgentDashboard({ userId, attentionAreaId }: AgentDashboardProps) {
     // All queries are independent — run in parallel
