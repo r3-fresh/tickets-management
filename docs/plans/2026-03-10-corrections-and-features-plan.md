@@ -25,33 +25,16 @@
 - Subjects de email: `Ticket #2026-0001 | Titulo` (sin slug de area).
 - Helper `getDisplayCode()` para extraer la parte visible del codigo.
 
+### Fase 3: Correcciones inmediatas
+- **Branch:** `fix/corrections-batch-1` (mergeada)
+- 3.1: Email "Nueva solicitud de atencion" — HTML a texto plano con `htmlToPlainText()`, saludo "Estimado" cambiado a "Hola".
+- 3.2: Dashboards agente/usuario — filtro de ultimos tickets cambiado a solo `open` e `in_progress`.
+- 3.3: Limite de archivos reducido a 5 MB (cliente FilePond + API + textos UI).
+- 3.4: Email "Ticket asignado" — incluye nombre del agente asignado en la descripcion.
+
 ---
 
 ## Fases pendientes
-
-### Fase 3: Correcciones inmediatas
-- **Branch:** `fix/corrections-batch-1`
-- **Prioridad:** Alta
-
-#### 3.1 Email "Nueva solicitud de atencion" - HTML en descripcion
-- El campo descripcion se renderiza con etiquetas HTML crudas en el correo.
-- Solucion: Convertir HTML a texto plano o renderizar correctamente en el template.
-- Ademas, cambiar "Estimado" por "Hola" en el saludo.
-
-#### 3.2 Dashboards agente/usuario - Filtrar ultimos tickets
-- Las tablas de ultimos tickets en los dashboards de agente y usuario muestran tickets con estado `pending_validation`.
-- Solo deben mostrar tickets con estado `open` e `in_progress`.
-
-#### 3.3 Limite de archivos 5MB
-- Vercel tiene un limite de 5MB por archivo en uploads.
-- Actualizar validacion en FilePond y en la API de upload.
-- Mostrar mensaje claro cuando el usuario intente subir un archivo mayor a 5MB.
-- Actualizar textos descriptivos en la UI.
-
-#### 3.4 Email "Ticket asignado" - Incluir nombre del agente
-- Actualizar el template de correo para que la descripcion incluya el nombre del agente encargado de la atencion.
-
----
 
 ### Fase 4: Formularios por area de atencion
 - **Branch:** `feat/area-specific-forms`

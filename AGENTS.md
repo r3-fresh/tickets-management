@@ -72,6 +72,10 @@ src/
 
 ## 🎨 Guías de Estilo de Código
 
+### Indentación
+- **2 espacios** para toda indentación (TypeScript, TSX, JSON, CSS)
+- NO usar tabs ni 4 espacios
+
 ### Imports
 - Usar alias `@/*` para imports desde `src/*`
 - Orden: externos → internos → relativos → tipos
@@ -93,14 +97,14 @@ import type { Ticket } from "@/types";
 ```typescript
 // Definir props interface antes del componente
 interface MyComponentProps {
-    title: string;
-    onSubmit: (data: FormData) => void;
-    isDisabled?: boolean;
+  title: string;
+  onSubmit: (data: FormData) => void;
+  isDisabled?: boolean;
 }
 
 // Client components: agregar "use client" si usan hooks
 export function MyComponent({ title, onSubmit, isDisabled = false }: MyComponentProps) {
-    // ...
+  // ...
 }
 ```
 
@@ -118,18 +122,18 @@ import { mySchema } from "@/lib/validation/schemas";
 import { requireAuth } from "@/lib/auth/helpers";
 
 export async function myAction(formData: FormData) {
-    const session = await requireAuth();
-    
-    const result = mySchema.safeParse({
-        field: formData.get("field"),
-    });
-    
-    if (!result.success) {
-        return { error: "Datos inválidos" };
-    }
-    
-    // Lógica de la acción...
-    return { success: true, data: result.data };
+  const session = await requireAuth();
+  
+  const result = mySchema.safeParse({
+    field: formData.get("field"),
+  });
+  
+  if (!result.success) {
+    return { error: "Datos inválidos" };
+  }
+  
+  // Lógica de la acción...
+  return { success: true, data: result.data };
 }
 ```
 
@@ -149,7 +153,7 @@ import { tickets } from "@/db/schema";
 import { eq } from "drizzle-orm";
 
 const ticket = await db.query.tickets.findFirst({
-    where: eq(tickets.id, ticketId),
+  where: eq(tickets.id, ticketId),
 });
 ```
 
@@ -176,9 +180,9 @@ import { cn } from "@/lib/utils/cn";
 - Usar objetos `as const` para enums
 ```typescript
 export const TICKET_STATUS = {
-    OPEN: 'open',
-    IN_PROGRESS: 'in_progress',
-    // ...
+  OPEN: 'open',
+  IN_PROGRESS: 'in_progress',
+  // ...
 } as const;
 ```
 
@@ -196,7 +200,7 @@ export const TICKET_STATUS = {
 - Validación: usar Zod y retornar errores específicos
 ```typescript
 if (!result.success) {
-    return { error: "Mensaje de error", details: result.error.flatten() };
+  return { error: "Mensaje de error", details: result.error.flatten() };
 }
 ```
 
@@ -257,7 +261,7 @@ El plan completo con todas las fases está documentado en:
 
 ### Estado actual
 - **Fases 2a-2c:** Completadas (eliminación campus/work_areas, códigos de ticket con slug, URLs con ticketCode, emails sin slug)
-- **Fase 3:** Pendiente - Correcciones inmediatas (emails, dashboards, límite 5MB)
+- **Fase 3:** Completada - Correcciones inmediatas (emails HTML fix, dashboards filtrados, límite 5MB, nombre de agente en emails)
 - **Fase 4:** Pendiente - Formularios por área de atención
 - **Fase 5:** Pendiente - Prioridades configurables por área
 - **Fase 6:** Pendiente - Módulo de proveedores y tickets derivados
