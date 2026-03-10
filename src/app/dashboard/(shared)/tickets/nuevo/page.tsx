@@ -7,45 +7,45 @@ import { getActiveCategories, getActiveAttentionAreas } from "@/actions/config/g
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
-    title: "Nuevo ticket",
+  title: "Nuevo ticket",
 };
 
 const NewTicketForm = dynamic(
-    () => import("@/components/tickets/ticket-form").then(mod => ({ default: mod.NewTicketForm }))
+  () => import("@/components/tickets/ticket-form").then(mod => ({ default: mod.NewTicketForm }))
 );
 
 export default async function NuevoTicketPage() {
-    const session = await requireAuth();
+  const session = await requireAuth();
 
-    // All queries are independent after session — run in parallel
-    const [
-        availableUsers,
-        allowNewTicketsSetting,
-        categories,
-        attentionAreas,
-        disabledMessage,
-    ] = await Promise.all([
-        db.select({
-            id: users.id,
-            name: users.name,
-            email: users.email,
-            image: users.image
-        }).from(users),
-        getAppSetting("allow_new_tickets"),
-        getActiveCategories(),
-        getActiveAttentionAreas(),
-        getAppSetting("ticket_disabled_message"),
-    ]);
+  // All queries are independent after session — run in parallel
+  const [
+    availableUsers,
+    allowNewTicketsSetting,
+    categories,
+    attentionAreas,
+    disabledMessage,
+  ] = await Promise.all([
+    db.select({
+      id: users.id,
+      name: users.name,
+      email: users.email,
+      image: users.image
+    }).from(users),
+    getAppSetting("allow_new_tickets"),
+    getActiveCategories(),
+    getActiveAttentionAreas(),
+    getAppSetting("ticket_disabled_message"),
+  ]);
 
-    const allowNewTickets = allowNewTicketsSetting !== "false";
+  const allowNewTickets = allowNewTicketsSetting !== "false";
 
-    return (
-        <NewTicketForm
-            availableUsers={availableUsers}
-            allowNewTickets={allowNewTickets}
-            categories={categories}
-            attentionAreas={attentionAreas}
-            disabledMessage={disabledMessage}
-        />
-    );
+  return (
+    <NewTicketForm
+      availableUsers={availableUsers}
+      allowNewTickets={allowNewTickets}
+      categories={categories}
+      attentionAreas={attentionAreas}
+      disabledMessage={disabledMessage}
+    />
+  );
 }

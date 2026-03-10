@@ -5,11 +5,11 @@ import type { TicketStatus, TicketPriority, ClosedBy } from "@/types";
 // ============================================
 
 export const TICKET_STATUS: Record<string, TicketStatus> = {
-    OPEN: 'open',
-    IN_PROGRESS: 'in_progress',
-    PENDING_VALIDATION: 'pending_validation',
-    RESOLVED: 'resolved',
-    VOIDED: 'voided',
+  OPEN: 'open',
+  IN_PROGRESS: 'in_progress',
+  PENDING_VALIDATION: 'pending_validation',
+  RESOLVED: 'resolved',
+  VOIDED: 'voided',
 } as const;
 
 // ============================================
@@ -17,10 +17,10 @@ export const TICKET_STATUS: Record<string, TicketStatus> = {
 // ============================================
 
 export const TICKET_PRIORITY: Record<string, TicketPriority> = {
-    LOW: 'low',
-    MEDIUM: 'medium',
-    HIGH: 'high',
-    CRITICAL: 'critical',
+  LOW: 'low',
+  MEDIUM: 'medium',
+  HIGH: 'high',
+  CRITICAL: 'critical',
 } as const;
 
 // ============================================
@@ -28,9 +28,9 @@ export const TICKET_PRIORITY: Record<string, TicketPriority> = {
 // ============================================
 
 export const CLOSURE_TYPE: Record<string, ClosedBy> = {
-    USER: 'user',
-    ADMIN: 'admin',
-    SYSTEM: 'system',
+  USER: 'user',
+  ADMIN: 'admin',
+  SYSTEM: 'system',
 } as const;
 
 // ============================================
@@ -44,24 +44,24 @@ export const VALIDATION_TIMEOUT_HOURS = 48;
 // ============================================
 
 export const STATUS_LABELS: Record<TicketStatus, string> = {
-    open: "Abierto",
-    in_progress: "En progreso",
-    pending_validation: "Pendiente de validación",
-    resolved: "Resuelto",
-    voided: "Anulado",
+  open: "Abierto",
+  in_progress: "En progreso",
+  pending_validation: "Pendiente de validación",
+  resolved: "Resuelto",
+  voided: "Anulado",
 };
 
 export const PRIORITY_LABELS: Record<TicketPriority, string> = {
-    low: "Baja",
-    medium: "Media",
-    high: "Alta",
-    critical: "Crítica",
+  low: "Baja",
+  medium: "Media",
+  high: "Alta",
+  critical: "Crítica",
 };
 
 export const CLOSURE_TYPE_LABELS: Record<ClosedBy, string> = {
-    user: "Usuario",
-    admin: "Administrador",
-    system: "Sistema (48hrs)",
+  user: "Usuario",
+  admin: "Administrador",
+  system: "Sistema (48hrs)",
 };
 
 // ============================================
@@ -69,9 +69,9 @@ export const CLOSURE_TYPE_LABELS: Record<ClosedBy, string> = {
 // ============================================
 
 export const VALID_STATUS_TRANSITIONS: Record<TicketStatus, readonly TicketStatus[]> = {
-    open: ['in_progress', 'voided'],
-    in_progress: ['open', 'pending_validation', 'resolved', 'voided'],
-    pending_validation: ['resolved', 'in_progress'],
-    resolved: ['in_progress'],
-    voided: [],
+  open: ['in_progress', 'voided'],
+  in_progress: ['open', 'pending_validation', 'resolved', 'voided'],
+  pending_validation: ['resolved', 'in_progress'],
+  resolved: ['in_progress'],
+  voided: [],
 };

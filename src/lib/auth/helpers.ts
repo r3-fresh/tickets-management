@@ -11,10 +11,10 @@ import type { AppSession } from "@/types";
  * @returns Session object or null if not authenticated
  */
 export const getSession = cache(async (): Promise<AppSession | null> => {
-    const session = await auth.api.getSession({
-        headers: await headers(),
-    });
-    return session as AppSession | null;
+  const session = await auth.api.getSession({
+    headers: await headers(),
+  });
+  return session as AppSession | null;
 });
 
 /**
@@ -23,18 +23,18 @@ export const getSession = cache(async (): Promise<AppSession | null> => {
  * @throws Redirects if not authenticated or user is deactivated
  */
 export async function requireAuth(): Promise<AppSession> {
-    const session = await getSession();
+  const session = await getSession();
 
-    if (!session?.user) {
-        redirect("/auth/signin?error=unauthorized");
-    }
+  if (!session?.user) {
+    redirect("/auth/signin?error=unauthorized");
+  }
 
-    // Check if user is active
-    if (!session.user.isActive) {
-        redirect("/auth/signin?error=user_deactivated");
-    }
+  // Check if user is active
+  if (!session.user.isActive) {
+    redirect("/auth/signin?error=user_deactivated");
+  }
 
-    return session;
+  return session;
 }
 
 /**
@@ -43,13 +43,13 @@ export async function requireAuth(): Promise<AppSession> {
  * @throws Redirects if not authenticated or not an admin
  */
 export async function requireAdmin(): Promise<AppSession> {
-    const session = await requireAuth();
+  const session = await requireAuth();
 
-    if (session.user.role !== "admin") {
-        redirect("/dashboard?error=forbidden");
-    }
+  if (session.user.role !== "admin") {
+    redirect("/dashboard?error=forbidden");
+  }
 
-    return session;
+  return session;
 }
 
 /**
@@ -57,8 +57,8 @@ export async function requireAdmin(): Promise<AppSession> {
  * @returns true if user is admin, false otherwise
  */
 export async function isAdmin(): Promise<boolean> {
-    const session = await getSession();
-    return session?.user?.role === "admin";
+  const session = await getSession();
+  return session?.user?.role === "admin";
 }
 
 /**
@@ -66,19 +66,19 @@ export async function isAdmin(): Promise<boolean> {
  * @returns Session object
  */
 export async function requireAgent(): Promise<AppSession> {
-    const session = await requireAuth();
+  const session = await requireAuth();
 
-    if (session.user.role !== "agent" && session.user.role !== "admin") {
-        redirect("/dashboard?error=forbidden");
-    }
+  if (session.user.role !== "agent" && session.user.role !== "admin") {
+    redirect("/dashboard?error=forbidden");
+  }
 
-    return session;
+  return session;
 }
 
 /**
  * Checks if key user is an agent
  */
 export async function isAgent(): Promise<boolean> {
-    const session = await getSession();
-    return session?.user?.role === "agent";
+  const session = await getSession();
+  return session?.user?.role === "agent";
 }

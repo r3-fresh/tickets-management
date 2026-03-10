@@ -6,19 +6,19 @@ import { usePathname } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import {
-    LayoutDashboard,
-    Ticket,
-    LogOut,
-    Menu,
-    X,
-    User,
-    Shield,
-    Eye,
-    Settings,
-    ChevronLeft,
-    ChevronRight,
-    BookOpen,
-    PlusCircle
+  LayoutDashboard,
+  Ticket,
+  LogOut,
+  Menu,
+  X,
+  User,
+  Shield,
+  Eye,
+  Settings,
+  ChevronLeft,
+  ChevronRight,
+  BookOpen,
+  PlusCircle
 } from "lucide-react";
 import { authClient } from "@/lib/auth/client";
 import { useRouter } from "next/navigation";
@@ -30,433 +30,433 @@ import { cn } from "@/lib/utils/cn";
 // --- STATIC NAVIGATION ITEMS (hoisted outside component) ---
 
 const KNOWLEDGE_BASE_ITEM = {
-    href: "https://docs.google.com/spreadsheets/d/1F23_z7fQJbfGCmvavge3Igw-FcyG4Xd_A-MR3s5WURc/",
-    label: "Base de conocimiento",
-    icon: BookOpen,
-    external: true
+  href: "https://docs.google.com/spreadsheets/d/1F23_z7fQJbfGCmvavge3Igw-FcyG4Xd_A-MR3s5WURc/",
+  label: "Base de conocimiento",
+  icon: BookOpen,
+  external: true
 };
 
 const USER_NAV_ITEMS = [
-    { href: "/dashboard", label: "Mi panel", icon: LayoutDashboard },
-    { href: "/dashboard/tickets/nuevo", label: "Nuevo ticket", icon: PlusCircle },
-    { href: "/dashboard/mis-tickets", label: "Mis tickets", icon: Ticket },
-    { href: "/dashboard/seguimiento", label: "En seguimiento", icon: Eye },
+  { href: "/dashboard", label: "Mi panel", icon: LayoutDashboard },
+  { href: "/dashboard/tickets/nuevo", label: "Nuevo ticket", icon: PlusCircle },
+  { href: "/dashboard/mis-tickets", label: "Mis tickets", icon: Ticket },
+  { href: "/dashboard/seguimiento", label: "En seguimiento", icon: Eye },
 ];
 
 const AGENT_NAV_ITEMS = [
-    { href: "/dashboard", label: "Mi panel", icon: LayoutDashboard },
-    { href: "/dashboard/tickets/nuevo", label: "Nuevo ticket", icon: PlusCircle },
-    { href: "/dashboard/mis-tickets", label: "Mis tickets", icon: Ticket },
-    { href: "/dashboard/seguimiento", label: "En seguimiento", icon: Eye },
-    { href: "/dashboard/area", label: "Tickets del área", icon: Ticket },
+  { href: "/dashboard", label: "Mi panel", icon: LayoutDashboard },
+  { href: "/dashboard/tickets/nuevo", label: "Nuevo ticket", icon: PlusCircle },
+  { href: "/dashboard/mis-tickets", label: "Mis tickets", icon: Ticket },
+  { href: "/dashboard/seguimiento", label: "En seguimiento", icon: Eye },
+  { href: "/dashboard/area", label: "Tickets del área", icon: Ticket },
 ];
 
 const ADMIN_NAV_ITEMS = [
-    { href: "/dashboard", label: "Panel de control", icon: LayoutDashboard },
-    { href: "/dashboard/explorador", label: "Explorador de tickets", icon: Ticket },
+  { href: "/dashboard", label: "Panel de control", icon: LayoutDashboard },
+  { href: "/dashboard/explorador", label: "Explorador de tickets", icon: Ticket },
 ];
 
 const ROLES_ITEM = { href: "/dashboard/usuarios", label: "Gestión de usuarios", icon: Shield, external: false };
 
 export default function DashboardLayout({
-    children,
+  children,
 }: {
-    children: React.ReactNode;
+  children: React.ReactNode;
 }) {
-    const [isSidebarOpen, setIsSidebarOpen] = useState(false); // Mobile toggle
-    const [isCollapsed, setIsCollapsed] = useState(false); // Desktop collapse
-    const pathname = usePathname();
-    const router = useRouter();
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false); // Mobile toggle
+  const [isCollapsed, setIsCollapsed] = useState(false); // Desktop collapse
+  const pathname = usePathname();
+  const router = useRouter();
 
-    // Close mobile sidebar on Escape key
-    const handleEscape = useCallback((e: KeyboardEvent) => {
-        if (e.key === "Escape") setIsSidebarOpen(false);
-    }, []);
+  // Close mobile sidebar on Escape key
+  const handleEscape = useCallback((e: KeyboardEvent) => {
+    if (e.key === "Escape") setIsSidebarOpen(false);
+  }, []);
 
-    useEffect(() => {
-        if (isSidebarOpen) {
-            document.addEventListener("keydown", handleEscape);
-            return () => document.removeEventListener("keydown", handleEscape);
-        }
-    }, [isSidebarOpen, handleEscape]);
-
-    // Use auth hook to get session data
-    const { data: session, isPending } = authClient.useSession();
-
-    const handleSignOut = async () => {
-        await authClient.signOut({
-            fetchOptions: {
-                onSuccess: () => {
-                    router.push("/login"); // Handle redirect here
-                },
-            },
-        });
-    };
-
-    // --- NAVIGATION ITEMS CONFIGURATION ---
-
-    // Type assertion for better-auth session with role
-    const userRole = (session?.user as { role?: string })?.role;
-
-    // Settings items (Agent/Admin) - depends on userRole, cannot be hoisted
-    const settingsItem = {
-        href: userRole === "admin" ? "/dashboard/sistema" : "/dashboard/configuracion",
-        label: userRole === "admin" ? "Configuración del sistema" : "Configuración del área",
-        icon: Settings,
-        external: false
-    };
-
-    let navigationSection = USER_NAV_ITEMS;
-    let resourcesSection = [KNOWLEDGE_BASE_ITEM];
-
-    if (userRole === "admin") {
-        navigationSection = ADMIN_NAV_ITEMS;
-        resourcesSection = [...resourcesSection, ROLES_ITEM, settingsItem];
-    } else if (userRole === "agent") {
-        navigationSection = AGENT_NAV_ITEMS;
-        resourcesSection = [...resourcesSection, settingsItem];
+  useEffect(() => {
+    if (isSidebarOpen) {
+      document.addEventListener("keydown", handleEscape);
+      return () => document.removeEventListener("keydown", handleEscape);
     }
+  }, [isSidebarOpen, handleEscape]);
 
-    return (
-        <div className="flex h-dvh overflow-hidden bg-background">
-            {/* --- DESKTOP SIDEBAR --- */}
-            <aside
-                aria-label="Menú principal"
-                className={cn(
-                    "hidden md:flex flex-col shrink-0 h-full overflow-hidden transition-all duration-300 ease-in-out z-20 border-r border-sidebar-border",
-                    "bg-sidebar text-sidebar-foreground",
-                    isCollapsed ? "w-20" : "w-72"
-                )}
-            >
-                {/* 1. TOP: User Profile */}
-                <div className={cn(
-                    "relative flex border-b border-sidebar-border transition-all duration-300",
-                    isCollapsed ? "flex-col items-center justify-center py-4 px-2 gap-4" : "flex-col items-start py-6 px-6 gap-3"
-                )}>
-                    {/* Theme Toggle - Absolute Top Right (visible only expanded) */}
-                    {!isCollapsed && (
-                        <div className="absolute top-4 right-4 z-20">
-                            <ModeToggle />
-                        </div>
-                    )}
+  // Use auth hook to get session data
+  const { data: session, isPending } = authClient.useSession();
 
-                    {isPending ? (
-                        <>
-                            <Skeleton className={cn("rounded-full shrink-0", isCollapsed ? "h-8 w-8" : "h-12 w-12")} />
-                            {!isCollapsed && (
-                                <div className="flex flex-col items-start w-full min-w-0 space-y-2">
-                                    <Skeleton className="h-4 w-32" />
-                                    <Skeleton className="h-3 w-40" />
-                                    <Skeleton className="h-5 w-20 mt-1" />
-                                </div>
-                            )}
-                        </>
-                    ) : (
-                        <>
-                            <Avatar className={cn("transition-all duration-300 ring-2 ring-sidebar-ring shrink-0", isCollapsed ? "h-8 w-8" : "h-12 w-12")}>
-                                <AvatarImage src={session?.user?.image || undefined} referrerPolicy="no-referrer" />
-                                <AvatarFallback className="bg-primary text-primary-foreground font-bold">
-                                    {session?.user?.name?.charAt(0) || "U"}
-                                </AvatarFallback>
-                            </Avatar>
+  const handleSignOut = async () => {
+    await authClient.signOut({
+      fetchOptions: {
+        onSuccess: () => {
+          router.push("/login"); // Handle redirect here
+        },
+      },
+    });
+  };
 
-                            {!isCollapsed && (
-                                <div className="flex flex-col items-start w-full min-w-0 space-y-1">
-                                    <h2 className="font-semibold text-sm w-full wrap-break-word leading-tight" title={session?.user?.name || ""}>
-                                        {session?.user?.name || "Usuario"}
-                                    </h2>
-                                    <p className="text-xs text-muted-foreground w-full break-all" title={session?.user?.email || ""}>
-                                        {session?.user?.email || ""}
-                                    </p>
-                                    <div className="pt-2">
-                                        <SidebarUserInfo role={userRole || "user"} />
-                                    </div>
-                                </div>
-                            )}
-                        </>
-                    )}
-                </div>
+  // --- NAVIGATION ITEMS CONFIGURATION ---
 
-                {/* 2. MIDDLE: Navigation */}
-                <div className="flex-1 overflow-y-auto py-6 space-y-6">
-                    {isPending ? (
-                        <div className="px-3 space-y-3">
-                            {!isCollapsed && <Skeleton className="h-3 w-16 mb-3" />}
-                            {Array.from({ length: 3 }).map((_, i) => (
-                                <div key={i} className={cn("flex items-center px-3 py-2 rounded-md", isCollapsed ? "justify-center" : "")}>
-                                    <Skeleton className="h-5 w-5 shrink-0" />
-                                    {!isCollapsed && <Skeleton className="h-4 w-24 ml-3" />}
-                                </div>
-                            ))}
-                            <div className="mx-1 border-t border-sidebar-border my-4" />
-                            {!isCollapsed && <Skeleton className="h-3 w-14 mb-3" />}
-                            {Array.from({ length: 2 }).map((_, i) => (
-                                <div key={i} className={cn("flex items-center px-3 py-2 rounded-md", isCollapsed ? "justify-center" : "")}>
-                                    <Skeleton className="h-5 w-5 shrink-0" />
-                                    {!isCollapsed && <Skeleton className="h-4 w-28 ml-3" />}
-                                </div>
-                            ))}
-                        </div>
-                    ) : (
-                        <>
-                            {/* Navigation Section */}
-                            <div className="px-3">
-                                {!isCollapsed && (
-                                    <h3 className="px-3 mb-2 text-xs font-semibold text-muted-foreground uppercase tracking-wider animate-in fade-in duration-300">
-                                        Navegación
-                                    </h3>
-                                )}
-                                <nav className="space-y-1">
-                                    {navigationSection.map((item) => {
-                                        const Icon = item.icon;
-                                        const isActive = pathname === item.href;
-                                        return (
-                                            <Link
-                                                key={item.href}
-                                                href={item.href}
-                                                aria-current={isActive ? "page" : undefined}
-                                                className={cn(
-                                                    "group flex items-center px-3 py-2 text-sm font-medium rounded-md transition-colors",
-                                                    isCollapsed ? "justify-center" : "",
-                                                    isActive
-                                                        ? "bg-sidebar-accent text-sidebar-accent-foreground"
-                                                        : "text-muted-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"
-                                                )}
-                                                title={isCollapsed ? item.label : undefined}
-                                            >
-                                                <Icon className={cn("h-5 w-5 shrink-0", !isCollapsed && "mr-3", isActive && "text-primary")} aria-hidden="true" />
-                                                {!isCollapsed && <span>{item.label}</span>}
-                                            </Link>
-                                        );
-                                    })}
-                                </nav>
-                            </div>
+  // Type assertion for better-auth session with role
+  const userRole = (session?.user as { role?: string })?.role;
 
-                            {/* Separator */}
-                            <div className="mx-4 border-t border-sidebar-border" />
+  // Settings items (Agent/Admin) - depends on userRole, cannot be hoisted
+  const settingsItem = {
+    href: userRole === "admin" ? "/dashboard/sistema" : "/dashboard/configuracion",
+    label: userRole === "admin" ? "Configuración del sistema" : "Configuración del área",
+    icon: Settings,
+    external: false
+  };
 
-                            {/* Resources Section */}
-                            <div className="px-3">
-                                {!isCollapsed && (
-                                    <h3 className="px-3 mb-2 text-xs font-semibold text-muted-foreground uppercase tracking-wider animate-in fade-in duration-300">
-                                        Recursos
-                                    </h3>
-                                )}
-                                <nav className="space-y-1">
-                                    {resourcesSection.map((item) => {
-                                        const Icon = item.icon;
-                                        const isActive = pathname === item.href;
-                                        return (
-                                            <Link
-                                                key={item.href}
-                                                href={item.href}
-                                                target={item.external ? "_blank" : undefined}
-                                                rel={item.external ? "noopener noreferrer" : undefined}
-                                                aria-current={isActive ? "page" : undefined}
-                                                className={cn(
-                                                    "group flex items-center px-3 py-2 text-sm font-medium rounded-md transition-colors",
-                                                    isCollapsed ? "justify-center" : "",
-                                                    isActive
-                                                        ? "bg-sidebar-accent text-sidebar-accent-foreground"
-                                                        : "text-muted-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"
-                                                )}
-                                                title={isCollapsed ? item.label : undefined}
-                                            >
-                                                <Icon className={cn("h-5 w-5 shrink-0", !isCollapsed && "mr-3")} aria-hidden="true" />
-                                                {!isCollapsed && <span>{item.label}</span>}
-                                            </Link>
-                                        );
-                                    })}
-                                </nav>
-                            </div>
-                        </>
-                    )}
-                </div>
+  let navigationSection = USER_NAV_ITEMS;
+  let resourcesSection = [KNOWLEDGE_BASE_ITEM];
 
-                {/* 3. BOTTOM: Controls & Logout */}
-                <div className="p-4 border-t border-sidebar-border bg-sidebar mt-auto">
-                    <div className={cn("flex items-center", isCollapsed ? "flex-col gap-6 justify-center" : "gap-2 flex-row")}>
-                        {/* Collapse Button */}
-                        <Button
-                            variant="ghost"
-                            size="icon"
-                            onClick={() => setIsCollapsed(prev => !prev)}
-                            className={cn(
-                                "text-muted-foreground hover:text-foreground hover:bg-sidebar-accent h-9 w-9 border border-sidebar-border transition-all",
-                                isCollapsed ? "order-2" : "order-2"
-                            )}
-                            aria-label={isCollapsed ? "Expandir menú" : "Colapsar menú"}
-                        >
-                            {isCollapsed ? <ChevronRight className="h-4 w-4" /> : <ChevronLeft className="h-4 w-4" />}
-                        </Button>
+  if (userRole === "admin") {
+    navigationSection = ADMIN_NAV_ITEMS;
+    resourcesSection = [...resourcesSection, ROLES_ITEM, settingsItem];
+  } else if (userRole === "agent") {
+    navigationSection = AGENT_NAV_ITEMS;
+    resourcesSection = [...resourcesSection, settingsItem];
+  }
 
-                        <button
-                            onClick={handleSignOut}
-                            className={cn(
-                                "flex items-center text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-950/30 hover:text-red-700 dark:hover:text-red-300 rounded-md transition-colors cursor-pointer",
-                                isCollapsed ? "justify-center p-3 order-1" : "flex-1 px-3 py-2 order-1"
-                            )}
-                            aria-label="Cerrar sesión"
-                        >
-                            <LogOut className={cn("h-5 w-5", !isCollapsed && "mr-3")} aria-hidden="true" />
-                            {!isCollapsed && <span className="text-sm font-medium">Cerrar sesión</span>}
-                        </button>
-                    </div>
-                </div>
-            </aside>
-
-
-            {/* --- MOBILE SIDEBAR OVERLAY --- */}
-            {isSidebarOpen && (
-                <div
-                    className="fixed inset-0 z-40 bg-black/50 md:hidden"
-                    onClick={() => setIsSidebarOpen(false)}
-                    aria-hidden="true"
-                />
-            )}
-
-            {/* --- MOBILE SIDEBAR --- */}
-            <aside
-                aria-label="Menú principal"
-                className={cn(
-                    "fixed inset-y-0 left-0 z-50 w-72 h-full overflow-hidden transform bg-sidebar text-sidebar-foreground shadow-2xl transition-transform duration-300 ease-in-out md:hidden",
-                    isSidebarOpen ? "translate-x-0" : "-translate-x-full"
-                )}
-            >
-                <div className="flex h-16 items-center justify-between px-6 border-b border-sidebar-border">
-                    <span className="text-base font-semibold">Menú</span>
-                    <button
-                        onClick={() => setIsSidebarOpen(false)}
-                        className="text-muted-foreground hover:text-foreground"
-                        aria-label="Cerrar menú"
-                    >
-                        <X className="h-6 w-6" />
-                    </button>
-                </div>
-
-                <div className="flex flex-col h-full overflow-y-auto">
-                    {/* Mobile Profile */}
-                    <div className="p-6 border-b border-sidebar-border flex flex-col items-center relative">
-                        <div className="absolute top-4 right-4">
-                            <ModeToggle />
-                        </div>
-                        {isPending ? (
-                            <>
-                                <Skeleton className="h-16 w-16 mb-3 rounded-full" />
-                                <Skeleton className="h-5 w-32 mb-2" />
-                                <Skeleton className="h-4 w-40 mb-2" />
-                                <Skeleton className="h-5 w-20" />
-                            </>
-                        ) : (
-                            <>
-                                <Avatar className="h-16 w-16 mb-3 ring-2 ring-sidebar-ring">
-                                    <AvatarImage src={session?.user?.image || undefined} referrerPolicy="no-referrer" />
-                                    <AvatarFallback className="bg-primary text-primary-foreground font-bold">
-                                        {session?.user?.name?.charAt(0) || "U"}
-                                    </AvatarFallback>
-                                </Avatar>
-                                <h2 className="font-semibold text-lg">{session?.user?.name || "Usuario"}</h2>
-                                <p className="text-sm text-muted-foreground mb-2">{session?.user?.email || ""}</p>
-                                <SidebarUserInfo role={userRole || "user"} />
-                            </>
-                        )}
-                    </div>
-
-                    {/* Mobile Navigation */}
-                    <nav className="flex-1 px-4 py-6 space-y-6">
-                        {isPending ? (
-                            <div className="space-y-3">
-                                <Skeleton className="h-3 w-16 mb-3" />
-                                {Array.from({ length: 3 }).map((_, i) => (
-                                    <div key={i} className="flex items-center px-3 py-3 rounded-lg">
-                                        <Skeleton className="h-6 w-6 mr-4 shrink-0" />
-                                        <Skeleton className="h-4 w-28" />
-                                    </div>
-                                ))}
-                            </div>
-                        ) : (
-                            <>
-                                <div>
-                                    <h3 className="px-2 mb-2 text-xs font-semibold text-muted-foreground uppercase tracking-wider">
-                                        Navegación
-                                    </h3>
-                                    <div className="space-y-1">
-                                        {navigationSection.map((item) => (
-                                            <Link
-                                                key={item.href}
-                                                href={item.href}
-                                                onClick={() => setIsSidebarOpen(false)}
-                                                aria-current={pathname === item.href ? "page" : undefined}
-                                                className={cn(
-                                                    "group flex items-center px-3 py-3 text-base font-medium rounded-lg",
-                                                    pathname === item.href
-                                                        ? "bg-sidebar-accent text-sidebar-accent-foreground"
-                                                        : "text-muted-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"
-                                                )}
-                                            >
-                                                <item.icon className="mr-4 h-6 w-6 shrink-0" aria-hidden="true" />
-                                                {item.label}
-                                            </Link>
-                                        ))}
-                                    </div>
-                                </div>
-
-                                <div>
-                                    <h3 className="px-2 mb-2 text-xs font-semibold text-muted-foreground uppercase tracking-wider">
-                                        Recursos
-                                    </h3>
-                                    <div className="space-y-1">
-                                        {resourcesSection.map((item) => (
-                                            <Link
-                                                key={item.href}
-                                                href={item.href}
-                                                target={item.external ? "_blank" : undefined}
-                                                rel={item.external ? "noopener noreferrer" : undefined}
-                                                onClick={() => setIsSidebarOpen(false)}
-                                                className="group flex items-center px-3 py-3 text-base font-medium rounded-lg text-muted-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"
-                                            >
-                                                <item.icon className="mr-4 h-6 w-6 shrink-0" aria-hidden="true" />
-                                                {item.label}
-                                            </Link>
-                                        ))}
-                                    </div>
-                                </div>
-                            </>
-                        )}
-                    </nav>
-
-                    <div className="p-4 border-t border-sidebar-border">
-                        <button
-                            onClick={handleSignOut}
-                            className="flex w-full items-center justify-center px-4 py-3 text-red-600 dark:text-red-400 bg-red-50 dark:bg-red-950/20 rounded-lg hover:bg-red-100 dark:hover:bg-red-950/40 hover:text-red-700 dark:hover:text-red-300 transition-colors"
-                            aria-label="Cerrar sesión"
-                        >
-                            <LogOut className="mr-2 h-5 w-5" aria-hidden="true" />
-                            Cerrar sesión
-                        </button>
-                    </div>
-                </div>
-            </aside>
-
-            {/* --- MAIN HEADER (Mobile Only) & CONTENT --- */}
-            <div className="flex flex-1 flex-col min-w-0 overflow-hidden">
-                <header className="flex h-16 shrink-0 items-center justify-between border-b border-border bg-card px-4 shadow-sm md:hidden">
-                    <button
-                        onClick={() => setIsSidebarOpen(true)}
-                        className="text-muted-foreground focus:outline-none"
-                        aria-label="Abrir menú"
-                        aria-expanded={isSidebarOpen}
-                    >
-                        <Menu className="h-6 w-6" />
-                    </button>
-                    <span className="text-base font-semibold">Gestión de tickets</span>
-                    <div className="w-6" />
-                </header>
-
-                <main className="flex-1 overflow-y-auto p-4 lg:p-8">
-                    {children}
-                </main>
+  return (
+    <div className="flex h-dvh overflow-hidden bg-background">
+      {/* --- DESKTOP SIDEBAR --- */}
+      <aside
+        aria-label="Menú principal"
+        className={cn(
+          "hidden md:flex flex-col shrink-0 h-full overflow-hidden transition-all duration-300 ease-in-out z-20 border-r border-sidebar-border",
+          "bg-sidebar text-sidebar-foreground",
+          isCollapsed ? "w-20" : "w-72"
+        )}
+      >
+        {/* 1. TOP: User Profile */}
+        <div className={cn(
+          "relative flex border-b border-sidebar-border transition-all duration-300",
+          isCollapsed ? "flex-col items-center justify-center py-4 px-2 gap-4" : "flex-col items-start py-6 px-6 gap-3"
+        )}>
+          {/* Theme Toggle - Absolute Top Right (visible only expanded) */}
+          {!isCollapsed && (
+            <div className="absolute top-4 right-4 z-20">
+              <ModeToggle />
             </div>
+          )}
+
+          {isPending ? (
+            <>
+              <Skeleton className={cn("rounded-full shrink-0", isCollapsed ? "h-8 w-8" : "h-12 w-12")} />
+              {!isCollapsed && (
+                <div className="flex flex-col items-start w-full min-w-0 space-y-2">
+                  <Skeleton className="h-4 w-32" />
+                  <Skeleton className="h-3 w-40" />
+                  <Skeleton className="h-5 w-20 mt-1" />
+                </div>
+              )}
+            </>
+          ) : (
+            <>
+              <Avatar className={cn("transition-all duration-300 ring-2 ring-sidebar-ring shrink-0", isCollapsed ? "h-8 w-8" : "h-12 w-12")}>
+                <AvatarImage src={session?.user?.image || undefined} referrerPolicy="no-referrer" />
+                <AvatarFallback className="bg-primary text-primary-foreground font-bold">
+                  {session?.user?.name?.charAt(0) || "U"}
+                </AvatarFallback>
+              </Avatar>
+
+              {!isCollapsed && (
+                <div className="flex flex-col items-start w-full min-w-0 space-y-1">
+                  <h2 className="font-semibold text-sm w-full wrap-break-word leading-tight" title={session?.user?.name || ""}>
+                    {session?.user?.name || "Usuario"}
+                  </h2>
+                  <p className="text-xs text-muted-foreground w-full break-all" title={session?.user?.email || ""}>
+                    {session?.user?.email || ""}
+                  </p>
+                  <div className="pt-2">
+                    <SidebarUserInfo role={userRole || "user"} />
+                  </div>
+                </div>
+              )}
+            </>
+          )}
         </div>
-    );
+
+        {/* 2. MIDDLE: Navigation */}
+        <div className="flex-1 overflow-y-auto py-6 space-y-6">
+          {isPending ? (
+            <div className="px-3 space-y-3">
+              {!isCollapsed && <Skeleton className="h-3 w-16 mb-3" />}
+              {Array.from({ length: 3 }).map((_, i) => (
+                <div key={i} className={cn("flex items-center px-3 py-2 rounded-md", isCollapsed ? "justify-center" : "")}>
+                  <Skeleton className="h-5 w-5 shrink-0" />
+                  {!isCollapsed && <Skeleton className="h-4 w-24 ml-3" />}
+                </div>
+              ))}
+              <div className="mx-1 border-t border-sidebar-border my-4" />
+              {!isCollapsed && <Skeleton className="h-3 w-14 mb-3" />}
+              {Array.from({ length: 2 }).map((_, i) => (
+                <div key={i} className={cn("flex items-center px-3 py-2 rounded-md", isCollapsed ? "justify-center" : "")}>
+                  <Skeleton className="h-5 w-5 shrink-0" />
+                  {!isCollapsed && <Skeleton className="h-4 w-28 ml-3" />}
+                </div>
+              ))}
+            </div>
+          ) : (
+            <>
+              {/* Navigation Section */}
+              <div className="px-3">
+                {!isCollapsed && (
+                  <h3 className="px-3 mb-2 text-xs font-semibold text-muted-foreground uppercase tracking-wider animate-in fade-in duration-300">
+                    Navegación
+                  </h3>
+                )}
+                <nav className="space-y-1">
+                  {navigationSection.map((item) => {
+                    const Icon = item.icon;
+                    const isActive = pathname === item.href;
+                    return (
+                      <Link
+                        key={item.href}
+                        href={item.href}
+                        aria-current={isActive ? "page" : undefined}
+                        className={cn(
+                          "group flex items-center px-3 py-2 text-sm font-medium rounded-md transition-colors",
+                          isCollapsed ? "justify-center" : "",
+                          isActive
+                            ? "bg-sidebar-accent text-sidebar-accent-foreground"
+                            : "text-muted-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"
+                        )}
+                        title={isCollapsed ? item.label : undefined}
+                      >
+                        <Icon className={cn("h-5 w-5 shrink-0", !isCollapsed && "mr-3", isActive && "text-primary")} aria-hidden="true" />
+                        {!isCollapsed && <span>{item.label}</span>}
+                      </Link>
+                    );
+                  })}
+                </nav>
+              </div>
+
+              {/* Separator */}
+              <div className="mx-4 border-t border-sidebar-border" />
+
+              {/* Resources Section */}
+              <div className="px-3">
+                {!isCollapsed && (
+                  <h3 className="px-3 mb-2 text-xs font-semibold text-muted-foreground uppercase tracking-wider animate-in fade-in duration-300">
+                    Recursos
+                  </h3>
+                )}
+                <nav className="space-y-1">
+                  {resourcesSection.map((item) => {
+                    const Icon = item.icon;
+                    const isActive = pathname === item.href;
+                    return (
+                      <Link
+                        key={item.href}
+                        href={item.href}
+                        target={item.external ? "_blank" : undefined}
+                        rel={item.external ? "noopener noreferrer" : undefined}
+                        aria-current={isActive ? "page" : undefined}
+                        className={cn(
+                          "group flex items-center px-3 py-2 text-sm font-medium rounded-md transition-colors",
+                          isCollapsed ? "justify-center" : "",
+                          isActive
+                            ? "bg-sidebar-accent text-sidebar-accent-foreground"
+                            : "text-muted-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"
+                        )}
+                        title={isCollapsed ? item.label : undefined}
+                      >
+                        <Icon className={cn("h-5 w-5 shrink-0", !isCollapsed && "mr-3")} aria-hidden="true" />
+                        {!isCollapsed && <span>{item.label}</span>}
+                      </Link>
+                    );
+                  })}
+                </nav>
+              </div>
+            </>
+          )}
+        </div>
+
+        {/* 3. BOTTOM: Controls & Logout */}
+        <div className="p-4 border-t border-sidebar-border bg-sidebar mt-auto">
+          <div className={cn("flex items-center", isCollapsed ? "flex-col gap-6 justify-center" : "gap-2 flex-row")}>
+            {/* Collapse Button */}
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={() => setIsCollapsed(prev => !prev)}
+              className={cn(
+                "text-muted-foreground hover:text-foreground hover:bg-sidebar-accent h-9 w-9 border border-sidebar-border transition-all",
+                isCollapsed ? "order-2" : "order-2"
+              )}
+              aria-label={isCollapsed ? "Expandir menú" : "Colapsar menú"}
+            >
+              {isCollapsed ? <ChevronRight className="h-4 w-4" /> : <ChevronLeft className="h-4 w-4" />}
+            </Button>
+
+            <button
+              onClick={handleSignOut}
+              className={cn(
+                "flex items-center text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-950/30 hover:text-red-700 dark:hover:text-red-300 rounded-md transition-colors cursor-pointer",
+                isCollapsed ? "justify-center p-3 order-1" : "flex-1 px-3 py-2 order-1"
+              )}
+              aria-label="Cerrar sesión"
+            >
+              <LogOut className={cn("h-5 w-5", !isCollapsed && "mr-3")} aria-hidden="true" />
+              {!isCollapsed && <span className="text-sm font-medium">Cerrar sesión</span>}
+            </button>
+          </div>
+        </div>
+      </aside>
+
+
+      {/* --- MOBILE SIDEBAR OVERLAY --- */}
+      {isSidebarOpen && (
+        <div
+          className="fixed inset-0 z-40 bg-black/50 md:hidden"
+          onClick={() => setIsSidebarOpen(false)}
+          aria-hidden="true"
+        />
+      )}
+
+      {/* --- MOBILE SIDEBAR --- */}
+      <aside
+        aria-label="Menú principal"
+        className={cn(
+          "fixed inset-y-0 left-0 z-50 w-72 h-full overflow-hidden transform bg-sidebar text-sidebar-foreground shadow-2xl transition-transform duration-300 ease-in-out md:hidden",
+          isSidebarOpen ? "translate-x-0" : "-translate-x-full"
+        )}
+      >
+        <div className="flex h-16 items-center justify-between px-6 border-b border-sidebar-border">
+          <span className="text-base font-semibold">Menú</span>
+          <button
+            onClick={() => setIsSidebarOpen(false)}
+            className="text-muted-foreground hover:text-foreground"
+            aria-label="Cerrar menú"
+          >
+            <X className="h-6 w-6" />
+          </button>
+        </div>
+
+        <div className="flex flex-col h-full overflow-y-auto">
+          {/* Mobile Profile */}
+          <div className="p-6 border-b border-sidebar-border flex flex-col items-center relative">
+            <div className="absolute top-4 right-4">
+              <ModeToggle />
+            </div>
+            {isPending ? (
+              <>
+                <Skeleton className="h-16 w-16 mb-3 rounded-full" />
+                <Skeleton className="h-5 w-32 mb-2" />
+                <Skeleton className="h-4 w-40 mb-2" />
+                <Skeleton className="h-5 w-20" />
+              </>
+            ) : (
+              <>
+                <Avatar className="h-16 w-16 mb-3 ring-2 ring-sidebar-ring">
+                  <AvatarImage src={session?.user?.image || undefined} referrerPolicy="no-referrer" />
+                  <AvatarFallback className="bg-primary text-primary-foreground font-bold">
+                    {session?.user?.name?.charAt(0) || "U"}
+                  </AvatarFallback>
+                </Avatar>
+                <h2 className="font-semibold text-lg">{session?.user?.name || "Usuario"}</h2>
+                <p className="text-sm text-muted-foreground mb-2">{session?.user?.email || ""}</p>
+                <SidebarUserInfo role={userRole || "user"} />
+              </>
+            )}
+          </div>
+
+          {/* Mobile Navigation */}
+          <nav className="flex-1 px-4 py-6 space-y-6">
+            {isPending ? (
+              <div className="space-y-3">
+                <Skeleton className="h-3 w-16 mb-3" />
+                {Array.from({ length: 3 }).map((_, i) => (
+                  <div key={i} className="flex items-center px-3 py-3 rounded-lg">
+                    <Skeleton className="h-6 w-6 mr-4 shrink-0" />
+                    <Skeleton className="h-4 w-28" />
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <>
+                <div>
+                  <h3 className="px-2 mb-2 text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+                    Navegación
+                  </h3>
+                  <div className="space-y-1">
+                    {navigationSection.map((item) => (
+                      <Link
+                        key={item.href}
+                        href={item.href}
+                        onClick={() => setIsSidebarOpen(false)}
+                        aria-current={pathname === item.href ? "page" : undefined}
+                        className={cn(
+                          "group flex items-center px-3 py-3 text-base font-medium rounded-lg",
+                          pathname === item.href
+                            ? "bg-sidebar-accent text-sidebar-accent-foreground"
+                            : "text-muted-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"
+                        )}
+                      >
+                        <item.icon className="mr-4 h-6 w-6 shrink-0" aria-hidden="true" />
+                        {item.label}
+                      </Link>
+                    ))}
+                  </div>
+                </div>
+
+                <div>
+                  <h3 className="px-2 mb-2 text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+                    Recursos
+                  </h3>
+                  <div className="space-y-1">
+                    {resourcesSection.map((item) => (
+                      <Link
+                        key={item.href}
+                        href={item.href}
+                        target={item.external ? "_blank" : undefined}
+                        rel={item.external ? "noopener noreferrer" : undefined}
+                        onClick={() => setIsSidebarOpen(false)}
+                        className="group flex items-center px-3 py-3 text-base font-medium rounded-lg text-muted-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"
+                      >
+                        <item.icon className="mr-4 h-6 w-6 shrink-0" aria-hidden="true" />
+                        {item.label}
+                      </Link>
+                    ))}
+                  </div>
+                </div>
+              </>
+            )}
+          </nav>
+
+          <div className="p-4 border-t border-sidebar-border">
+            <button
+              onClick={handleSignOut}
+              className="flex w-full items-center justify-center px-4 py-3 text-red-600 dark:text-red-400 bg-red-50 dark:bg-red-950/20 rounded-lg hover:bg-red-100 dark:hover:bg-red-950/40 hover:text-red-700 dark:hover:text-red-300 transition-colors"
+              aria-label="Cerrar sesión"
+            >
+              <LogOut className="mr-2 h-5 w-5" aria-hidden="true" />
+              Cerrar sesión
+            </button>
+          </div>
+        </div>
+      </aside>
+
+      {/* --- MAIN HEADER (Mobile Only) & CONTENT --- */}
+      <div className="flex flex-1 flex-col min-w-0 overflow-hidden">
+        <header className="flex h-16 shrink-0 items-center justify-between border-b border-border bg-card px-4 shadow-sm md:hidden">
+          <button
+            onClick={() => setIsSidebarOpen(true)}
+            className="text-muted-foreground focus:outline-none"
+            aria-label="Abrir menú"
+            aria-expanded={isSidebarOpen}
+          >
+            <Menu className="h-6 w-6" />
+          </button>
+          <span className="text-base font-semibold">Gestión de tickets</span>
+          <div className="w-6" />
+        </header>
+
+        <main className="flex-1 overflow-y-auto p-4 lg:p-8">
+          {children}
+        </main>
+      </div>
+    </div>
+  );
 }

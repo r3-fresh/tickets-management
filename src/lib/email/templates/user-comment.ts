@@ -3,14 +3,9 @@ import { escapeHtml } from '../escape-html';
 
 export interface UserCommentTemplateParams {
   ticketCode: string;
-  title: string;
   userName: string;
   userEmail: string;
   comment: string;
-  category: string;
-  subcategory: string;
-  status: string;
-  priority: string;
   ticketUrl: string;
   attentionAreaName?: string;
 }
@@ -30,8 +25,6 @@ export function getUserCommentTemplate(params: UserCommentTemplateParams): strin
         <div style="background-color: #F9FAFB; border-left: 4px solid #4F46E5; padding: 15px; margin: 20px 0;">
             <div style="color: #4B5563;">${comment}</div>
         </div>
-        
-
         
         <div style="text-align: center; margin: 20px 0;">
             <a href="${params.ticketUrl}" style="display: inline-block; background-color: #4F46E5; color: white; padding: 12px 30px; text-decoration: none; border-radius: 6px; font-weight: bold;">Ver detalles del ticket</a>

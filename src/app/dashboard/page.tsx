@@ -8,77 +8,77 @@ import { Skeleton } from "@/components/ui/skeleton";
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
-    title: "Mi panel",
+  title: "Mi panel",
 };
 
 function DashboardSkeleton() {
-    return (
-        <div className="space-y-6">
-            <Skeleton className="h-4 w-32" />
-            <div className="space-y-2">
-                <Skeleton className="h-8 w-48" />
-                <Skeleton className="h-4 w-72" />
+  return (
+    <div className="space-y-6">
+      <Skeleton className="h-4 w-32" />
+      <div className="space-y-2">
+        <Skeleton className="h-8 w-48" />
+        <Skeleton className="h-4 w-72" />
+      </div>
+      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+        {Array.from({ length: 4 }).map((_, i) => (
+          <div key={i} className="rounded-lg border bg-card p-6 space-y-3">
+            <div className="flex items-center justify-between">
+              <Skeleton className="h-4 w-24" />
+              <Skeleton className="h-8 w-8 rounded-full" />
             </div>
-            <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-                {Array.from({ length: 4 }).map((_, i) => (
-                    <div key={i} className="rounded-lg border bg-card p-6 space-y-3">
-                        <div className="flex items-center justify-between">
-                            <Skeleton className="h-4 w-24" />
-                            <Skeleton className="h-8 w-8 rounded-full" />
-                        </div>
-                        <Skeleton className="h-8 w-16" />
-                    </div>
-                ))}
-            </div>
-            <Skeleton className="h-64 rounded-lg" />
-        </div>
-    );
+            <Skeleton className="h-8 w-16" />
+          </div>
+        ))}
+      </div>
+      <Skeleton className="h-64 rounded-lg" />
+    </div>
+  );
 }
 
 export default async function DashboardRootPage() {
-    const session = await getSession();
+  const session = await getSession();
 
-    if (!session?.user) {
-        redirect("/login");
-    }
+  if (!session?.user) {
+    redirect("/login");
+  }
 
-    // Direct render based on role - NO redirects for instant loading
-    if (session.user.role === "admin") {
-        return (
-            <Suspense fallback={<DashboardSkeleton />}>
-                <AdminDashboard />
-            </Suspense>
-        );
-    }
-
-    if (session.user.role === "agent") {
-        // Check if agent has area assigned
-        if (!session.user.attentionAreaId) {
-            return (
-                <div className="p-8 text-center">
-                    <h1 className="text-2xl font-bold text-destructive">Error de configuración</h1>
-                    <p className="mt-2 text-muted-foreground">
-                        Tu usuario tiene rol de agente pero no tiene un área de atención asignada.
-                        Contacta al administrador.
-                    </p>
-                </div>
-            );
-        }
-
-        return (
-            <Suspense fallback={<DashboardSkeleton />}>
-                <AgentDashboard 
-                    userId={session.user.id} 
-                    attentionAreaId={session.user.attentionAreaId} 
-                />
-            </Suspense>
-        );
-    }
-
-    // Regular users
+  // Direct render based on role - NO redirects for instant loading
+  if (session.user.role === "admin") {
     return (
-        <Suspense fallback={<DashboardSkeleton />}>
-            <UserDashboard userId={session.user.id} />
-        </Suspense>
+      <Suspense fallback={<DashboardSkeleton />}>
+        <AdminDashboard />
+      </Suspense>
     );
+  }
+
+  if (session.user.role === "agent") {
+    // Check if agent has area assigned
+    if (!session.user.attentionAreaId) {
+      return (
+        <div className="p-8 text-center">
+          <h1 className="text-2xl font-bold text-destructive">Error de configuración</h1>
+          <p className="mt-2 text-muted-foreground">
+            Tu usuario tiene rol de agente pero no tiene un área de atención asignada.
+            Contacta al administrador.
+          </p>
+        </div>
+      );
+    }
+
+    return (
+      <Suspense fallback={<DashboardSkeleton />}>
+        <AgentDashboard
+          userId={session.user.id}
+          attentionAreaId={session.user.attentionAreaId}
+        />
+      </Suspense>
+    );
+  }
+
+  // Regular users
+  return (
+    <Suspense fallback={<DashboardSkeleton />}>
+      <UserDashboard userId={session.user.id} />
+    </Suspense>
+  );
 }

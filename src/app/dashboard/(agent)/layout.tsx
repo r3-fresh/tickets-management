@@ -1,10 +1,10 @@
 import { requireAgent } from "@/lib/auth/helpers";
 
 export default async function AgentLayout({
-    children,
+  children,
 }: {
-    children: React.ReactNode;
+  children: React.ReactNode;
 }) {
-    await requireAgent(); // Autorización centralizada
-    return <>{children}</>;
+  await requireAgent(); // Autorización centralizada
+  return <>{children}</>;
 }

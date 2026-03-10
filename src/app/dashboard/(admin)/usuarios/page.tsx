@@ -5,46 +5,46 @@ import { Breadcrumb } from "@/components/shared/breadcrumb";
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
-    title: "Gestión de usuarios",
+  title: "Gestión de usuarios",
 };
 
 interface PageProps {
-    searchParams: Promise<Record<string, string | string[] | undefined>>;
+  searchParams: Promise<Record<string, string | string[] | undefined>>;
 }
 
 export default async function UsuariosPage({ searchParams }: PageProps) {
-    // Authorization handled by (admin) layout
-    const session = await getSession();
-    if (!session?.user) return null;
+  // Authorization handled by (admin) layout
+  const session = await getSession();
+  if (!session?.user) return null;
 
-    const params = await searchParams;
-    const search = typeof params.search === "string" ? params.search : undefined;
-    const page = typeof params.page === "string" ? Number(params.page) : 1;
-    const perPage = typeof params.perPage === "string" ? Number(params.perPage) : 10;
+  const params = await searchParams;
+  const search = typeof params.search === "string" ? params.search : undefined;
+  const page = typeof params.page === "string" ? Number(params.page) : 1;
+  const perPage = typeof params.perPage === "string" ? Number(params.perPage) : 10;
 
-    const { getActiveAttentionAreas } = await import("@/actions/config/get-config");
-    const [paginatedUsers, attentionAreas] = await Promise.all([
-        queryUsersPaginated(search, page, perPage),
-        getActiveAttentionAreas(),
-    ]);
+  const { getActiveAttentionAreas } = await import("@/actions/config/get-config");
+  const [paginatedUsers, attentionAreas] = await Promise.all([
+    queryUsersPaginated(search, page, perPage),
+    getActiveAttentionAreas(),
+  ]);
 
-    return (
-        <div className="space-y-6">
-            {/* Breadcrumbs */}
-            <Breadcrumb items={[{ label: "Gestión de usuarios" }]} />
+  return (
+    <div className="space-y-6">
+      {/* Breadcrumbs */}
+      <Breadcrumb items={[{ label: "Gestión de usuarios" }]} />
 
-            {/* Header */}
-            <div>
-                <h1 className="text-3xl font-bold tracking-tight">Gestión de usuarios</h1>
-                <p className="text-muted-foreground mt-1">Administra los roles de los usuarios del sistema</p>
-            </div>
+      {/* Header */}
+      <div>
+        <h1 className="text-3xl font-bold tracking-tight">Gestión de usuarios</h1>
+        <p className="text-muted-foreground mt-1">Administra los roles de los usuarios del sistema</p>
+      </div>
 
-            <RolesTable
-                users={paginatedUsers.rows}
-                totalCount={paginatedUsers.totalCount}
-                currentUserId={session.user.id}
-                attentionAreas={attentionAreas}
-            />
-        </div>
-    );
+      <RolesTable
+        users={paginatedUsers.rows}
+        totalCount={paginatedUsers.totalCount}
+        currentUserId={session.user.id}
+        attentionAreas={attentionAreas}
+      />
+    </div>
+  );
 }
