@@ -263,7 +263,7 @@ El plan completo con todas las fases está documentado en:
 - **Fases 2a-2c:** Completadas (eliminación campus/work_areas, códigos de ticket con slug, URLs con ticketCode, emails sin slug)
 - **Fase 3:** Completada - Correcciones inmediatas (emails HTML fix, dashboards filtrados, límite 5MB, nombre de agente en emails)
 - **Fase 4:** Completada - Formularios por área de atención (clasificación-first flow, campos Difusión, prioridad para todas las áreas, Calendar date pickers)
-- **Fase 5:** Pendiente - Prioridades configurables por área
+- **Fase 5:** Completada - Prioridades configurables por área (tabla `priority_config`, admin/agent UI, tooltips dinámicos, SLA en detalle)
 - **Fase 6:** Pendiente - Módulo de proveedores y tickets derivados
 - **Fase 7:** Pendiente - Sección Actividad y derivaciones
 

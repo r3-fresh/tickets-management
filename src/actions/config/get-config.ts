@@ -1,8 +1,9 @@
 "use server";
 
 import { db } from "@/db";
-import { ticketCategories, ticketSubcategories, attentionAreas } from "@/db/schema";
+import { ticketCategories, ticketSubcategories, attentionAreas, priorityConfig } from "@/db/schema";
 import { requireAuth } from "@/lib/auth/helpers";
+import { eq } from "drizzle-orm";
 
 export async function getActiveCategories() {
   await requireAuth();
@@ -56,6 +57,38 @@ export async function getActiveAttentionAreas() {
     return areas;
   } catch (error) {
     console.error("Error fetching attention areas:", error);
+    return [];
+  }
+}
+
+export async function getAllPriorityConfigs() {
+  await requireAuth();
+
+  try {
+    const configs = await db.query.priorityConfig.findMany({
+      with: {
+        attentionArea: {
+          columns: { id: true, name: true, slug: true },
+        },
+      },
+    });
+    return configs;
+  } catch (error) {
+    console.error("Error fetching priority configs:", error);
+    return [];
+  }
+}
+
+export async function getPriorityConfigByArea(attentionAreaId: number) {
+  await requireAuth();
+
+  try {
+    const configs = await db.query.priorityConfig.findMany({
+      where: eq(priorityConfig.attentionAreaId, attentionAreaId),
+    });
+    return configs;
+  } catch (error) {
+    console.error("Error fetching priority config for area:", error);
     return [];
   }
 }

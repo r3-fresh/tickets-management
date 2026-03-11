@@ -1,5 +1,5 @@
 import { db } from "@/db";
-import { users } from "@/db/schema";
+import { users, priorityConfig } from "@/db/schema";
 import { requireAuth } from "@/lib/auth/helpers";
 import { getAppSetting } from "@/db/queries";
 import dynamic from "next/dynamic";
@@ -24,6 +24,7 @@ export default async function NuevoTicketPage() {
     categories,
     attentionAreas,
     disabledMessage,
+    priorityConfigs,
   ] = await Promise.all([
     db.select({
       id: users.id,
@@ -35,6 +36,7 @@ export default async function NuevoTicketPage() {
     getActiveCategories(),
     getActiveAttentionAreas(),
     getAppSetting("ticket_disabled_message"),
+    db.query.priorityConfig.findMany(),
   ]);
 
   const allowNewTickets = allowNewTicketsSetting !== "false";
@@ -46,6 +48,7 @@ export default async function NuevoTicketPage() {
       categories={categories}
       attentionAreas={attentionAreas}
       disabledMessage={disabledMessage}
+      priorityConfigs={priorityConfigs}
     />
   );
 }

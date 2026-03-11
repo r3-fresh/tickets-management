@@ -1,5 +1,5 @@
 import { db } from "@/db";
-import { ticketCategories, ticketSubcategories, appSettings, attentionAreas } from "@/db/schema";
+import { ticketCategories, ticketSubcategories, appSettings, attentionAreas, priorityConfig } from "@/db/schema";
 
 async function seed() {
   console.log("🌱 Seeding database...");
@@ -129,6 +129,27 @@ async function seed() {
     ]).onConflictDoNothing();
 
     console.log("✅ App settings configured");
+
+    // 5. Seed Priority Config (4 priorities × 3 areas = 12 rows)
+    console.log("🎯 Seeding priority config...");
+    const priorityDefaults = [
+      { priority: "low", description: "Consultas generales, solicitudes de información o problemas menores que no afectan el funcionamiento.", slaHours: 120 },
+      { priority: "medium", description: "Incidencias que afectan parcialmente el trabajo pero permiten continuar operando.", slaHours: 48 },
+      { priority: "high", description: "Problemas que impiden realizar tareas críticas o afectan a múltiples usuarios.", slaHours: 24 },
+      { priority: "critical", description: "Interrupción total del servicio, caída de sistemas o situaciones que requieren acción inmediata.", slaHours: 1 },
+    ];
+
+    const priorityConfigRows = attentionAreasList.flatMap(area =>
+      priorityDefaults.map(p => ({
+        attentionAreaId: area.id,
+        priority: p.priority,
+        description: p.description,
+        slaHours: p.slaHours,
+      }))
+    );
+
+    await db.insert(priorityConfig).values(priorityConfigRows).onConflictDoNothing();
+    console.log(`✅ Created ${priorityConfigRows.length} priority config entries`);
 
     console.log("\n🎉 Database seeded successfully!");
     console.log("\n📝 Next steps:");

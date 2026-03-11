@@ -45,3 +45,13 @@ export const createTicketFormSchema = z.object({
 });
 
 export type CreateTicketFormSchema = z.infer<typeof createTicketFormSchema>;
+
+// ─── Priority Config schemas (admin/agent config) ───
+
+export const updatePriorityConfigSchema = z.object({
+  id: z.coerce.number().min(1),
+  description: z.string().min(5, "La descripción debe tener al menos 5 caracteres"),
+  slaHours: z.coerce.number().min(1, "El SLA debe ser al menos 1 hora"),
+});
+
+export type UpdatePriorityConfigSchema = z.infer<typeof updatePriorityConfigSchema>;
