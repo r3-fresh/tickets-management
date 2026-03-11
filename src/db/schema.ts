@@ -285,5 +285,25 @@ export const attentionAreasRelations = relations(attentionAreas, ({ many }) => (
   tickets: many(tickets),
   categories: many(ticketCategories),
   sequences: many(ticketSequence),
+  priorityConfigs: many(priorityConfig),
+}));
+
+// --- PRIORITY CONFIG (per area + priority level) ---
+
+export const priorityConfig = pgTable("priority_config", {
+  id: serial("id").primaryKey(),
+  attentionAreaId: integer("attention_area_id").notNull().references(() => attentionAreas.id),
+  priority: text("priority").notNull(), // 'low' | 'medium' | 'high' | 'critical'
+  description: text("description").notNull(),
+  slaHours: integer("sla_hours").notNull(),
+}, (table) => ({
+  uniqueAreaPriority: unique().on(table.attentionAreaId, table.priority),
+}));
+
+export const priorityConfigRelations = relations(priorityConfig, ({ one }) => ({
+  attentionArea: one(attentionAreas, {
+    fields: [priorityConfig.attentionAreaId],
+    references: [attentionAreas.id],
+  }),
 }));
 

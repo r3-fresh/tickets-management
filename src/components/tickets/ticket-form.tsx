@@ -66,12 +66,21 @@ interface AttentionArea {
   isAcceptingTickets: boolean;
 }
 
+interface PriorityConfigItem {
+  id: number;
+  attentionAreaId: number;
+  priority: string;
+  description: string;
+  slaHours: number;
+}
+
 interface NewTicketFormProps {
   availableUsers: User[];
   allowNewTickets?: boolean;
   categories: Category[];
   attentionAreas: AttentionArea[];
   disabledMessage?: string | null;
+  priorityConfigs?: PriorityConfigItem[];
 }
 
 const PRIORITIES = (Object.keys(PRIORITY_STYLES) as TicketPriority[]).map((value) => {
@@ -165,7 +174,8 @@ export function NewTicketForm({
   allowNewTickets = true,
   categories,
   attentionAreas,
-  disabledMessage
+  disabledMessage,
+  priorityConfigs = [],
 }: NewTicketFormProps) {
   const [isPending, startTransition] = useTransition();
   const [selectedCategory, setSelectedCategory] = useState<number | null>(null);
@@ -197,6 +207,27 @@ export function NewTicketForm({
 
   const sidebarContext = useSidebarContext(selectedAttentionArea, selectedCategory, selectedSubcategory, attentionAreas, categories);
   const progress = useFormProgress(watchedValues, hasDescription, isDiffusion);
+
+  // Resolver priority info por área: DB config si existe, fallback a PRIORITY_DEFINITIONS
+  const priorityInfo = useMemo(() => {
+    const areaConfigs = selectedAttentionArea
+      ? priorityConfigs.filter(c => c.attentionAreaId === selectedAttentionArea)
+      : [];
+
+    const map: Record<string, { description: string; sla: string }> = {};
+    for (const key of ["low", "medium", "high", "critical"] as const) {
+      const dbConfig = areaConfigs.find(c => c.priority === key);
+      if (dbConfig) {
+        const slaText = dbConfig.slaHours < 24
+          ? `Atención hasta en ${dbConfig.slaHours} hora${dbConfig.slaHours !== 1 ? "s" : ""}`
+          : `Atención hasta en ${Math.floor(dbConfig.slaHours / 24)} día${Math.floor(dbConfig.slaHours / 24) !== 1 ? "s" : ""}`;
+        map[key] = { description: dbConfig.description, sla: slaText };
+      } else {
+        map[key] = PRIORITY_DEFINITIONS[key];
+      }
+    }
+    return map;
+  }, [selectedAttentionArea, priorityConfigs]);
 
   // Cuando cambia el área, resetear campos específicos y sincronizar el estado
   const handleAreaChange = useCallback((areaId: number) => {
@@ -510,10 +541,10 @@ export function NewTicketForm({
                                     </TooltipTrigger>
                                     <TooltipContent side="bottom" className="text-xs max-w-[200px] p-3 space-y-1.5" align="center">
                                       <p className="font-semibold opacity-90">{priority.label}</p>
-                                      <p className="opacity-70 leading-snug">{PRIORITY_DEFINITIONS[priority.value].description}</p>
+                                      <p className="opacity-70 leading-snug">{priorityInfo[priority.value].description}</p>
                                       <div className="flex items-center gap-1.5 pt-1 border-t border-background/20 mt-1">
                                         <span className="text-[10px] font-medium opacity-90">SLA:</span>
-                                        <span className="text-[10px] opacity-70">{PRIORITY_DEFINITIONS[priority.value].sla}</span>
+                                        <span className="text-[10px] opacity-70">{priorityInfo[priority.value].sla}</span>
                                       </div>
                                     </TooltipContent>
                                   </Tooltip>

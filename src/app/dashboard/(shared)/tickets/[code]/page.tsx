@@ -1,9 +1,9 @@
 
 import { db } from "@/db";
-import { tickets, comments, users } from "@/db/schema";
+import { tickets, comments, users, priorityConfig } from "@/db/schema";
 import { requireAuth } from "@/lib/auth/helpers";
 import { notFound, redirect } from "next/navigation";
-import { eq, desc } from "drizzle-orm";
+import { eq, desc, and } from "drizzle-orm";
 import { Card, CardHeader, CardContent, CardTitle } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 import { formatDate, formatDateShort, translatePriority, formatFileSize } from "@/lib/utils/format";
@@ -89,6 +89,19 @@ export default async function TicketDetailPage({ params }: { params: Promise<{ c
   });
 
   if (!ticket) notFound();
+
+  // Fetch SLA config for the ticket's priority + area (if both exist)
+  let slaInfo: { slaHours: number; description: string } | null = null;
+  if (ticket.priority && ticket.attentionAreaId) {
+    const config = await db.query.priorityConfig.findFirst({
+      where: and(
+        eq(priorityConfig.attentionAreaId, ticket.attentionAreaId),
+        eq(priorityConfig.priority, ticket.priority),
+      ),
+      columns: { slaHours: true, description: true },
+    });
+    slaInfo = config ?? null;
+  }
 
   // Permissions
   const isCreator = ticket.createdById === session.user.id;
@@ -371,6 +384,19 @@ export default async function TicketDetailPage({ params }: { params: Promise<{ c
                   <label className="text-[11px] font-medium text-muted-foreground uppercase block mb-1">Área</label>
                   <div className="text-sm text-foreground">{ticket.attentionArea?.name || "—"}</div>
                 </div>
+                {slaInfo && (
+                  <div>
+                    <label className="text-[11px] font-medium text-muted-foreground uppercase flex items-center gap-1.5 mb-1">
+                      <Clock className="w-3 h-3" />
+                      SLA estimado
+                    </label>
+                    <div className="text-sm text-foreground">
+                      {slaInfo.slaHours < 24
+                        ? `${slaInfo.slaHours} hora${slaInfo.slaHours !== 1 ? "s" : ""}`
+                        : `${Math.floor(slaInfo.slaHours / 24)} día${Math.floor(slaInfo.slaHours / 24) !== 1 ? "s" : ""}`}
+                    </div>
+                  </div>
+                )}
               </div>
             </div>
 

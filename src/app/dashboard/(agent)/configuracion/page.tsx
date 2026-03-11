@@ -1,5 +1,5 @@
 import { db } from "@/db";
-import { attentionAreas, ticketCategories, ticketSubcategories } from "@/db/schema";
+import { attentionAreas, ticketCategories, ticketSubcategories, priorityConfig } from "@/db/schema";
 import { getSession } from "@/lib/auth/helpers";
 import { eq, asc } from "drizzle-orm";
 import { SettingsTabs } from "@/components/agent/config-settings-tabs";
@@ -20,7 +20,7 @@ export default async function ConfiguracionAgentePage() {
   }
 
   // areaConfig and categories are independent — run in parallel
-  const [areaConfig, categories] = await Promise.all([
+  const [areaConfig, categories, areaPriorityConfigs] = await Promise.all([
     db.query.attentionAreas.findFirst({
       where: eq(attentionAreas.id, session.user.attentionAreaId),
     }),
@@ -32,6 +32,9 @@ export default async function ConfiguracionAgentePage() {
         },
       },
       orderBy: [asc(ticketCategories.displayOrder)],
+    }),
+    db.query.priorityConfig.findMany({
+      where: eq(priorityConfig.attentionAreaId, session.user.attentionAreaId),
     }),
   ]);
 
@@ -67,6 +70,7 @@ export default async function ConfiguracionAgentePage() {
         categories={categories}
         subcategories={subcategories}
         areaId={session.user.attentionAreaId}
+        priorityConfigs={areaPriorityConfigs}
       />
     </div>
   );

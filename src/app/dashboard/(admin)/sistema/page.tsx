@@ -1,5 +1,5 @@
 import { db } from "@/db";
-import { ticketCategories, ticketSubcategories, attentionAreas } from "@/db/schema";
+import { ticketCategories, ticketSubcategories, attentionAreas, priorityConfig } from "@/db/schema";
 import { asc } from "drizzle-orm";
 import { getAppSetting } from "@/db/queries";
 import { Breadcrumb } from "@/components/shared/breadcrumb";
@@ -16,6 +16,7 @@ export default async function SistemaPage() {
     categories,
     subcategories,
     attentionAreasList,
+    priorityConfigs,
   ] = await Promise.all([
     getAppSetting("allow_new_tickets"),
     getAppSetting("ticket_disabled_message"),
@@ -34,6 +35,7 @@ export default async function SistemaPage() {
     db.query.attentionAreas.findMany({
       orderBy: [asc(attentionAreas.name)],
     }),
+    db.query.priorityConfig.findMany(),
   ]);
 
   const allowNewTickets = allowNewTicketsSetting === null || allowNewTicketsSetting === "true";
@@ -54,6 +56,7 @@ export default async function SistemaPage() {
         initialCategories={categories}
         initialSubcategories={subcategories}
         initialAttentionAreas={attentionAreasList}
+        initialPriorityConfigs={priorityConfigs}
       />
     </div>
   );

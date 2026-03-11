@@ -1,9 +1,11 @@
 "use client";
 
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { SettingsForm } from "./config-form";
 import { AgentCategoriesManagement } from "@/components/agent/categories-management";
 import { AgentSubcategoriesManagement } from "@/components/agent/subcategories-management";
+import { AgentPriorityConfig } from "@/components/agent/priority-config";
 
 interface Category {
   id: number;
@@ -32,6 +34,14 @@ interface Subcategory {
   };
 }
 
+interface PriorityConfigItem {
+  id: number;
+  attentionAreaId: number;
+  priority: string;
+  description: string;
+  slaHours: number;
+}
+
 interface SettingsTabsProps {
   initialData: {
     isAcceptingTickets: boolean;
@@ -39,15 +49,17 @@ interface SettingsTabsProps {
   categories: Category[];
   subcategories: Subcategory[];
   areaId: number;
+  priorityConfigs: PriorityConfigItem[];
 }
 
-export function SettingsTabs({ initialData, categories, subcategories }: SettingsTabsProps) {
+export function SettingsTabs({ initialData, categories, subcategories, priorityConfigs }: SettingsTabsProps) {
   return (
     <Tabs defaultValue="reception" className="w-full">
-      <TabsList className="grid w-full max-w-2xl grid-cols-3">
-        <TabsTrigger value="reception" className="cursor-pointer">Recepción de tickets</TabsTrigger>
+      <TabsList className="grid w-full max-w-2xl grid-cols-4">
+        <TabsTrigger value="reception" className="cursor-pointer">Recepción</TabsTrigger>
         <TabsTrigger value="categories" className="cursor-pointer">Categorías</TabsTrigger>
         <TabsTrigger value="subcategories" className="cursor-pointer">Subcategorías</TabsTrigger>
+        <TabsTrigger value="priorities" className="cursor-pointer">Prioridades</TabsTrigger>
       </TabsList>
 
       <TabsContent value="reception" className="mt-6">
@@ -63,6 +75,20 @@ export function SettingsTabs({ initialData, categories, subcategories }: Setting
           subcategories={subcategories}
           categories={categories}
         />
+      </TabsContent>
+
+      <TabsContent value="priorities" className="mt-6">
+        <Card>
+          <CardHeader>
+            <CardTitle>Prioridades de tu área</CardTitle>
+            <CardDescription>
+              Configura la descripción y el tiempo de atención (SLA) de cada nivel de prioridad
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <AgentPriorityConfig priorityConfigs={priorityConfigs} />
+          </CardContent>
+        </Card>
       </TabsContent>
     </Tabs>
   );

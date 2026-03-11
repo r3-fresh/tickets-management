@@ -14,7 +14,7 @@ export default function SistemaLoading() {
 
       {/* Tabs skeleton */}
       <div className="flex gap-2 border-b pb-2">
-        {Array.from({ length: 4 }).map((_, i) => (
+        {Array.from({ length: 5 }).map((_, i) => (
           <Skeleton key={i} className="h-9 w-28" />
         ))}
       </div>
