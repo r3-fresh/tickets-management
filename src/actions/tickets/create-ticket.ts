@@ -2,7 +2,7 @@
 
 import { db } from "@/db";
 import { tickets, users, attentionAreas, ticketCategories, ticketSubcategories, ticketAttachments } from "@/db/schema";
-import { createTicketSchema } from "@/lib/validation/schemas";
+import { createTicketSchema, createDiffusionTicketSchema } from "@/lib/validation/schemas";
 import { requireAuth } from "@/lib/auth/helpers";
 import { redirect } from "next/navigation";
 import { after } from "next/server";
@@ -30,26 +30,17 @@ export async function createTicketAction(formData: FormData) {
     };
   }
 
-  const rawData = {
-    title: formData.get("title"),
-    description: formData.get("description"),
-    priority: formData.get("priority"),
-    categoryId: formData.get("categoryId"),
-    subcategoryId: formData.get("subcategoryId"),
-    attentionAreaId: formData.get("attentionAreaId"),
-  };
+  // Determinar el slug del área para elegir el schema de validación
+  const attentionAreaIdRaw = formData.get("attentionAreaId");
+  const attentionAreaIdNum = Number(attentionAreaIdRaw);
 
-  const result = createTicketSchema.safeParse(rawData);
-
-  if (!result.success) {
-    return { error: "Datos inválidos", details: result.error.flatten() };
+  if (!attentionAreaIdNum || isNaN(attentionAreaIdNum)) {
+    return { error: "Selecciona un área de atención" };
   }
 
-  const { title, description, priority, categoryId, subcategoryId, attentionAreaId } = result.data;
-
-  // Validate if Attention Area is accepting tickets
+  // Obtener el área para saber si es Difusión
   const targetArea = await db.query.attentionAreas.findFirst({
-    where: eq(attentionAreas.id, attentionAreaId),
+    where: eq(attentionAreas.id, attentionAreaIdNum),
   });
 
   if (!targetArea) {
@@ -60,6 +51,59 @@ export async function createTicketAction(formData: FormData) {
     return {
       error: "Esta área no está aceptando tickets en este momento.",
     };
+  }
+
+  const isDiffusion = targetArea.slug === "DIF";
+
+  // Validar según el tipo de formulario
+  let title: string;
+  let description: string;
+  let priority: string | null = null;
+  let categoryId: number;
+  let subcategoryId: number;
+  let attentionAreaId: number;
+  let activityStartDate: string | null = null;
+  let desiredDiffusionDate: string | null = null;
+  let targetAudience: string | null = null;
+
+  if (isDiffusion) {
+    const rawData = {
+      title: formData.get("title"),
+      description: formData.get("description"),
+      priority: formData.get("priority"),
+      categoryId: formData.get("categoryId"),
+      subcategoryId: formData.get("subcategoryId"),
+      attentionAreaId: formData.get("attentionAreaId"),
+      activityStartDate: formData.get("activityStartDate"),
+      desiredDiffusionDate: formData.get("desiredDiffusionDate"),
+      targetAudience: formData.get("targetAudience"),
+    };
+
+    const result = createDiffusionTicketSchema.safeParse(rawData);
+    if (!result.success) {
+      return { error: "Datos inválidos", details: result.error.flatten() };
+    }
+
+    ({ title, description, priority, categoryId, subcategoryId, attentionAreaId } = result.data);
+    activityStartDate = result.data.activityStartDate;
+    desiredDiffusionDate = result.data.desiredDiffusionDate;
+    targetAudience = result.data.targetAudience;
+  } else {
+    const rawData = {
+      title: formData.get("title"),
+      description: formData.get("description"),
+      priority: formData.get("priority"),
+      categoryId: formData.get("categoryId"),
+      subcategoryId: formData.get("subcategoryId"),
+      attentionAreaId: formData.get("attentionAreaId"),
+    };
+
+    const result = createTicketSchema.safeParse(rawData);
+    if (!result.success) {
+      return { error: "Datos inválidos", details: result.error.flatten() };
+    }
+
+    ({ title, description, priority, categoryId, subcategoryId, attentionAreaId } = result.data);
   }
 
   // Parse watchers (user IDs)
@@ -89,23 +133,29 @@ export async function createTicketAction(formData: FormData) {
       subcategoryId,
       attentionAreaId,
       watchers: watcherList,
+      // Campos de Difusión (null para TSI/FE)
+      activityStartDate,
+      desiredDiffusionDate,
+      targetAudience,
     });
 
     ticketId = newTicket.id;
     ticketCode = newTicket.ticketCode;
 
-    // Vincular archivos adjuntos al ticket (si se subieron)
-    const uploadToken = formData.get("uploadToken") as string | null;
-    if (uploadToken) {
-      await db.update(ticketAttachments)
-        .set({ ticketId: ticketId, uploadToken: null })
-        .where(
-          and(
-            eq(ticketAttachments.uploadToken, uploadToken),
-            eq(ticketAttachments.uploadedById, session.user.id),
-            isNull(ticketAttachments.ticketId)
-          )
-        );
+    // Vincular archivos adjuntos al ticket (solo para áreas que no son Difusión)
+    if (!isDiffusion) {
+      const uploadToken = formData.get("uploadToken") as string | null;
+      if (uploadToken) {
+        await db.update(ticketAttachments)
+          .set({ ticketId: ticketId, uploadToken: null })
+          .where(
+            and(
+              eq(ticketAttachments.uploadToken, uploadToken),
+              eq(ticketAttachments.uploadedById, session.user.id),
+              isNull(ticketAttachments.ticketId)
+            )
+          );
+      }
     }
 
     // Defer email notification after response is sent to user
@@ -138,7 +188,7 @@ export async function createTicketAction(formData: FormData) {
           ticketCode,
           title,
           description,
-          priority,
+          priority: priority || 'medium', // Fallback para emails de Difusión
           categoryName: category?.name || 'Sin categoría',
           subcategoryName: subcategory?.name || 'Sin subcategoría',
           createdAt: new Date(),

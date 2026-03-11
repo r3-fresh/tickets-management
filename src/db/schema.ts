@@ -1,6 +1,6 @@
 
 
-import { pgTable, text, timestamp, boolean, uuid, serial, integer, jsonb, unique, type AnyPgColumn, smallint } from "drizzle-orm/pg-core";
+import { pgTable, text, timestamp, boolean, uuid, serial, integer, jsonb, unique, type AnyPgColumn, smallint, date } from "drizzle-orm/pg-core";
 import { relations } from "drizzle-orm";
 
 // --- AUTH SCHEMA (Better-Auth Compatible) ---
@@ -96,11 +96,11 @@ export const ticketSubcategories = pgTable("ticket_subcategory", {
 
 export const tickets = pgTable("ticket", {
   id: serial("id").primaryKey(),
-  ticketCode: text("ticket_code").notNull().unique(), // Format: {area_slug}-YYYY-#### (e.g., tsi-2026-0001)
+  ticketCode: text("ticket_code").notNull().unique(), // Format: {AREA_SLUG}-YYYY-#### (e.g., TSI-2026-0001)
   title: text("title").notNull(),
   description: text("description").notNull(),
   status: text("status").notNull().default("open"), // 'open', 'in_progress', 'pending_validation', 'resolved', 'voided'
-  priority: text("priority").notNull(), // 'low', 'medium', 'high', 'critical'
+  priority: text("priority"), // 'low', 'medium', 'high', 'critical' — null para Difusión
 
   createdById: text("created_by_id").notNull().references(() => users.id),
   assignedToId: text("assigned_to_id").references(() => users.id),
@@ -110,6 +110,11 @@ export const tickets = pgTable("ticket", {
   subcategoryId: integer("subcategory_id").references(() => ticketSubcategories.id),
   // Target Attention Area
   attentionAreaId: integer("attention_area_id").references(() => attentionAreas.id),
+
+  // Campos específicos de Difusión
+  activityStartDate: date("activity_start_date"),          // Fecha de inicio de la actividad
+  desiredDiffusionDate: date("desired_diffusion_date"),    // Fecha deseable de inicio de difusión
+  targetAudience: text("target_audience"),                 // Público objetivo
 
   watchers: text("watchers").array(), // User IDs que monitorean el ticket
 
@@ -247,7 +252,7 @@ export const ticketSubcategoriesRelations = relations(ticketSubcategories, ({ on
 export const attentionAreas = pgTable("attention_area", {
   id: serial("id").primaryKey(),
   name: text("name").notNull(),
-  slug: text("slug").notNull().unique(), // 'tsi', 'fondo-editorial', 'difusion'
+  slug: text("slug").notNull().unique(), // 'TSI', 'FED', 'DIF'
   isActive: boolean("is_active").notNull().default(true),
 
   // Availability

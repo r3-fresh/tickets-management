@@ -82,7 +82,7 @@ export async function addCommentAction(formData: FormData) {
             ticketCode: ticketData.ticketCode,
             title: ticketData.title,
             status: ticketData.status,
-            priority: ticketData.priority,
+            priority: ticketData.priority || 'medium',
             categoryName: ticketData.category?.name || 'Sin categoría',
             subcategoryName: ticketData.subcategory?.name || 'Sin subcategoría',
             ticketId: ticketData.id,

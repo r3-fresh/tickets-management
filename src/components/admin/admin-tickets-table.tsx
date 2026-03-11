@@ -29,7 +29,7 @@ interface Ticket {
   subcategoryId: number | null;
   categoryName: string | null;
   categoryId: number | null;
-  priority: string;
+  priority: string | null;
   status: string;
   createdAt: Date;
   updatedAt: Date;
@@ -144,7 +144,7 @@ export function AdminTicketsTable({ tickets, totalCount, assignedUsers, categori
                       </div>
                     </TableCell>
                     <TableCell>
-                      <PriorityBadge priority={ticket.priority} />
+                      <PriorityBadge priority={ticket.priority || "—"} />
                     </TableCell>
                     <TableCell>
                       <StatusBadge status={ticket.status} />

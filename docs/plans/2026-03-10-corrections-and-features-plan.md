@@ -15,7 +15,7 @@
 ### Fase 2b: Codigos de ticket con slug de area
 - **Branch:** `feat/area-ticket-codes` (mergeada)
 - Tabla `ticket_sequence` con contador auto-incremental por area+year.
-- Formato: `{slug}-{year}-{sequence}` (ej: `tsi-2026-0001`).
+- Formato: `{SLUG}-{year}-{sequence}` (ej: `TSI-2026-0001`).
 - Funcion `insertTicketWithCode` con UPSERT atomico.
 
 ### Fase 2c: URLs con ticketCode y emails sin slug
@@ -32,53 +32,23 @@
 - 3.3: Limite de archivos reducido a 5 MB (cliente FilePond + API + textos UI).
 - 3.4: Email "Ticket asignado" — incluye nombre del agente asignado en la descripcion.
 
+### Fase 4: Formularios por area de atencion
+- **Branch:** `feat/area-specific-forms` (mergeada)
+- **Slugs actualizados a UPPERCASE de 3 letras:** `TSI`, `DIF`, `FED`
+- **Flujo classification-first:** El usuario primero elige area/categoria/subcategoria en una card compacta. Una vez completada la clasificacion, el resto del formulario aparece con animacion (grid-rows CSS transition).
+- **Prioridad para TODAS las areas:** Incluida Difusion. Campo `priority` nullable en BD para compatibilidad con registros sin prioridad.
+- **Columnas nuevas en tabla `tickets`:** `activityStartDate` (date), `desiredDiffusionDate` (date), `targetAudience` (text) — todas nullable.
+- **Calendar date pickers:** react-day-picker v9 con locale `es` para fechas de Difusion (no inputs nativos).
+- **Archivos adjuntos:** Ocultos para area DIF tanto en formulario como en detalle del ticket.
+- **Publico objetivo:** Desplegable con opciones preestablecidas + opcion "Otro" con input libre.
+- **Detalle del ticket:** Muestra campos de Difusion en sidebar cuando aplica, oculta adjuntos para DIF.
+- **Schema unificado en cliente:** Un solo `useForm` con schema unificado (campos opcionales) para evitar problemas de tipos con react-hook-form + TypeScript.
+- **Validacion en servidor:** Dos schemas separados (`createTicketSchema` para TSI/FED, `createDiffusionTicketSchema` para DIF) validados segun el slug del area.
+- **Skeletons actualizados:** Todas las paginas de tabla ahora muestran 9 columnas + 5 filtros + buscador. Skeleton de nuevo ticket refleja el flujo classification-first.
+
 ---
 
 ## Fases pendientes
-
-### Fase 4: Formularios por area de atencion
-- **Branch:** `feat/area-specific-forms`
-- **Prioridad:** Alta
-
-#### 4.1 Arquitectura
-- Cada area de atencion tendra su propio formulario de creacion de ticket.
-- Solo hay 3 areas fijas (TSI, Difusion, Fondo Editorial) que no van a crecer.
-- El formulario detecta el area seleccionada y muestra/oculta campos segun el slug.
-
-#### 4.2 Schema - Columnas para Difusion
-- Agregar columnas nullable a la tabla `tickets`:
-  - `activityStartDate` (date, nullable) - Fecha de inicio de la actividad
-  - `desiredDiffusionDate` (date, nullable) - Fecha deseable de inicio de difusion
-  - `targetAudience` (text, nullable) - Publico objetivo
-- Estas columnas seran NULL para tickets de TSI y Fondo Editorial.
-
-#### 4.3 TSI (slug: `tsi`)
-- Formulario actual: titulo, area de atencion, categoria, subcategoria, prioridad, descripcion (rich text), archivos adjuntos.
-- Campus y area de procedencia ya fueron eliminados en Fase 2a. Confirmar que no queda rastro.
-
-#### 4.4 Difusion (slug: `dif`)
-- Campos: titulo, area de atencion, categoria, subcategoria, fecha inicio actividad, fecha deseable difusion, publico objetivo (desplegable), descripcion (rich text).
-- SIN opcion de adjuntar archivos (ni en formulario ni en detalle del ticket).
-- Publico objetivo opciones:
-  - Toda la comunidad Continental
-  - Docentes de Universidad
-  - Docentes de instituto
-  - Administrativos UC
-  - Administrativos IC
-  - Todos los estudiantes UC
-  - Todos los estudiantes IC
-  - Posgrado
-  - Otro (input libre)
-- NO incluye campo de prioridad (a confirmar si Difusion usa prioridades).
-
-#### 4.5 Fondo Editorial (slug: `fe`)
-- Mismo formulario que TSI (temporal hasta desarrollo futuro).
-
-#### 4.6 Detalle del ticket
-- Mostrar campos especificos de Difusion en el detalle cuando aplique.
-- Ocultar seccion de adjuntos para tickets de Difusion.
-
----
 
 ### Fase 5: Prioridades configurables por area
 - **Branch:** `feat/priority-config`

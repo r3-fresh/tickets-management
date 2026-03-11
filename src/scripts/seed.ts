@@ -10,17 +10,17 @@ async function seed() {
     const attentionAreasList = await db.insert(attentionAreas).values([
       {
         name: "Tecnologías y Sistemas de Información",
-        slug: "tsi",
+        slug: "TSI",
         isAcceptingTickets: true
       },
       {
         name: "Fondo Editorial",
-        slug: "fe",
+        slug: "FED",
         isAcceptingTickets: false
       },
       {
         name: "Difusión",
-        slug: "dif",
+        slug: "DIF",
         isAcceptingTickets: false
       }
     ]).onConflictDoNothing().returning({ id: attentionAreas.id, name: attentionAreas.name });

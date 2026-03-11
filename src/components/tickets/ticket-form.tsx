@@ -2,13 +2,14 @@
 
 import { useForm, type Resolver } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { createTicketSchema, CreateTicketSchema } from "@/lib/validation/schemas";
+import { createTicketFormSchema, type CreateTicketFormSchema } from "@/lib/validation/schemas";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
+import { Input } from "@/components/ui/input";
 import { toast } from "sonner";
 import { createTicketAction } from "@/actions/tickets";
-import { useState, useTransition, useMemo, lazy, Suspense } from "react";
+import { useState, useTransition, useMemo, lazy, Suspense, useCallback } from "react";
 import {
   Loader2,
   ArrowLeft,
@@ -16,18 +17,22 @@ import {
   Bell,
   Lightbulb,
   Paperclip,
+  CalendarIcon,
 } from "lucide-react";
 import { UserSelector } from "@/components/ui/user-selector";
 import Link from "next/link";
 import { RichTextEditor } from "@/components/shared/rich-text-editor";
 import { cn } from "@/lib/utils/cn";
+import { Calendar } from "@/components/ui/calendar";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { dayjs } from "@/lib/utils/date";
+import { es } from "react-day-picker/locale";
 import { PRIORITY_STYLES } from "@/lib/constants/ticket-display";
 import { PRIORITY_LABELS } from "@/lib/constants/tickets";
 import { PRIORITY_DEFINITIONS } from "@/lib/constants/priority-info";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { Info } from "lucide-react";
 import type { TicketPriority } from "@/types";
-
 
 
 const FileUpload = lazy(() =>
@@ -57,6 +62,7 @@ interface Category {
 interface AttentionArea {
   id: number;
   name: string;
+  slug: string;
   isAcceptingTickets: boolean;
 }
 
@@ -79,6 +85,18 @@ const PRIORITIES = (Object.keys(PRIORITY_STYLES) as TicketPriority[]).map((value
   };
 });
 
+// Opciones de público objetivo para Difusión
+const TARGET_AUDIENCE_OPTIONS = [
+  "Toda la comunidad Continental",
+  "Docentes de universidad",
+  "Docentes de instituto",
+  "Administrativos UC",
+  "Administrativos IC",
+  "Todos los estudiantes UC",
+  "Todos los estudiantes IC",
+  "Posgrado",
+] as const;
+
 interface SidebarContext {
   areaName: string;
   category?: { name: string; description: string | null };
@@ -99,30 +117,47 @@ function useSidebarContext(
     const category = categories.find(c => c.id === selectedCategory);
     const subcategory = category?.subcategories.find(s => s.id === selectedSubcategory);
 
+    const isDiffusion = area?.slug === "DIF";
+
     return {
-      areaName: area ? area.name : "Comienza describiendo tu solicitud",
+      areaName: area ? area.name : "Selecciona un área para comenzar",
       category: category ? { name: category.name, description: category.description } : undefined,
       subcategory: subcategory ? { name: subcategory.name, description: subcategory.description } : undefined,
-      tips: [
-        "Describe el problema con el mayor detalle posible",
-        "Adjunta capturas o enlaces relevantes en la descripción",
-      ],
+      tips: isDiffusion
+        ? [
+          "Indica las fechas con la mayor anticipación posible",
+          "Describe detalladamente el evento o actividad a difundir",
+          "Especifica el público objetivo para una mejor segmentación",
+        ]
+        : [
+          "Describe el problema con el mayor detalle posible",
+          "Adjunta capturas o enlaces relevantes en la descripción",
+        ],
     };
   }, [selectedAttentionArea, selectedCategory, selectedSubcategory, attentionAreas, categories]);
 }
 
 // Progreso del formulario
-function useFormProgress(formValues: Partial<CreateTicketSchema>, hasDescription: boolean) {
+function useFormProgress(formValues: Partial<CreateTicketFormSchema>, hasDescription: boolean, isDiffusion: boolean) {
   return useMemo(() => {
-    const fields = [
-      { label: "Asunto", done: Boolean(formValues.title && formValues.title.length >= 5) },
-      { label: "Clasificación", done: Boolean(formValues.attentionAreaId && formValues.categoryId) },
-      { label: "Descripción", done: hasDescription },
-      { label: "Prioridad", done: Boolean(formValues.priority) },
-    ];
+    const fields = isDiffusion
+      ? [
+        { label: "Clasificación", done: Boolean(formValues.attentionAreaId && formValues.categoryId && formValues.subcategoryId) },
+        { label: "Asunto", done: Boolean(formValues.title && formValues.title.length >= 5) },
+        { label: "Prioridad", done: Boolean(formValues.priority) },
+        { label: "Fechas", done: Boolean(formValues.activityStartDate && formValues.desiredDiffusionDate) },
+        { label: "Público", done: Boolean(formValues.targetAudience) },
+        { label: "Descripción", done: hasDescription },
+      ]
+      : [
+        { label: "Clasificación", done: Boolean(formValues.attentionAreaId && formValues.categoryId && formValues.subcategoryId) },
+        { label: "Asunto", done: Boolean(formValues.title && formValues.title.length >= 5) },
+        { label: "Prioridad", done: Boolean(formValues.priority) },
+        { label: "Descripción", done: hasDescription },
+      ];
     const completed = fields.filter(f => f.done).length;
     return { fields, completed, total: fields.length };
-  }, [formValues, hasDescription]);
+  }, [formValues, hasDescription, isDiffusion]);
 }
 
 export function NewTicketForm({
@@ -136,15 +171,24 @@ export function NewTicketForm({
   const [selectedCategory, setSelectedCategory] = useState<number | null>(null);
   const [selectedSubcategory, setSelectedSubcategory] = useState<number | null>(null);
   const [selectedAttentionArea, setSelectedAttentionArea] = useState<number | null>(null);
+  const [selectedAreaSlug, setSelectedAreaSlug] = useState<string | null>(null);
   const [selectedWatchers, setSelectedWatchers] = useState<string[]>([]);
   const [uploadToken] = useState(() => crypto.randomUUID());
+  // Para "Otro" en público objetivo
+  const [targetAudienceMode, setTargetAudienceMode] = useState<"preset" | "custom">("preset");
+  const [customTargetAudience, setCustomTargetAudience] = useState("");
 
-  const form = useForm<CreateTicketSchema>({
-    // zodResolver type mismatch with z.coerce.number() (Zod 4 + @hookform/resolvers 5.x)
-    resolver: zodResolver(createTicketSchema) as Resolver<CreateTicketSchema>,
+  const isDiffusion = selectedAreaSlug === "DIF";
+
+  // Un único formulario con schema unificado
+  const form = useForm<CreateTicketFormSchema>({
+    resolver: zodResolver(createTicketFormSchema) as Resolver<CreateTicketFormSchema>,
     defaultValues: {
       title: "",
       description: "",
+      activityStartDate: "",
+      desiredDiffusionDate: "",
+      targetAudience: "",
     },
   });
 
@@ -152,7 +196,35 @@ export function NewTicketForm({
   const hasDescription = Boolean(watchedValues.description && watchedValues.description.length >= 10);
 
   const sidebarContext = useSidebarContext(selectedAttentionArea, selectedCategory, selectedSubcategory, attentionAreas, categories);
-  const progress = useFormProgress(watchedValues, hasDescription);
+  const progress = useFormProgress(watchedValues, hasDescription, isDiffusion);
+
+  // Cuando cambia el área, resetear campos específicos y sincronizar el estado
+  const handleAreaChange = useCallback((areaId: number) => {
+    const area = attentionAreas.find(a => a.id === areaId);
+    const newSlug = area?.slug || null;
+
+    setSelectedAttentionArea(areaId);
+    setSelectedAreaSlug(newSlug);
+    setSelectedCategory(null);
+    setSelectedSubcategory(null);
+    setTargetAudienceMode("preset");
+    setCustomTargetAudience("");
+
+    // Conservar campos compartidos, limpiar campos específicos de área
+    const currentTitle = form.getValues("title");
+    const currentDescription = form.getValues("description");
+
+    form.reset({
+      title: currentTitle,
+      description: currentDescription,
+      attentionAreaId: areaId,
+      // Limpiar campos específicos
+      priority: undefined,
+      activityStartDate: "",
+      desiredDiffusionDate: "",
+      targetAudience: "",
+    });
+  }, [attentionAreas, form]);
 
   if (!allowNewTickets) {
     return (
@@ -177,16 +249,18 @@ export function NewTicketForm({
     );
   }
 
-  const onSubmit = (data: CreateTicketSchema) => {
+  const onSubmit = (data: CreateTicketFormSchema) => {
     const formData = new FormData();
     Object.entries(data).forEach(([key, value]) => {
-      if (value !== undefined && value !== null) {
+      if (value !== undefined && value !== null && value !== "") {
         formData.append(key, value.toString());
       }
     });
 
     formData.append("watchers", JSON.stringify(selectedWatchers));
-    formData.append("uploadToken", uploadToken);
+    if (!isDiffusion) {
+      formData.append("uploadToken", uploadToken);
+    }
 
     startTransition(async () => {
       const result = await createTicketAction(formData);
@@ -204,6 +278,9 @@ export function NewTicketForm({
     : [];
 
   const currentSubcategories = categories.find(c => c.id === selectedCategory)?.subcategories || [];
+
+  // Clasificación completa: el usuario ya eligió área + categoría + subcategoría
+  const hasClassification = Boolean(selectedAttentionArea && selectedCategory && selectedSubcategory);
 
   return (
     <div className="max-w-6xl mx-auto pb-2">
@@ -227,308 +304,486 @@ export function NewTicketForm({
           <Form {...form}>
             <TooltipProvider delayDuration={300}>
               <form onSubmit={form.handleSubmit(onSubmit)} id="ticket-form">
-                {/* ── Card 1: Título + Clasificación ── */}
-                <div className="rounded-xl border border-border bg-card">
-                  <FormField
-                    control={form.control}
-                    name="title"
-                    render={({ field }) => (
-                      <FormItem className="p-0">
-                        <FormControl>
-                          <input
-                            {...field}
-                            type="text"
-                            placeholder="¿Qué necesitas resolver?"
-                            className="w-full bg-transparent text-xl font-medium placeholder:text-muted-foreground/50 outline-none px-6 pt-6 pb-2 tracking-tight"
-                            autoFocus
-                            autoComplete="off"
-                            required
-                          />
-                        </FormControl>
-                        <FormMessage className="px-6 pb-2" />
-                      </FormItem>
-                    )}
-                  />
-
-                  {/* Clasificación — selectores compactos en línea */}
-                  <div className="px-6 pb-4">
-                    <div className="flex items-center gap-2 flex-wrap">
-                      <FormField
-                        control={form.control}
-                        name="attentionAreaId"
-                        render={({ field }) => (
-                          <FormItem>
-                            <Select
-                              onValueChange={(val) => {
-                                const areaId = Number(val);
-                                field.onChange(areaId);
-                                setSelectedAttentionArea(areaId);
-                                form.setValue("categoryId", undefined as unknown as number);
-                                form.setValue("subcategoryId", undefined as unknown as number);
-                                setSelectedCategory(null);
-                                setSelectedSubcategory(null);
-                              }}
-                              value={field.value?.toString() ?? ""}
-                              required
-                            >
-                              <FormControl>
-                                <SelectTrigger
-                                  size="sm"
-                                  className={cn(
-                                    "w-fit text-xs rounded-md border gap-1 pl-2.5 pr-1.5 max-w-[200px]",
-                                    field.value
-                                      ? "border-foreground/15 text-foreground"
-                                      : "border-dashed border-muted-foreground/30 text-muted-foreground"
-                                  )}
-                                >
-                                  <SelectValue placeholder="Área de atención" />
-                                </SelectTrigger>
-                              </FormControl>
-                              <SelectContent>
-                                {attentionAreas.map((area) => (
-                                  <SelectItem
-                                    key={area.id}
-                                    value={area.id.toString()}
-                                    disabled={!area.isAcceptingTickets}
-                                  >
-                                    {area.name} {!area.isAcceptingTickets && "(Cerrado)"}
-                                  </SelectItem>
-                                ))}
-                              </SelectContent>
-                            </Select>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
-
-                      <span className="text-muted-foreground/30 text-sm select-none">/</span>
-
-                      <FormField
-                        control={form.control}
-                        name="categoryId"
-                        render={({ field }) => (
-                          <FormItem>
-                            <Select
-                              onValueChange={(val) => {
-                                field.onChange(Number(val));
-                                setSelectedCategory(Number(val));
-                                form.setValue("subcategoryId", undefined as unknown as number);
-                                setSelectedSubcategory(null);
-                              }}
-                              value={field.value?.toString() ?? ""}
-                              disabled={!selectedAttentionArea || filteredCategories.length === 0}
-                              required
-                            >
-                              <FormControl>
-                                <SelectTrigger
-                                  size="sm"
-                                  className={cn(
-                                    "w-fit text-xs rounded-md border gap-1 pl-2.5 pr-1.5 max-w-[200px]",
-                                    field.value
-                                      ? "border-foreground/15 text-foreground"
-                                      : "border-dashed border-muted-foreground/30 text-muted-foreground"
-                                  )}
-                                >
-                                  <SelectValue placeholder="Categoría" />
-                                </SelectTrigger>
-                              </FormControl>
-                              <SelectContent>
-                                {filteredCategories.map((cat) => (
-                                  <SelectItem key={cat.id} value={cat.id.toString()}>
-                                    {cat.name}
-                                  </SelectItem>
-                                ))}
-                              </SelectContent>
-                            </Select>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
-
-                      <span className="text-muted-foreground/30 text-sm select-none">/</span>
-
-                      <FormField
-                        control={form.control}
-                        name="subcategoryId"
-                        render={({ field }) => (
-                          <FormItem>
-                            <Select
-                              onValueChange={(val) => {
-                                field.onChange(Number(val));
-                                setSelectedSubcategory(Number(val));
-                              }}
-                              value={field.value?.toString() ?? ""}
-                              disabled={!selectedCategory || currentSubcategories.length === 0}
-                              required
-                            >
-                              <FormControl>
-                                <SelectTrigger
-                                  size="sm"
-                                  className={cn(
-                                    "w-fit text-xs rounded-md border gap-1 pl-2.5 pr-1.5 max-w-[200px]",
-                                    field.value
-                                      ? "border-foreground/15 text-foreground"
-                                      : "border-dashed border-muted-foreground/30 text-muted-foreground"
-                                  )}
-                                >
-                                  <SelectValue placeholder="Subcategoría" />
-                                </SelectTrigger>
-                              </FormControl>
-                              <SelectContent>
-                                {currentSubcategories.map((sub) => (
-                                  <SelectItem key={sub.id} value={sub.id.toString()}>
-                                    {sub.name}
-                                  </SelectItem>
-                                ))}
-                              </SelectContent>
-                            </Select>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
-                    </div>
-                  </div>
-
-                  {/* Separador */}
-                  <div className="mx-6 border-t border-border" />
-
-                  {/* Prioridad */}
-                  <div className="px-6 pb-5 pt-4">
-                    <FormField
-                      control={form.control}
-                      name="priority"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel className="text-sm font-medium">
-                            Prioridad <span className="text-muted-foreground">*</span>
-                          </FormLabel>
-                          <p className="text-xs text-muted-foreground mb-2">
-                            Define la urgencia de tu solicitud para ayudar al equipo a priorizar
-                          </p>
-                          <div className="grid grid-cols-4 gap-2">
-                            {PRIORITIES.map((priority) => (
-                              <Tooltip key={priority.value}>
-                                <TooltipTrigger asChild>
-                                  <button
-                                    type="button"
-                                    onClick={() => field.onChange(priority.value)}
-                                    className={cn(
-                                      "py-1.5 rounded-md border text-xs font-medium transition-all cursor-pointer text-center",
-                                      field.value === priority.value
-                                        ? priority.activeColor
-                                        : cn("bg-background text-muted-foreground border-input/30 hover:border-input", priority.hover)
-                                    )}
-                                  >
-                                    {priority.label}
-                                  </button>
-                                </TooltipTrigger>
-                                <TooltipContent side="bottom" className="text-xs max-w-[200px] p-3 space-y-1.5" align="center">
-                                  <p className="font-semibold opacity-90">{priority.label}</p>
-                                  <p className="opacity-70 leading-snug">{PRIORITY_DEFINITIONS[priority.value].description}</p>
-                                  <div className="flex items-center gap-1.5 pt-1 border-t border-background/20 mt-1">
-                                    <span className="text-[10px] font-medium opacity-90">SLA:</span>
-                                    <span className="text-[10px] opacity-70">{PRIORITY_DEFINITIONS[priority.value].sla}</span>
-                                  </div>
-                                </TooltipContent>
-                              </Tooltip>
-                            ))}
-                          </div>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                  </div>
-                </div>
-
-                {/* ── Card 2: Descripción + Archivos adjuntos (juntos al final) ── */}
-                <div className="mt-5 rounded-xl border border-border bg-card">
-                  {/* Descripción */}
-                  <div className="px-6 pt-5 pb-4">
-                    <FormField
-                      control={form.control}
-                      name="description"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel className="text-sm font-medium">
-                            Descripción <span className="text-muted-foreground">*</span>
-                          </FormLabel>
-                          <p className="text-xs text-muted-foreground mb-1">
-                            Detalla el problema o solicitud. Incluye pasos para reproducirlo, contexto relevante y el resultado esperado.
-                          </p>
-                          <FormControl>
-                            <RichTextEditor
-                              value={field.value}
-                              onChange={field.onChange}
-                              placeholder="Ej: Al intentar acceder al sistema de notas, aparece un error 500. Esto ocurre desde ayer..."
-                            />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                  </div>
-
-                  {/* Separador */}
-                  <div className="mx-6 border-t border-border" />
-
-                  {/* Archivos adjuntos */}
-                  <div className="px-6 pt-4 pb-6">
-                    <div className="flex items-center gap-2 mb-1">
-                      <Paperclip className="h-3.5 w-3.5 text-muted-foreground" />
-                      <p className="text-sm font-medium">Archivos adjuntos</p>
-                      <span className="text-xs text-muted-foreground">(opcional)</span>
-                    </div>
-                    <p className="text-xs text-muted-foreground mb-3">
-                      Adjunta capturas de pantalla, documentos u otros archivos relevantes. Máximo 5 MB por archivo.
-                    </p>
-                    <Suspense fallback={null}>
-                      <FileUpload uploadToken={uploadToken} />
-                    </Suspense>
-                  </div>
-                </div>
-
-                {/* ── Notificar a — solo visible en móvil (en desktop va al sidebar) ── */}
-                <div className="mt-3 rounded-xl border border-border bg-card p-5 lg:hidden">
-                  <div className="flex items-center gap-2 mb-1">
-                    <Bell className="h-3.5 w-3.5 text-muted-foreground" />
-                    <p className="text-sm font-medium">Notificar a</p>
-                  </div>
-                  <p className="text-xs text-muted-foreground mb-3">
-                    Estos usuarios podrán dar seguimiento al ticket
+                {/* ── Card 1: Clasificación (siempre visible) ── */}
+                <div className="rounded-xl border border-border bg-card p-6">
+                  <p className="text-sm font-medium mb-1">Clasifica tu solicitud</p>
+                  <p className="text-xs text-muted-foreground mb-4">
+                    Selecciona el área, categoría y subcategoría para continuar
                   </p>
-                  <UserSelector
-                    users={availableUsers}
-                    selectedUserIds={selectedWatchers}
-                    onSelectionChange={setSelectedWatchers}
-                    placeholder="Buscar personas..."
-                  />
+                  <div className="flex items-center gap-2 flex-wrap">
+                    <FormField
+                      control={form.control}
+                      name="attentionAreaId"
+                      render={({ field }) => (
+                        <FormItem>
+                          <Select
+                            onValueChange={(val) => {
+                              const areaId = Number(val);
+                              field.onChange(areaId);
+                              handleAreaChange(areaId);
+                            }}
+                            value={field.value?.toString() ?? ""}
+                            required
+                          >
+                            <FormControl>
+                              <SelectTrigger
+                                size="sm"
+                                className={cn(
+                                  "w-fit text-xs rounded-md border gap-1 pl-2.5 pr-1.5 max-w-[200px]",
+                                  field.value
+                                    ? "border-foreground/15 text-foreground"
+                                    : "border-dashed border-muted-foreground/30 text-muted-foreground"
+                                )}
+                              >
+                                <SelectValue placeholder="Área de atención" />
+                              </SelectTrigger>
+                            </FormControl>
+                            <SelectContent>
+                              {attentionAreas.map((area) => (
+                                <SelectItem
+                                  key={area.id}
+                                  value={area.id.toString()}
+                                  disabled={!area.isAcceptingTickets}
+                                >
+                                  {area.name} {!area.isAcceptingTickets && "(Cerrado)"}
+                                </SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+
+                    <span className="text-muted-foreground/30 text-sm select-none">/</span>
+
+                    <FormField
+                      control={form.control}
+                      name="categoryId"
+                      render={({ field }) => (
+                        <FormItem>
+                          <Select
+                            onValueChange={(val) => {
+                              field.onChange(Number(val));
+                              setSelectedCategory(Number(val));
+                              form.setValue("subcategoryId", 0);
+                              setSelectedSubcategory(null);
+                            }}
+                            value={field.value?.toString() ?? ""}
+                            disabled={!selectedAttentionArea || filteredCategories.length === 0}
+                            required
+                          >
+                            <FormControl>
+                              <SelectTrigger
+                                size="sm"
+                                className={cn(
+                                  "w-fit text-xs rounded-md border gap-1 pl-2.5 pr-1.5 max-w-[200px]",
+                                  field.value
+                                    ? "border-foreground/15 text-foreground"
+                                    : "border-dashed border-muted-foreground/30 text-muted-foreground"
+                                )}
+                              >
+                                <SelectValue placeholder="Categoría" />
+                              </SelectTrigger>
+                            </FormControl>
+                            <SelectContent>
+                              {filteredCategories.map((cat) => (
+                                <SelectItem key={cat.id} value={cat.id.toString()}>
+                                  {cat.name}
+                                </SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+
+                    <span className="text-muted-foreground/30 text-sm select-none">/</span>
+
+                    <FormField
+                      control={form.control}
+                      name="subcategoryId"
+                      render={({ field }) => (
+                        <FormItem>
+                          <Select
+                            onValueChange={(val) => {
+                              field.onChange(Number(val));
+                              setSelectedSubcategory(Number(val));
+                            }}
+                            value={field.value ? field.value.toString() : ""}
+                            disabled={!selectedCategory || currentSubcategories.length === 0}
+                            required
+                          >
+                            <FormControl>
+                              <SelectTrigger
+                                size="sm"
+                                className={cn(
+                                  "w-fit text-xs rounded-md border gap-1 pl-2.5 pr-1.5 max-w-[200px]",
+                                  field.value
+                                    ? "border-foreground/15 text-foreground"
+                                    : "border-dashed border-muted-foreground/30 text-muted-foreground"
+                                )}
+                              >
+                                <SelectValue placeholder="Subcategoría" />
+                              </SelectTrigger>
+                            </FormControl>
+                            <SelectContent>
+                              {currentSubcategories.map((sub) => (
+                                <SelectItem key={sub.id} value={sub.id.toString()}>
+                                  {sub.name}
+                                </SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                  </div>
+                </div>
+
+                {/* ── Resto del formulario (aparece tras clasificar) ── */}
+                <div
+                  className={cn(
+                    "grid transition-all duration-300 ease-in-out",
+                    hasClassification
+                      ? "grid-rows-[1fr] opacity-100 mt-5"
+                      : "grid-rows-[0fr] opacity-0 mt-0"
+                  )}
+                >
+                  <div className="overflow-hidden">
+                    {/* ── Card 2: Título + Prioridad + Campos de área ── */}
+                    <div className="rounded-xl border border-border bg-card">
+                      <FormField
+                        control={form.control}
+                        name="title"
+                        render={({ field }) => (
+                          <FormItem className="p-0">
+                            <FormControl>
+                              <input
+                                {...field}
+                                type="text"
+                                placeholder="¿Qué necesitas resolver?"
+                                className="w-full bg-transparent text-xl font-medium placeholder:text-muted-foreground/50 outline-none px-6 pt-6 pb-2 tracking-tight"
+                                autoComplete="off"
+                                required
+                              />
+                            </FormControl>
+                            <FormMessage className="px-6 pb-2" />
+                          </FormItem>
+                        )}
+                      />
+
+                      {/* Separador */}
+                      <div className="mx-6 border-t border-border" />
+
+                      {/* ── Prioridad (todas las áreas) ── */}
+                      <div className="px-6 pb-5 pt-4">
+                        <FormField
+                          control={form.control}
+                          name="priority"
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel className="text-sm font-medium">
+                                Prioridad <span className="text-muted-foreground">*</span>
+                              </FormLabel>
+                              <p className="text-xs text-muted-foreground mb-2">
+                                Define la urgencia de tu solicitud para ayudar al equipo a priorizar
+                              </p>
+                              <div className="grid grid-cols-4 gap-2">
+                                {PRIORITIES.map((priority) => (
+                                  <Tooltip key={priority.value}>
+                                    <TooltipTrigger asChild>
+                                      <button
+                                        type="button"
+                                        onClick={() => field.onChange(priority.value)}
+                                        className={cn(
+                                          "py-1.5 rounded-md border text-xs font-medium transition-all cursor-pointer text-center",
+                                          field.value === priority.value
+                                            ? priority.activeColor
+                                            : cn("bg-background text-muted-foreground border-input/30 hover:border-input", priority.hover)
+                                        )}
+                                      >
+                                        {priority.label}
+                                      </button>
+                                    </TooltipTrigger>
+                                    <TooltipContent side="bottom" className="text-xs max-w-[200px] p-3 space-y-1.5" align="center">
+                                      <p className="font-semibold opacity-90">{priority.label}</p>
+                                      <p className="opacity-70 leading-snug">{PRIORITY_DEFINITIONS[priority.value].description}</p>
+                                      <div className="flex items-center gap-1.5 pt-1 border-t border-background/20 mt-1">
+                                        <span className="text-[10px] font-medium opacity-90">SLA:</span>
+                                        <span className="text-[10px] opacity-70">{PRIORITY_DEFINITIONS[priority.value].sla}</span>
+                                      </div>
+                                    </TooltipContent>
+                                  </Tooltip>
+                                ))}
+                              </div>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+                      </div>
+
+                      {/* ── Campos de Difusión ── */}
+                      {isDiffusion && (
+                        <>
+                          <div className="mx-6 border-t border-border" />
+                          <div className="px-6 pb-5 pt-4 space-y-5">
+                            {/* Fechas en fila */}
+                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                              <FormField
+                                control={form.control}
+                                name="activityStartDate"
+                                render={({ field }) => (
+                                  <FormItem className="flex flex-col">
+                                    <FormLabel className="text-sm font-medium">
+                                      Fecha de inicio de la actividad <span className="text-muted-foreground">*</span>
+                                    </FormLabel>
+                                    <Popover>
+                                      <PopoverTrigger asChild>
+                                        <FormControl>
+                                          <Button
+                                            variant="outline"
+                                            className={cn(
+                                              "w-full justify-start text-left font-normal text-sm",
+                                              !field.value && "text-muted-foreground"
+                                            )}
+                                          >
+                                            <CalendarIcon className="mr-2 h-4 w-4" />
+                                            {field.value
+                                              ? dayjs(field.value).format("D [de] MMMM [de] YYYY")
+                                              : "Selecciona una fecha"}
+                                          </Button>
+                                        </FormControl>
+                                      </PopoverTrigger>
+                                      <PopoverContent className="w-auto p-0" align="start">
+                                        <Calendar
+                                          locale={es}
+                                          mode="single"
+                                          selected={field.value ? new Date(field.value + "T00:00:00") : undefined}
+                                          onSelect={(date) => {
+                                            field.onChange(date ? dayjs(date).format("YYYY-MM-DD") : "");
+                                          }}
+                                          disabled={{ before: new Date() }}
+                                          autoFocus
+                                        />
+                                      </PopoverContent>
+                                    </Popover>
+                                    <FormMessage />
+                                  </FormItem>
+                                )}
+                              />
+                              <FormField
+                                control={form.control}
+                                name="desiredDiffusionDate"
+                                render={({ field }) => (
+                                  <FormItem className="flex flex-col">
+                                    <FormLabel className="text-sm font-medium">
+                                      Fecha deseada de difusión <span className="text-muted-foreground">*</span>
+                                    </FormLabel>
+                                    <Popover>
+                                      <PopoverTrigger asChild>
+                                        <FormControl>
+                                          <Button
+                                            variant="outline"
+                                            className={cn(
+                                              "w-full justify-start text-left font-normal text-sm",
+                                              !field.value && "text-muted-foreground"
+                                            )}
+                                          >
+                                            <CalendarIcon className="mr-2 h-4 w-4" />
+                                            {field.value
+                                              ? dayjs(field.value).format("D [de] MMMM [de] YYYY")
+                                              : "Selecciona una fecha"}
+                                          </Button>
+                                        </FormControl>
+                                      </PopoverTrigger>
+                                      <PopoverContent className="w-auto p-0" align="start">
+                                        <Calendar
+                                          locale={es}
+                                          mode="single"
+                                          selected={field.value ? new Date(field.value + "T00:00:00") : undefined}
+                                          onSelect={(date) => {
+                                            field.onChange(date ? dayjs(date).format("YYYY-MM-DD") : "");
+                                          }}
+                                          disabled={{ before: new Date() }}
+                                          autoFocus
+                                        />
+                                      </PopoverContent>
+                                    </Popover>
+                                    <FormMessage />
+                                  </FormItem>
+                                )}
+                              />
+                            </div>
+
+                            {/* Público objetivo */}
+                            <FormField
+                              control={form.control}
+                              name="targetAudience"
+                              render={({ field }) => (
+                                <FormItem>
+                                  <FormLabel className="text-sm font-medium">
+                                    Público objetivo <span className="text-muted-foreground">*</span>
+                                  </FormLabel>
+                                  <p className="text-xs text-muted-foreground mb-2">
+                                    Selecciona a quién va dirigida la difusión
+                                  </p>
+                                  <div className="space-y-3">
+                                    <Select
+                                      onValueChange={(val) => {
+                                        if (val === "__otro__") {
+                                          setTargetAudienceMode("custom");
+                                          field.onChange(customTargetAudience);
+                                        } else {
+                                          setTargetAudienceMode("preset");
+                                          setCustomTargetAudience("");
+                                          field.onChange(val);
+                                        }
+                                      }}
+                                      value={targetAudienceMode === "custom" ? "__otro__" : field.value || ""}
+                                    >
+                                      <FormControl>
+                                        <SelectTrigger className="text-sm">
+                                          <SelectValue placeholder="Selecciona el público objetivo" />
+                                        </SelectTrigger>
+                                      </FormControl>
+                                      <SelectContent>
+                                        {TARGET_AUDIENCE_OPTIONS.map((option) => (
+                                          <SelectItem key={option} value={option}>
+                                            {option}
+                                          </SelectItem>
+                                        ))}
+                                        <SelectItem value="__otro__">Otro (especificar)</SelectItem>
+                                      </SelectContent>
+                                    </Select>
+
+                                    {targetAudienceMode === "custom" && (
+                                      <Input
+                                        type="text"
+                                        placeholder="Especifica el público objetivo..."
+                                        value={customTargetAudience}
+                                        onChange={(e) => {
+                                          setCustomTargetAudience(e.target.value);
+                                          field.onChange(e.target.value);
+                                        }}
+                                        className="text-sm"
+                                      />
+                                    )}
+                                  </div>
+                                  <FormMessage />
+                                </FormItem>
+                              )}
+                            />
+                          </div>
+                        </>
+                      )}
+                    </div>
+
+                    {/* ── Card 3: Descripción + Archivos adjuntos ── */}
+                    <div className="mt-5 rounded-xl border border-border bg-card">
+                      {/* Descripción */}
+                      <div className="px-6 pt-5 pb-4">
+                        <FormField
+                          control={form.control}
+                          name="description"
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel className="text-sm font-medium">
+                                Descripción <span className="text-muted-foreground">*</span>
+                              </FormLabel>
+                              <p className="text-xs text-muted-foreground mb-1">
+                                {isDiffusion
+                                  ? "Recuerda que, para solicitar piezas gráficas u otros materiales, el texto debe estar previamente revisado y validado, cargado en Cendoc y compartido con todo el equipo del CIE en modo lector."
+                                  : "Detalla el problema o solicitud. Incluye pasos para reproducirlo, contexto relevante y el resultado esperado."
+                                }
+                              </p>
+                              <FormControl>
+                                <RichTextEditor
+                                  value={field.value}
+                                  onChange={field.onChange}
+                                  placeholder={isDiffusion
+                                    ? "Ej: Se requiere la difusión del evento de graduación 2026, que incluye..."
+                                    : "Ej: Al intentar acceder al sistema de notas, aparece un error 500. Esto ocurre desde ayer..."
+                                  }
+                                />
+                              </FormControl>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+                      </div>
+
+                      {/* Archivos adjuntos — solo para áreas que no son Difusión */}
+                      {!isDiffusion && (
+                        <>
+                          {/* Separador */}
+                          <div className="mx-6 border-t border-border" />
+
+                          <div className="px-6 pt-4 pb-6">
+                            <div className="flex items-center gap-2 mb-1">
+                              <Paperclip className="h-3.5 w-3.5 text-muted-foreground" />
+                              <p className="text-sm font-medium">Archivos adjuntos</p>
+                              <span className="text-xs text-muted-foreground">(opcional)</span>
+                            </div>
+                            <p className="text-xs text-muted-foreground mb-3">
+                              Adjunta capturas de pantalla, documentos u otros archivos relevantes. Máximo 5 MB por archivo.
+                            </p>
+                            <Suspense fallback={null}>
+                              <FileUpload uploadToken={uploadToken} />
+                            </Suspense>
+                          </div>
+                        </>
+                      )}
+                    </div>
+
+                    {/* ── Notificar a — solo visible en móvil (en desktop va al sidebar) ── */}
+                    <div className="mt-3 rounded-xl border border-border bg-card p-5 lg:hidden">
+                      <div className="flex items-center gap-2 mb-1">
+                        <Bell className="h-3.5 w-3.5 text-muted-foreground" />
+                        <p className="text-sm font-medium">Notificar a</p>
+                      </div>
+                      <p className="text-xs text-muted-foreground mb-3">
+                        Estos usuarios podrán dar seguimiento al ticket
+                      </p>
+                      <UserSelector
+                        users={availableUsers}
+                        selectedUserIds={selectedWatchers}
+                        onSelectionChange={setSelectedWatchers}
+                        placeholder="Buscar personas..."
+                      />
+                    </div>
+                  </div>
                 </div>
 
                 {/* ── Barra sticky — solo en móvil (sin sidebar) ── */}
-                <div className="sticky bottom-0 mt-6 lg:hidden">
-                  <div className="rounded-xl border border-border bg-card/95 backdrop-blur-sm px-5 py-3.5">
-                    <div className="flex items-center justify-between">
-                      <span className="text-xs text-muted-foreground tabular-nums">
-                        {progress.completed} de {progress.total}
-                      </span>
-                      <div className="flex items-center gap-2">
-                        <Link href="/dashboard">
-                          <Button type="button" variant="ghost" size="sm">
-                            Cancelar
+                {hasClassification && (
+                  <div className="sticky bottom-0 mt-6 lg:hidden">
+                    <div className="rounded-xl border border-border bg-card/95 backdrop-blur-sm px-5 py-3.5">
+                      <div className="flex items-center justify-between">
+                        <span className="text-xs text-muted-foreground tabular-nums">
+                          {progress.completed} de {progress.total}
+                        </span>
+                        <div className="flex items-center gap-2">
+                          <Link href="/dashboard">
+                            <Button type="button" variant="ghost" size="sm">
+                              Cancelar
+                            </Button>
+                          </Link>
+                          <Button type="submit" size="sm" disabled={isPending}>
+                            {isPending && <Loader2 className="mr-1.5 h-3.5 w-3.5 animate-spin" />}
+                            Crear ticket
                           </Button>
-                        </Link>
-                        <Button type="submit" size="sm" disabled={isPending}>
-                          {isPending && <Loader2 className="mr-1.5 h-3.5 w-3.5 animate-spin" />}
-                          Crear ticket
-                        </Button>
+                        </div>
                       </div>
                     </div>
                   </div>
-                </div>
+                )}
               </form>
             </TooltipProvider>
-          </Form >
-        </div >
+          </Form>
+        </div>
 
         {/* ════════════════════════════════════════ */}
         {/* Panel lateral (desktop)                 */}
@@ -679,7 +934,7 @@ export function NewTicketForm({
             </Link>
           </div>
         </aside>
-      </div >
-    </div >
+      </div>
+    </div>
   );
 }

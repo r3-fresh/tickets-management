@@ -150,7 +150,7 @@ function AreaDialog({
               name="slug"
               defaultValue={area?.slug}
               required
-              placeholder="Ej: tsi"
+              placeholder="Ej: TSI"
             />
           </div>
           <div className="flex items-center space-x-2">

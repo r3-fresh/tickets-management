@@ -11,10 +11,10 @@ const BASE_URL = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000';
 
 /**
  * Extrae el código de visualización del ticket (sin el slug del área).
- * Ejemplo: "tsi-2026-0001" → "2026-0001"
+ * Ejemplo: "TSI-2026-0001" → "2026-0001"
  */
 function getDisplayCode(ticketCode: string): string {
-  return ticketCode.replace(/^[a-z]+-/, '');
+  return ticketCode.replace(/^[A-Z]+-/, '');
 }
 
 // --- Shared Types ---
