@@ -262,7 +262,7 @@ El plan completo con todas las fases está documentado en:
 ### Estado actual
 - **Fases 2a-2c:** Completadas (eliminación campus/work_areas, códigos de ticket con slug, URLs con ticketCode, emails sin slug)
 - **Fase 3:** Completada - Correcciones inmediatas (emails HTML fix, dashboards filtrados, límite 5MB, nombre de agente en emails)
-- **Fase 4:** Pendiente - Formularios por área de atención
+- **Fase 4:** Completada - Formularios por área de atención (clasificación-first flow, campos Difusión, prioridad para todas las áreas, Calendar date pickers)
 - **Fase 5:** Pendiente - Prioridades configurables por área
 - **Fase 6:** Pendiente - Módulo de proveedores y tickets derivados
 - **Fase 7:** Pendiente - Sección Actividad y derivaciones
@@ -275,11 +275,16 @@ El plan completo con todas las fases está documentado en:
 - La migración de datos del viejo DB al nuevo será al final de todo
 
 ### Decisiones de arquitectura tomadas
-- **Códigos de ticket:** `{slug}-{year}-{sequence}` con tabla `ticket_sequence` (contador nunca decrementa)
-- **URLs:** `/dashboard/tickets/{ticketCode}` (no ID numérico)
+- **Códigos de ticket:** `{SLUG}-{year}-{sequence}` con tabla `ticket_sequence` (contador nunca decrementa)
+- **Slugs:** Uppercase de 3 letras: `TSI`, `DIF`, `FED`
+- **URLs:** `/dashboard/tickets/{ticketCode}` (no ID numérico) — ej: `/dashboard/tickets/TSI-2026-0001`
 - **Email subjects:** `Ticket #2026-0001 | Título` (sin slug de área, helper `getDisplayCode()`)
 - **Áreas de atención:** Solo 3 áreas fijas (TSI, Difusión, Fondo Editorial), no crecerán
-- **Campos de Difusión:** Columnas nullable en tabla `tickets` (no JSON)
+- **Campos de Difusión:** Columnas nullable en tabla `tickets` (no JSON): `activityStartDate`, `desiredDiffusionDate`, `targetAudience`
+- **Formulario de tickets:** Flujo classification-first — el usuario primero elige área/categoría/subcategoría, luego aparece el resto del formulario con animación
+- **Prioridad:** Requerida para TODAS las áreas (incluyendo Difusión). Campo nullable en BD para compatibilidad
+- **Fechas en formulario:** Calendar date pickers (react-day-picker v9 con locale `es`), no inputs nativos
+- **Archivos adjuntos:** No disponibles para Difusión (ni en formulario ni en detalle)
 - **Prioridades por área:** Tabla `priority_config` con 4 filas por área (descripción + SLA editables)
 - **Proveedores:** Tabla configurable por área, tickets derivados como módulo independiente con enlace opcional
 - **Actividad:** Renombrar "Comentarios" a "Actividad", agregar `type` a comments (comment/derivation/system)

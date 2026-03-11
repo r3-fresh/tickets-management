@@ -4,7 +4,7 @@ import { sql, eq, and } from "drizzle-orm";
 
 /**
  * Inserta un ticket con código atómico generado por la BD.
- * Formato: {slug}-YYYY-#### (ej: tsi-2026-0001). Se reinicia cada año por área.
+ * Formato: {SLUG}-YYYY-#### (ej: TSI-2026-0001). Se reinicia cada año por área.
  *
  * Usa una transacción con SELECT ... FOR UPDATE sobre la fila del contador
  * para garantizar secuencialidad sin colisiones. Reintenta hasta 3 veces

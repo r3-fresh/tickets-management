@@ -6,7 +6,7 @@ import { notFound, redirect } from "next/navigation";
 import { eq, desc } from "drizzle-orm";
 import { Card, CardHeader, CardContent, CardTitle } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
-import { formatDate, translatePriority, formatFileSize } from "@/lib/utils/format";
+import { formatDate, formatDateShort, translatePriority, formatFileSize } from "@/lib/utils/format";
 import { StatusBadge } from "@/components/shared/status-badge";
 import { PriorityBadge } from "@/components/shared/priority-badge";
 import { UserAvatar } from "@/components/shared/user-avatar";
@@ -141,7 +141,7 @@ export default async function TicketDetailPage({ params }: { params: Promise<{ c
             <div className="flex flex-wrap items-center gap-x-6 gap-y-2 text-sm text-muted-foreground">
               <div className="flex items-center gap-2">
                 <StatusBadge status={ticket.status} />
-                <PriorityBadge priority={ticket.priority} />
+                {ticket.priority && <PriorityBadge priority={ticket.priority} />}
                 <CopyTicketButton ticketCode={ticket.ticketCode} title={ticket.title} />
               </div>
               <span className="flex items-center gap-1.5 font-mono text-xs bg-muted/50 px-2 py-0.5 rounded border">
@@ -175,7 +175,7 @@ export default async function TicketDetailPage({ params }: { params: Promise<{ c
                   />
                 </div>
               </div>
-              {ticket.attachments && ticket.attachments.length > 0 && (
+              {ticket.attachments && ticket.attachments.length > 0 && ticket.attentionArea?.slug !== "DIF" && (
                 <>
                   <div className="mx-6 border-t border-border" />
                   <div className="px-6 pt-4 pb-6 space-y-3">
@@ -374,6 +374,30 @@ export default async function TicketDetailPage({ params }: { params: Promise<{ c
               </div>
             </div>
 
+            {/* Campos específicos de Difusión */}
+            {ticket.attentionArea?.slug === "DIF" && (ticket.activityStartDate || ticket.desiredDiffusionDate || ticket.targetAudience) && (
+              <div className="bg-sidebar border border-border/50 rounded-xl p-4 grid grid-cols-1 gap-y-4">
+                {ticket.activityStartDate && (
+                  <div>
+                    <label className="text-[11px] font-medium text-muted-foreground uppercase block mb-1">Fecha de inicio de actividad</label>
+                    <div className="text-sm text-foreground">{formatDateShort(ticket.activityStartDate)}</div>
+                  </div>
+                )}
+                {ticket.desiredDiffusionDate && (
+                  <div>
+                    <label className="text-[11px] font-medium text-muted-foreground uppercase block mb-1">Fecha deseada de difusión</label>
+                    <div className="text-sm text-foreground">{formatDateShort(ticket.desiredDiffusionDate)}</div>
+                  </div>
+                )}
+                {ticket.targetAudience && (
+                  <div>
+                    <label className="text-[11px] font-medium text-muted-foreground uppercase block mb-1">Público objetivo</label>
+                    <div className="text-sm text-foreground">{ticket.targetAudience}</div>
+                  </div>
+                )}
+              </div>
+            )}
+
             {/* Watchers */}
             <div className="bg-sidebar border border-border/50 rounded-xl p-4 space-y-3">
               <div className="flex items-center justify-between">
@@ -402,8 +426,8 @@ export default async function TicketDetailPage({ params }: { params: Promise<{ c
               </div>
             </div>
 
-            {/* Attachment Uploader — only for open tickets */}
-            {!isTicketClosed && (
+            {/* Attachment Uploader — only for open tickets, not for Difusión */}
+            {!isTicketClosed && ticket.attentionArea?.slug !== "DIF" && (
               <div className="mb-4">
                 <TicketAttachmentUploader ticketId={ticket.id} />
               </div>

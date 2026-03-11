@@ -49,6 +49,7 @@ export async function getActiveAttentionAreas() {
       columns: {
         id: true,
         name: true,
+        slug: true,
         isAcceptingTickets: true,
       }
     });
