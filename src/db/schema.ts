@@ -196,6 +196,7 @@ export const ticketsRelations = relations(tickets, ({ one, many }) => ({
   }),
   comments: many(comments),
   attachments: many(ticketAttachments),
+  providerTickets: many(providerTickets),
 }));
 
 export const commentsRelations = relations(comments, ({ one }) => ({
@@ -228,6 +229,8 @@ export const usersRelations = relations(users, ({ many, one }) => ({
     fields: [users.attentionAreaId],
     references: [attentionAreas.id],
   }),
+  requestedProviderTickets: many(providerTickets, { relationName: "requestedProviderTickets" }),
+  createdProviderTickets: many(providerTickets, { relationName: "createdProviderTickets" }),
 }));
 
 // Configuration tables relations
@@ -286,6 +289,8 @@ export const attentionAreasRelations = relations(attentionAreas, ({ many }) => (
   categories: many(ticketCategories),
   sequences: many(ticketSequence),
   priorityConfigs: many(priorityConfig),
+  providers: many(providers),
+  providerTickets: many(providerTickets),
 }));
 
 // --- PRIORITY CONFIG (per area + priority level) ---
@@ -303,6 +308,69 @@ export const priorityConfig = pgTable("priority_config", {
 export const priorityConfigRelations = relations(priorityConfig, ({ one }) => ({
   attentionArea: one(attentionAreas, {
     fields: [priorityConfig.attentionAreaId],
+    references: [attentionAreas.id],
+  }),
+}));
+
+// --- PROVIDERS ---
+
+export const providers = pgTable("provider", {
+  id: serial("id").primaryKey(),
+  name: text("name").notNull(),
+  attentionAreaId: integer("attention_area_id").notNull().references(() => attentionAreas.id),
+  isActive: boolean("is_active").notNull().default(true),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  updatedAt: timestamp("updated_at").defaultNow().notNull(),
+});
+
+export const providersRelations = relations(providers, ({ one, many }) => ({
+  attentionArea: one(attentionAreas, {
+    fields: [providers.attentionAreaId],
+    references: [attentionAreas.id],
+  }),
+  providerTickets: many(providerTickets),
+}));
+
+// --- PROVIDER TICKETS (tickets derivados a proveedores) ---
+
+export const providerTickets = pgTable("provider_ticket", {
+  id: serial("id").primaryKey(),
+  externalCode: text("external_code").notNull(), // Número de ticket/ID manual del proveedor
+  title: text("title").notNull(),
+  requestDate: date("request_date").notNull(),
+  description: text("description").notNull(),
+  requestedById: text("requested_by_id").notNull().references(() => users.id), // Agente que solicita
+  status: text("status").notNull().default("en_proceso"), // 'en_proceso' | 'cerrado'
+  completionDate: date("completion_date"), // Fecha de atención (para calcular tiempos)
+  providerId: integer("provider_id").notNull().references(() => providers.id),
+  ticketId: integer("ticket_id").references(() => tickets.id), // Enlace opcional con ticket del sistema
+  attentionAreaId: integer("attention_area_id").notNull().references(() => attentionAreas.id),
+  createdById: text("created_by_id").notNull().references(() => users.id),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  updatedAt: timestamp("updated_at").defaultNow().notNull(),
+});
+
+export const providerTicketsRelations = relations(providerTickets, ({ one }) => ({
+  provider: one(providers, {
+    fields: [providerTickets.providerId],
+    references: [providers.id],
+  }),
+  ticket: one(tickets, {
+    fields: [providerTickets.ticketId],
+    references: [tickets.id],
+  }),
+  requestedBy: one(users, {
+    fields: [providerTickets.requestedById],
+    references: [users.id],
+    relationName: "requestedProviderTickets",
+  }),
+  createdBy: one(users, {
+    fields: [providerTickets.createdById],
+    references: [users.id],
+    relationName: "createdProviderTickets",
+  }),
+  attentionArea: one(attentionAreas, {
+    fields: [providerTickets.attentionAreaId],
     references: [attentionAreas.id],
   }),
 }));

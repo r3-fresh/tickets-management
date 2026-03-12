@@ -1,5 +1,5 @@
 import { db } from "@/db";
-import { ticketCategories, ticketSubcategories, appSettings, attentionAreas, priorityConfig } from "@/db/schema";
+import { ticketCategories, ticketSubcategories, appSettings, attentionAreas, priorityConfig, providers } from "@/db/schema";
 
 async function seed() {
   console.log("🌱 Seeding database...");
@@ -150,6 +150,33 @@ async function seed() {
 
     await db.insert(priorityConfig).values(priorityConfigRows).onConflictDoNothing();
     console.log(`✅ Created ${priorityConfigRows.length} priority config entries`);
+
+    // 6. Seed Providers (per area)
+    console.log("🏢 Seeding providers...");
+    const tsiAreaForProviders = attentionAreasList.find(a => a.name.includes("Tecnologías"));
+    const difAreaForProviders = attentionAreasList.find(a => a.name.includes("Difusión"));
+
+    const providerValues = [
+      // TSI providers
+      ...(tsiAreaForProviders ? [
+        { name: "Elogim", attentionAreaId: tsiAreaForProviders.id },
+        { name: "Exlibris", attentionAreaId: tsiAreaForProviders.id },
+        { name: "Intelego", attentionAreaId: tsiAreaForProviders.id },
+      ] : []),
+      // Difusión providers
+      ...(difAreaForProviders ? [
+        { name: "Comunicación al Estudiante (DSEE)", attentionAreaId: difAreaForProviders.id },
+        { name: "Experiencia de Marca y Producto", attentionAreaId: difAreaForProviders.id },
+        { name: "Audiovisual", attentionAreaId: difAreaForProviders.id },
+        { name: "Gestión Docente", attentionAreaId: difAreaForProviders.id },
+        { name: "Fondo Editorial", attentionAreaId: difAreaForProviders.id },
+      ] : []),
+    ];
+
+    if (providerValues.length > 0) {
+      await db.insert(providers).values(providerValues).onConflictDoNothing();
+    }
+    console.log(`✅ Created ${providerValues.length} providers`);
 
     console.log("\n🎉 Database seeded successfully!");
     console.log("\n📝 Next steps:");

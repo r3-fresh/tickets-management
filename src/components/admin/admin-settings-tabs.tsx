@@ -6,7 +6,7 @@ import { SettingsForm } from "@/components/admin/settings-form";
 import { AdminCategoriesManagement as CategoriesManagement } from "@/components/admin/categories-management";
 import { SubcategoriesManagement } from "@/components/admin/subcategories-management";
 import { Tag, Grid3x3, Settings } from "lucide-react";
-import { Gauge } from "lucide-react";
+import { Gauge, Truck } from "lucide-react";
 
 interface Category {
   id: number;
@@ -31,6 +31,7 @@ interface Subcategory {
 
 import { AttentionAreasList } from "@/components/admin/attention-areas-list";
 import { PriorityConfigManagement } from "@/components/admin/priority-config-management";
+import { ProvidersManagement } from "@/components/admin/providers-management";
 
 interface AttentionArea {
   id: number;
@@ -47,6 +48,13 @@ interface PriorityConfigItem {
   slaHours: number;
 }
 
+interface ProviderItem {
+  id: number;
+  name: string;
+  attentionAreaId: number;
+  isActive: boolean;
+}
+
 interface AdminSettingsTabsProps {
   initialAllowNewTickets: boolean;
   initialDisabledMessage?: string;
@@ -54,6 +62,7 @@ interface AdminSettingsTabsProps {
   initialSubcategories: Subcategory[];
   initialAttentionAreas: AttentionArea[];
   initialPriorityConfigs: PriorityConfigItem[];
+  initialProviders: ProviderItem[];
 }
 
 export function AdminSettingsTabs({
@@ -62,11 +71,12 @@ export function AdminSettingsTabs({
   initialCategories,
   initialSubcategories,
   initialAttentionAreas,
-  initialPriorityConfigs
+  initialPriorityConfigs,
+  initialProviders,
 }: AdminSettingsTabsProps) {
   return (
     <Tabs defaultValue="general" className="space-y-4">
-      <TabsList className="grid w-full grid-cols-5">
+      <TabsList className="grid w-full grid-cols-6">
         <TabsTrigger value="general" className="cursor-pointer">General</TabsTrigger>
         <TabsTrigger value="categories" className="cursor-pointer">
           <Tag className="h-4 w-4 mr-2" />
@@ -83,6 +93,10 @@ export function AdminSettingsTabs({
         <TabsTrigger value="priorities" className="cursor-pointer">
           <Gauge className="h-4 w-4 mr-2" />
           Prioridades
+        </TabsTrigger>
+        <TabsTrigger value="providers" className="cursor-pointer">
+          <Truck className="h-4 w-4 mr-2" />
+          Proveedores
         </TabsTrigger>
       </TabsList>
 
@@ -162,6 +176,23 @@ export function AdminSettingsTabs({
           <CardContent>
             <PriorityConfigManagement
               priorityConfigs={initialPriorityConfigs}
+              attentionAreas={initialAttentionAreas}
+            />
+          </CardContent>
+        </Card>
+      </TabsContent>
+
+      <TabsContent value="providers" className="space-y-4">
+        <Card>
+          <CardHeader>
+            <CardTitle>Proveedores por área</CardTitle>
+            <CardDescription>
+              Gestiona los proveedores externos asociados a cada área de atención
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <ProvidersManagement
+              providers={initialProviders}
               attentionAreas={initialAttentionAreas}
             />
           </CardContent>

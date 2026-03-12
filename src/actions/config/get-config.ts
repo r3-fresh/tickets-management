@@ -1,7 +1,7 @@
 "use server";
 
 import { db } from "@/db";
-import { ticketCategories, ticketSubcategories, attentionAreas, priorityConfig } from "@/db/schema";
+import { ticketCategories, ticketSubcategories, attentionAreas, priorityConfig, providers } from "@/db/schema";
 import { requireAuth } from "@/lib/auth/helpers";
 import { eq } from "drizzle-orm";
 
@@ -89,6 +89,55 @@ export async function getPriorityConfigByArea(attentionAreaId: number) {
     return configs;
   } catch (error) {
     console.error("Error fetching priority config for area:", error);
+    return [];
+  }
+}
+
+export async function getAllProviders() {
+  await requireAuth();
+
+  try {
+    const allProviders = await db.query.providers.findMany({
+      with: {
+        attentionArea: {
+          columns: { id: true, name: true, slug: true },
+        },
+      },
+    });
+    return allProviders;
+  } catch (error) {
+    console.error("Error fetching providers:", error);
+    return [];
+  }
+}
+
+export async function getProvidersByArea(attentionAreaId: number) {
+  await requireAuth();
+
+  try {
+    const areaProviders = await db.query.providers.findMany({
+      where: eq(providers.attentionAreaId, attentionAreaId),
+    });
+    return areaProviders;
+  } catch (error) {
+    console.error("Error fetching providers for area:", error);
+    return [];
+  }
+}
+
+export async function getActiveProvidersByArea(attentionAreaId: number) {
+  await requireAuth();
+
+  try {
+    const areaProviders = await db.query.providers.findMany({
+      where: (p, { eq, and }) => and(
+        eq(p.attentionAreaId, attentionAreaId),
+        eq(p.isActive, true),
+      ),
+    });
+    return areaProviders;
+  } catch (error) {
+    console.error("Error fetching active providers for area:", error);
     return [];
   }
 }
