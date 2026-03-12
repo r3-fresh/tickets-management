@@ -48,73 +48,32 @@
 
 ---
 
-## Fases pendientes
+## Fases completadas (cont.)
 
 ### Fase 5: Prioridades configurables por area
-- **Branch:** `feat/priority-config`
-- **Prioridad:** Media
-
-#### 5.1 Schema
-- Nueva tabla `priority_config`:
-  - `id` (serial, PK)
-  - `attentionAreaId` (FK a attention_areas)
-  - `priority` (text: low/medium/high/critical)
-  - `description` (text)
-  - `slaHours` (integer, horas de SLA)
-  - UNIQUE(attentionAreaId, priority)
-
-#### 5.2 Seed
-- Al crear un area, seedear 4 filas con valores por defecto.
-- Seed inicial para las 3 areas existentes.
-
-#### 5.3 UI de configuracion
-- Admin: En la seccion de sistema, poder editar descripcion y SLA de prioridades por area.
-- Agente: En su seccion de configuracion, poder editar las prioridades de su area.
-
-#### 5.4 Formulario de tickets
-- Mostrar las descripciones de prioridad segun el area seleccionada (tooltip o texto auxiliar).
-
----
+- **Branch:** `feat/priority-config` (mergeada)
+- Tabla `priority_config` con 4 filas por area (12 total): description + slaHours editables.
+- Admin UI: 6ta tab "Prioridades" en sistema con tabla+modal, filtro por area.
+- Agent UI: 4ta tab "Prioridades" en configuracion, edita solo su area.
+- Formulario de tickets: tooltips dinamicos con descripcion de prioridad segun area seleccionada.
+- Detalle de ticket: muestra SLA configurado en sidebar.
 
 ### Fase 6: Modulo de proveedores y tickets derivados
-- **Branch:** `feat/provider-tickets`
-- **Prioridad:** Media
-
-#### 6.1 Schema
-- Tabla `providers`:
-  - `id` (serial, PK)
-  - `name` (text)
-  - `attentionAreaId` (FK)
-  - `isActive` (boolean, default true)
-  - `createdAt`, `updatedAt`
-
-- Tabla `provider_tickets`:
-  - `id` (serial, PK)
-  - `externalCode` (text) - N ticket/ID manual, variable
-  - `title` (text) - Titulo o tema de requerimiento
-  - `requestDate` (date) - Fecha de requerimiento
-  - `description` (text) - Descripcion del requerimiento
-  - `requestedById` (FK a users) - Solicitado por (agente del area)
-  - `status` (text: en_proceso/cerrado)
-  - `providerId` (FK a providers)
-  - `ticketId` (FK nullable a tickets) - Enlace opcional con ticket del sistema
-  - `attentionAreaId` (FK)
-  - `createdAt`, `updatedAt`, `createdById`
-
-#### 6.2 Seed
-- Proveedores iniciales:
-  - TSI: Elogim, Exlibris, Intelego
-  - Difusion: Comunicacion al Estudiante (DSEE), Experiencia de Marca y Producto, Audiovisual, Gestion Docente, Fondo Editorial
-
-#### 6.3 UI de configuracion
-- CRUD de proveedores por area (similar a categorias).
-
-#### 6.4 Vista de agentes
-- Nueva seccion/pagina en el dashboard de agentes para registrar tickets derivados.
-- Tabla con filtros por proveedor, estado, fecha.
-- Formulario de registro con campo de enlace opcional a ticket del sistema.
+- **Branch:** `feat/provider-tickets` (mergeada)
+- Tabla `providers` (id, name, attentionAreaId, isActive, timestamps).
+- Tabla `provider_tickets` (id, externalCode, title, requestDate, description, requestedById, status, providerId, ticketId nullable, attentionAreaId, createdById, timestamps).
+- Seed: 8 proveedores iniciales (3 TSI + 5 Difusion).
+- Validacion: Zod schemas para CRUD de proveedores y tickets derivados.
+- Server actions: Admin provider CRUD, agent provider CRUD, agent provider ticket CRUD con rate limiting.
+- Admin UI: 6ta tab "Proveedores" en sistema con tabla+modal y filtro por area.
+- Agent config UI: 5ta tab "Proveedores" en configuracion, CRUD de proveedores del area.
+- Agent "Tickets derivados": Nueva pagina `/dashboard/proveedores` con tabla, filtros (proveedor, estado), y formulario create/edit con date picker y enlace opcional a ticket.
+- Sidebar: Nueva entrada "Tickets derivados" con icono Truck en navegacion de agente.
+- Estados de ticket derivado: `en_proceso` y `cerrado` (2 estados simples).
 
 ---
+
+## Fases pendientes
 
 ### Fase 7: Seccion Actividad y derivaciones
 - **Branch:** `feat/activity-section`

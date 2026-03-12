@@ -35,13 +35,22 @@ export type ClosedBy = 'user' | 'admin' | 'system';
 // Database Inference Types
 // ============================================
 
-import type { tickets, users, comments, ticketAttachments, priorityConfig } from "@/db/schema";
+import type { tickets, users, comments, ticketAttachments, priorityConfig, providers, providerTickets } from "@/db/schema";
 
 export type Ticket = typeof tickets.$inferSelect;
 export type User = typeof users.$inferSelect;
 export type Comment = typeof comments.$inferSelect;
 export type TicketAttachment = typeof ticketAttachments.$inferSelect;
 export type PriorityConfig = typeof priorityConfig.$inferSelect;
+export type Provider = typeof providers.$inferSelect;
+export type ProviderTicket = typeof providerTickets.$inferSelect;
 
 export type NewTicket = typeof tickets.$inferInsert;
 export type NewComment = typeof comments.$inferInsert;
+export type NewProviderTicket = typeof providerTickets.$inferInsert;
+
+// ============================================
+// Provider Ticket Types
+// ============================================
+
+export type ProviderTicketStatus = 'en_proceso' | 'cerrado';

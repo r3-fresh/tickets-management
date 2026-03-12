@@ -264,7 +264,7 @@ El plan completo con todas las fases está documentado en:
 - **Fase 3:** Completada - Correcciones inmediatas (emails HTML fix, dashboards filtrados, límite 5MB, nombre de agente en emails)
 - **Fase 4:** Completada - Formularios por área de atención (clasificación-first flow, campos Difusión, prioridad para todas las áreas, Calendar date pickers)
 - **Fase 5:** Completada - Prioridades configurables por área (tabla `priority_config`, admin/agent UI, tooltips dinámicos, SLA en detalle)
-- **Fase 6:** Pendiente - Módulo de proveedores y tickets derivados
+- **Fase 6:** Completada - Módulo de proveedores y tickets derivados (tablas `providers` + `provider_tickets`, CRUD admin/agente, página tickets derivados con filtros)
 - **Fase 7:** Pendiente - Sección Actividad y derivaciones
 
 ### Reglas de desarrollo
@@ -286,6 +286,7 @@ El plan completo con todas las fases está documentado en:
 - **Fechas en formulario:** Calendar date pickers (react-day-picker v9 con locale `es`), no inputs nativos
 - **Archivos adjuntos:** No disponibles para Difusión (ni en formulario ni en detalle)
 - **Prioridades por área:** Tabla `priority_config` con 4 filas por área (descripción + SLA editables)
-- **Proveedores:** Tabla configurable por área, tickets derivados como módulo independiente con enlace opcional
+- **Proveedores:** Tabla `providers` configurable por área, tickets derivados en tabla `provider_tickets` como módulo independiente con enlace opcional a ticket del sistema
+- **Tickets derivados:** Página `/dashboard/proveedores` para agentes con tabla, filtros por proveedor/estado, y formulario con date picker. Solo 2 estados: `en_proceso` y `cerrado`
 - **Actividad:** Renombrar "Comentarios" a "Actividad", agregar `type` a comments (comment/derivation/system)
 - **Proxy:** El proyecto usa `proxy.ts` en la raíz (Next.js 16), NO `middleware.ts`

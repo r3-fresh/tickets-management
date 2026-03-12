@@ -1,4 +1,4 @@
-import type { TicketStatus, TicketPriority, ClosedBy } from "@/types";
+import type { TicketStatus, TicketPriority, ClosedBy, ProviderTicketStatus } from "@/types";
 
 // ============================================
 // Ticket Status Constants
@@ -74,4 +74,18 @@ export const VALID_STATUS_TRANSITIONS: Record<TicketStatus, readonly TicketStatu
   pending_validation: ['resolved', 'in_progress'],
   resolved: ['in_progress'],
   voided: [],
+};
+
+// ============================================
+// Provider Ticket Constants
+// ============================================
+
+export const PROVIDER_TICKET_STATUS: Record<string, ProviderTicketStatus> = {
+  EN_PROCESO: 'en_proceso',
+  CERRADO: 'cerrado',
+} as const;
+
+export const PROVIDER_TICKET_STATUS_LABELS: Record<ProviderTicketStatus, string> = {
+  en_proceso: "En proceso",
+  cerrado: "Cerrado",
 };

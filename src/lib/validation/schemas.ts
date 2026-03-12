@@ -55,3 +55,45 @@ export const updatePriorityConfigSchema = z.object({
 });
 
 export type UpdatePriorityConfigSchema = z.infer<typeof updatePriorityConfigSchema>;
+
+// ─── Provider schemas (admin/agent config) ───
+
+export const createProviderSchema = z.object({
+  name: z.string().min(3, "El nombre debe tener al menos 3 caracteres"),
+  attentionAreaId: z.coerce.number().min(1, "Selecciona un área de atención"),
+});
+
+export const updateProviderSchema = z.object({
+  id: z.coerce.number().min(1),
+  name: z.string().min(3, "El nombre debe tener al menos 3 caracteres"),
+  isActive: z.boolean(),
+});
+
+export type CreateProviderSchema = z.infer<typeof createProviderSchema>;
+export type UpdateProviderSchema = z.infer<typeof updateProviderSchema>;
+
+// ─── Provider Ticket schemas (tickets derivados) ───
+
+export const createProviderTicketSchema = z.object({
+  externalCode: z.string().min(1, "El código externo es obligatorio"),
+  title: z.string().min(5, "El título debe tener al menos 5 caracteres"),
+  requestDate: z.string().min(1, "La fecha de requerimiento es obligatoria"),
+  description: z.string().min(10, "La descripción debe tener al menos 10 caracteres"),
+  providerId: z.coerce.number().min(1, "Selecciona un proveedor"),
+  ticketId: z.coerce.number().optional(), // Enlace opcional
+});
+
+export const updateProviderTicketSchema = z.object({
+  id: z.coerce.number().min(1),
+  externalCode: z.string().min(1, "El código externo es obligatorio"),
+  title: z.string().min(5, "El título debe tener al menos 5 caracteres"),
+  requestDate: z.string().min(1, "La fecha de requerimiento es obligatoria"),
+  description: z.string().min(10, "La descripción debe tener al menos 10 caracteres"),
+  providerId: z.coerce.number().min(1, "Selecciona un proveedor"),
+  status: z.enum(["en_proceso", "cerrado"]),
+  ticketId: z.coerce.number().optional(),
+  completionDate: z.string().optional(), // Fecha de atención (para calcular tiempos)
+});
+
+export type CreateProviderTicketSchema = z.infer<typeof createProviderTicketSchema>;
+export type UpdateProviderTicketSchema = z.infer<typeof updateProviderTicketSchema>;

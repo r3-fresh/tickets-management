@@ -6,6 +6,7 @@ import { SettingsForm } from "./config-form";
 import { AgentCategoriesManagement } from "@/components/agent/categories-management";
 import { AgentSubcategoriesManagement } from "@/components/agent/subcategories-management";
 import { AgentPriorityConfig } from "@/components/agent/priority-config";
+import { AgentProvidersManagement } from "@/components/agent/providers-management";
 
 interface Category {
   id: number;
@@ -42,6 +43,13 @@ interface PriorityConfigItem {
   slaHours: number;
 }
 
+interface ProviderItem {
+  id: number;
+  name: string;
+  attentionAreaId: number;
+  isActive: boolean;
+}
+
 interface SettingsTabsProps {
   initialData: {
     isAcceptingTickets: boolean;
@@ -50,16 +58,18 @@ interface SettingsTabsProps {
   subcategories: Subcategory[];
   areaId: number;
   priorityConfigs: PriorityConfigItem[];
+  providers: ProviderItem[];
 }
 
-export function SettingsTabs({ initialData, categories, subcategories, priorityConfigs }: SettingsTabsProps) {
+export function SettingsTabs({ initialData, categories, subcategories, priorityConfigs, providers }: SettingsTabsProps) {
   return (
     <Tabs defaultValue="reception" className="w-full">
-      <TabsList className="grid w-full max-w-2xl grid-cols-4">
+      <TabsList className="grid w-full max-w-3xl grid-cols-5">
         <TabsTrigger value="reception" className="cursor-pointer">Recepción</TabsTrigger>
         <TabsTrigger value="categories" className="cursor-pointer">Categorías</TabsTrigger>
         <TabsTrigger value="subcategories" className="cursor-pointer">Subcategorías</TabsTrigger>
         <TabsTrigger value="priorities" className="cursor-pointer">Prioridades</TabsTrigger>
+        <TabsTrigger value="providers" className="cursor-pointer">Proveedores</TabsTrigger>
       </TabsList>
 
       <TabsContent value="reception" className="mt-6">
@@ -87,6 +97,20 @@ export function SettingsTabs({ initialData, categories, subcategories, priorityC
           </CardHeader>
           <CardContent>
             <AgentPriorityConfig priorityConfigs={priorityConfigs} />
+          </CardContent>
+        </Card>
+      </TabsContent>
+
+      <TabsContent value="providers" className="mt-6">
+        <Card>
+          <CardHeader>
+            <CardTitle>Proveedores de tu área</CardTitle>
+            <CardDescription>
+              Gestiona los proveedores externos asociados a tu área de atención
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <AgentProvidersManagement providers={providers} />
           </CardContent>
         </Card>
       </TabsContent>
