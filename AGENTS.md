@@ -255,39 +255,55 @@ if (!result.success) {
 - Plantillas de correo en `src/lib/email/templates/`
 - El envío de correos usa `after()` para no bloquear respuestas
 
-## 🗺️ Plan de Desarrollo
+## 🏛️ Decisiones de Arquitectura
 
-El plan completo con todas las fases está documentado en:
-`docs/plans/2026-03-10-corrections-and-features-plan.md`
-
-### Estado actual
-- **Fases 2a-2c:** Completadas (eliminación campus/work_areas, códigos de ticket con slug, URLs con ticketCode, emails sin slug)
-- **Fase 3:** Completada - Correcciones inmediatas (emails HTML fix, dashboards filtrados, límite 5MB, nombre de agente en emails)
-- **Fase 4:** Completada - Formularios por área de atención (clasificación-first flow, campos Difusión, prioridad para todas las áreas, Calendar date pickers)
-- **Fase 5:** Completada - Prioridades configurables por área (tabla `priority_config`, admin/agent UI, tooltips dinámicos, SLA en detalle)
-- **Fase 6:** Completada - Módulo de proveedores y tickets derivados (tablas `providers` + `provider_tickets`, CRUD admin/agente, página tickets derivados con filtros)
-- **Fase 7:** Completada - Sección Actividad y derivaciones (columnas `type`+`metadata` en comments, timeline diferenciada, formulario derivación para agentes)
-
-### Reglas de desarrollo
-- Cada fase se implementa en una **branch independiente**
-- Se requiere **aprobación del usuario** antes de merge a main
-- Después del merge se elimina la branch
-- Base de datos es **Neon (nueva, vacía)** — no hay datos legacy que preservar
-- La migración de datos del viejo DB al nuevo será al final de todo
-
-### Decisiones de arquitectura tomadas
+### Tickets y Códigos
 - **Códigos de ticket:** `{SLUG}-{year}-{sequence}` con tabla `ticket_sequence` (contador nunca decrementa)
 - **Slugs:** Uppercase de 3 letras: `TSI`, `DIF`, `FED`
 - **URLs:** `/dashboard/tickets/{ticketCode}` (no ID numérico) — ej: `/dashboard/tickets/TSI-2026-0001`
 - **Email subjects:** `Ticket #2026-0001 | Título` (sin slug de área, helper `getDisplayCode()`)
-- **Áreas de atención:** Solo 3 áreas fijas (TSI, Difusión, Fondo Editorial), no crecerán
+
+### Áreas de Atención
+- Solo 3 áreas fijas (TSI, Difusión, Fondo Editorial), no crecerán
 - **Campos de Difusión:** Columnas nullable en tabla `tickets` (no JSON): `activityStartDate`, `desiredDiffusionDate`, `targetAudience`
-- **Formulario de tickets:** Flujo classification-first — el usuario primero elige área/categoría/subcategoría, luego aparece el resto del formulario con animación
-- **Prioridad:** Requerida para TODAS las áreas (incluyendo Difusión). Campo nullable en BD para compatibilidad
-- **Fechas en formulario:** Calendar date pickers (react-day-picker v9 con locale `es`), no inputs nativos
 - **Archivos adjuntos:** No disponibles para Difusión (ni en formulario ni en detalle)
-- **Prioridades por área:** Tabla `priority_config` con 4 filas por área (descripción + SLA editables)
-- **Proveedores:** Tabla `providers` configurable por área, tickets derivados en tabla `provider_tickets` como módulo independiente con enlace opcional a ticket del sistema
-- **Tickets derivados:** Página `/dashboard/proveedores` para agentes con tabla, filtros por proveedor/estado, y formulario con date picker. Solo 2 estados: `en_proceso` y `cerrado`
-- **Actividad:** Renombrar "Comentarios" a "Actividad", agregar `type` a comments (comment/derivation/system)
+
+### Formulario de Tickets
+- Flujo **classification-first** — el usuario primero elige área/categoría/subcategoría, luego aparece el resto del formulario con animación
+- **Prioridad:** Requerida para TODAS las áreas (incluyendo Difusión). Campo nullable en BD para compatibilidad
+- **Fechas:** Calendar date pickers (react-day-picker v9 con locale `es`), no inputs nativos
+
+### Prioridades
+- Tabla `priority_config` con 4 filas por área (descripción + SLA editables)
+- Las 4 prioridades (baja, media, alta, urgente) son hardcoded en constantes; solo `description` y `slaHours` son configurables por área
+
+### Proveedores y Tickets de Proveedores
+- Tabla `providers` configurable por área
+- Tabla `provider_tickets` como módulo independiente con enlace opcional a ticket del sistema
+- Página `/dashboard/proveedores` para agentes con tabla, filtros por proveedor/estado, formulario con date picker
+- Solo 2 estados: `en_proceso` y `cerrado`
+
+### Actividad (Comments)
+- Sección "Actividad" (no "Comentarios") en detalle de ticket
+- Tabla `comments` con columnas `type` (`comment` | `derivation` | `system`) y `metadata` (jsonb nullable)
+- Timeline diferenciada: comentarios (burbujas), derivaciones (banner ámbar), sistema (texto gris)
+- Conteo de no leídos solo cuenta `type='comment'`
+
+### Email
+- 7 funciones de email: ticketCreated, userComment, validationRequest, ticketAssigned, ticketResolved, ticketRejected, derivation
+- Interfaz `TicketContext` unificada con threading (`inReplyTo`/`references`)
+- Gmail API (googleapis) con `after()` para no bloquear respuestas
+
+### Infraestructura
 - **Proxy:** El proyecto usa `proxy.ts` en la raíz (Next.js 16), NO `middleware.ts`
+- **Base de datos:** Neon PostgreSQL
+- **Rate limiting:** `createRateLimiter('MODERATE')` o `createRateLimiter('STRICT')` (función síncrona)
+- **Config UI:** Componentes admin usan patrón tabla + modal (como `attention-areas-list.tsx`)
+
+## 🔄 Reglas de Desarrollo
+
+- Cada nueva funcionalidad se implementa en una **branch independiente**
+- Se requiere **aprobación del usuario** antes de merge a main
+- Después del merge se elimina la branch
+- Verificar con `pnpm exec tsc --noEmit` (puede requerir `rm -rf .next` si hay tipos cacheados obsoletos)
+- Verificar BD con `pnpm db:reset` para asegurar que schema + seed funcionan

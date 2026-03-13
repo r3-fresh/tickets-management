@@ -12,10 +12,15 @@ Sistema de gestión de tickets construido con **Next.js 16**, **TypeScript**, **
 
 - 🔐 **Autenticación**: Better Auth con Google OAuth
 - 👥 **Roles**: Admin, Agent, User con permisos diferenciados
-- 🎫 **Tickets**: Estados, prioridades, asignación y seguimiento
-- 💬 **Comentarios**: Sistema en tiempo real con notificaciones
-- 📊 **Dashboards**: Personalizados por rol con estadísticas
-- 📧 **Emails**: Gmail API para notificaciones
+- 🎫 **Tickets**: Códigos por área (`TSI-2026-0001`), estados, prioridades configurables por área, asignación, seguimiento y SLA
+- 📋 **Formularios por área**: Flujo classification-first con campos específicos (ej: fechas de difusión)
+- 💬 **Actividad**: Timeline diferenciada con comentarios, derivaciones y eventos del sistema
+- 🔀 **Derivaciones**: Derivar tickets a proveedores con fecha estimada y notificación por email
+- 🏢 **Proveedores**: CRUD de proveedores por área y tickets de proveedores con filtros y estados
+- ⚙️ **Configuración**: Áreas de atención, categorías, subcategorías, prioridades (descripción + SLA) editables por admin
+- 📊 **Dashboards**: Personalizados por rol con estadísticas y filtros
+- 📧 **Emails**: Gmail API con 7 tipos de notificación y threading completo
+- 📎 **Archivos**: Adjuntos con FilePond (límite 5MB, excluido para Difusión)
 - 🎨 **UI Moderna**: Tailwind CSS + shadcn/ui + modo oscuro
 - ⚡ **Performance**: Direct rendering, zero delay
 - 🛡️ **Seguridad**: Rate limiting, validación Zod, CSRF protection
@@ -166,7 +171,7 @@ UPDATE "user" SET role = 'admin' WHERE email = 'tu-email@example.com';
 
 ## 📚 Documentación
 
-- **[AGENTS.md](./AGENTS.md)** - Guía para agentes de código AI
+- **[AGENTS.md](./AGENTS.md)** - Guía completa para agentes de código AI (stack, arquitectura, convenciones)
 
 ---
 
