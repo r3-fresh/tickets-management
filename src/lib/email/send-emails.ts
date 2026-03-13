@@ -5,6 +5,7 @@ import { getValidationRequestTemplate } from './templates/validation-request';
 import { getTicketAssignedTemplate } from './templates/ticket-assigned';
 import { getTicketResolvedTemplate } from './templates/ticket-resolved';
 import { getTicketRejectedTemplate } from './templates/ticket-rejected';
+import { getDerivationTemplate } from './templates/derivation';
 import { translatePriority } from '../utils/format';
 
 const BASE_URL = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000';
@@ -312,6 +313,49 @@ export async function sendTicketRejectedEmail(params: SendTicketRejectedEmailPar
     to,
     cc: cc.length > 0 ? cc : undefined,
     subject: `Ticket #${getDisplayCode(params.ticketCode)} | ${params.title}`, // Unified subject for threading
+    htmlContent,
+    senderName: params.attentionAreaName,
+    threadId: params.emailThreadId || undefined,
+    ...threadingHeaders
+  });
+}
+
+// ============================================================================
+// 5. DERIVACIÓN A PROVEEDOR
+// ============================================================================
+
+export interface SendDerivationEmailParams extends TicketContext {
+  providerName: string;
+  estimatedDate?: string;
+  userName: string; // Agente que registró la derivación
+}
+
+export async function sendDerivationEmail(params: SendDerivationEmailParams) {
+  const ticketUrl = `${BASE_URL}/dashboard/tickets/${params.ticketCode}`;
+
+  const htmlContent = getDerivationTemplate({
+    ticketCode: params.ticketCode,
+    userName: params.userName,
+    providerName: params.providerName,
+    estimatedDate: params.estimatedDate,
+    ticketUrl,
+    attentionAreaName: params.attentionAreaName,
+  });
+
+  const { to, cc } = getUnifiedRecipients(params);
+
+  // Threading Logic
+  let threadingHeaders: { inReplyTo?: string, references?: string } = {};
+  if (params.initialMessageId) {
+    threadingHeaders = { inReplyTo: params.initialMessageId, references: params.initialMessageId };
+  } else if (params.emailThreadId) {
+    threadingHeaders = await getThreadMessageIds(params.emailThreadId);
+  }
+
+  return await sendGmailEmail({
+    to,
+    cc: cc.length > 0 ? cc : undefined,
+    subject: `Ticket #${getDisplayCode(params.ticketCode)} | ${params.title}`,
     htmlContent,
     senderName: params.attentionAreaName,
     threadId: params.emailThreadId || undefined,

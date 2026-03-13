@@ -142,8 +142,8 @@ export async function AdminDashboard() {
                 <MessageSquare className="h-6 w-6 text-muted-foreground" />
               </div>
               <div className="flex-1 space-y-1">
-                <p className="text-sm font-medium leading-none">Comentarios totales</p>
-                <p className="text-sm text-muted-foreground">Interacciones en hilos de soporte</p>
+                <p className="text-sm font-medium leading-none">Actividad total</p>
+                <p className="text-sm text-muted-foreground">Comentarios y eventos en tickets</p>
               </div>
               <div className="text-2xl font-bold">{totalCommentsRes.count}</div>
             </div>

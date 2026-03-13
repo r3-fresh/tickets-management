@@ -47,7 +47,7 @@ export default function Loading() {
 
           <Separator className="bg-border/60" />
 
-          {/* Comments */}
+          {/* Activity */}
           <div className="space-y-6 pt-4">
             <div className="flex items-center justify-between">
               <Skeleton className="h-4 w-28" />

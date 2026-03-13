@@ -129,7 +129,7 @@ export function queryTicketsWithUnread(
     })
     .from(tickets)
     .leftJoin(ticketCategories, eq(tickets.categoryId, ticketCategories.id))
-    .leftJoin(comments, eq(tickets.id, comments.ticketId))
+    .leftJoin(comments, and(eq(tickets.id, comments.ticketId), eq(comments.type, 'comment')))
     .leftJoin(
       ticketViews,
       and(
@@ -205,7 +205,7 @@ export async function queryTicketsPaginated(
     })
     .from(tickets)
     .leftJoin(ticketCategories, eq(tickets.categoryId, ticketCategories.id))
-    .leftJoin(comments, eq(tickets.id, comments.ticketId))
+    .leftJoin(comments, and(eq(tickets.id, comments.ticketId), eq(comments.type, 'comment')))
     .leftJoin(
       ticketViews,
       and(

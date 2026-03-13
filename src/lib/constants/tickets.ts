@@ -1,4 +1,4 @@
-import type { TicketStatus, TicketPriority, ClosedBy, ProviderTicketStatus } from "@/types";
+import type { TicketStatus, TicketPriority, ClosedBy, ProviderTicketStatus, CommentType } from "@/types";
 
 // ============================================
 // Ticket Status Constants
@@ -88,4 +88,20 @@ export const PROVIDER_TICKET_STATUS: Record<string, ProviderTicketStatus> = {
 export const PROVIDER_TICKET_STATUS_LABELS: Record<ProviderTicketStatus, string> = {
   en_proceso: "En proceso",
   cerrado: "Cerrado",
+};
+
+// ============================================
+// Comment / Activity Type Constants
+// ============================================
+
+export const COMMENT_TYPE: Record<string, CommentType> = {
+  COMMENT: 'comment',
+  DERIVATION: 'derivation',
+  SYSTEM: 'system',
+} as const;
+
+export const COMMENT_TYPE_LABELS: Record<CommentType, string> = {
+  comment: "Comentario",
+  derivation: "Derivación",
+  system: "Sistema",
 };

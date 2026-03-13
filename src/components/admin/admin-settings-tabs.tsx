@@ -6,7 +6,7 @@ import { SettingsForm } from "@/components/admin/settings-form";
 import { AdminCategoriesManagement as CategoriesManagement } from "@/components/admin/categories-management";
 import { SubcategoriesManagement } from "@/components/admin/subcategories-management";
 import { Tag, Grid3x3, Settings } from "lucide-react";
-import { Gauge, Truck } from "lucide-react";
+import { Gauge, Share2 } from "lucide-react";
 
 interface Category {
   id: number;
@@ -95,7 +95,7 @@ export function AdminSettingsTabs({
           Prioridades
         </TabsTrigger>
         <TabsTrigger value="providers" className="cursor-pointer">
-          <Truck className="h-4 w-4 mr-2" />
+          <Share2 className="h-4 w-4 mr-2" />
           Proveedores
         </TabsTrigger>
       </TabsList>

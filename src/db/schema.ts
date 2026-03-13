@@ -140,6 +140,8 @@ export const comments = pgTable("comment", {
   ticketId: integer("ticket_id").notNull().references(() => tickets.id),
   userId: text("user_id").notNull().references(() => users.id),
   isInternal: boolean("is_internal").default(false),
+  type: text("type").notNull().default("comment"), // 'comment' | 'derivation' | 'system'
+  metadata: jsonb("metadata"), // Extra event data (e.g., { providerName, externalCode } for derivations)
   createdAt: timestamp("created_at").defaultNow().notNull(),
 });
 

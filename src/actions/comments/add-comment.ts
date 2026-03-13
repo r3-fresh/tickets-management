@@ -52,6 +52,7 @@ export async function addCommentAction(formData: FormData) {
       userId: session.user.id,
       content,
       isInternal: false,
+      type: "comment",
     });
 
     // Defer email notification after response is sent to user

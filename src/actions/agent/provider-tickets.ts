@@ -66,7 +66,7 @@ export async function createProviderTicketAction(formData: FormData) {
     return { success: true };
   } catch (error) {
     console.error("Error creating provider ticket:", error);
-    return { error: "Error al crear el ticket derivado" };
+    return { error: "Error al crear el ticket de proveedor" };
   }
 }
 
@@ -142,7 +142,7 @@ export async function updateProviderTicketAction(formData: FormData) {
     return { success: true };
   } catch (error) {
     console.error("Error updating provider ticket:", error);
-    return { error: "Error al actualizar el ticket derivado" };
+    return { error: "Error al actualizar el ticket de proveedor" };
   }
 }
 
@@ -199,7 +199,7 @@ export async function closeProviderTicketAction(formData: FormData) {
     return { success: true };
   } catch (error) {
     console.error("Error closing provider ticket:", error);
-    return { error: "Error al cerrar el ticket derivado" };
+    return { error: "Error al cerrar el ticket de proveedor" };
   }
 }
 
@@ -240,7 +240,7 @@ export async function reopenProviderTicketAction(id: number) {
     return { success: true };
   } catch (error) {
     console.error("Error reopening provider ticket:", error);
-    return { error: "Error al reabrir el ticket derivado" };
+    return { error: "Error al reabrir el ticket de proveedor" };
   }
 }
 
@@ -272,6 +272,6 @@ export async function deleteProviderTicketAction(id: number) {
     return { success: true };
   } catch (error) {
     console.error("Error deleting provider ticket:", error);
-    return { error: "Error al eliminar el ticket derivado" };
+    return { error: "Error al eliminar el ticket de proveedor" };
   }
 }

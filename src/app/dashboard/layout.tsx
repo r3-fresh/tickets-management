@@ -19,7 +19,8 @@ import {
   ChevronRight,
   BookOpen,
   PlusCircle,
-  Truck
+  Share2,
+  Inbox
 } from "lucide-react";
 import { authClient } from "@/lib/auth/client";
 import { useRouter } from "next/navigation";
@@ -49,8 +50,8 @@ const AGENT_NAV_ITEMS = [
   { href: "/dashboard/tickets/nuevo", label: "Nuevo ticket", icon: PlusCircle },
   { href: "/dashboard/mis-tickets", label: "Mis tickets", icon: Ticket },
   { href: "/dashboard/seguimiento", label: "En seguimiento", icon: Eye },
-  { href: "/dashboard/area", label: "Tickets del área", icon: Ticket },
-  { href: "/dashboard/proveedores", label: "Tickets derivados", icon: Truck },
+  { href: "/dashboard/area", label: "Tickets del área", icon: Inbox },
+  { href: "/dashboard/proveedores", label: "Tickets de proveedores", icon: Share2 },
 ];
 
 const ADMIN_NAV_ITEMS = [

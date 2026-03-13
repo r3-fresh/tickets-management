@@ -1,6 +1,6 @@
 
 import { db } from "@/db";
-import { tickets, comments, users, priorityConfig } from "@/db/schema";
+import { tickets, comments, users, priorityConfig, providers } from "@/db/schema";
 import { requireAuth } from "@/lib/auth/helpers";
 import { notFound, redirect } from "next/navigation";
 import { eq, desc, and } from "drizzle-orm";
@@ -14,7 +14,7 @@ import { Breadcrumb } from "@/components/shared/breadcrumb";
 import { Skeleton } from "@/components/ui/skeleton";
 import {
   FileIcon, ImageIcon, FileTextIcon, FileSpreadsheetIcon, FilmIcon, ExternalLinkIcon, PaperclipIcon,
-  MessageSquareIcon, FileText, ChevronDown, Monitor, User, Clock, Calendar, Hash, Tag, ArrowRight, Eye
+  MessageSquareIcon, FileText, ChevronDown, Monitor, User, Clock, Calendar, Hash, Tag, ArrowRight, Eye, Activity, Share2
 } from "lucide-react";
 import { cn } from "@/lib/utils/cn";
 import { AdminTicketControls } from "@/components/tickets/admin-ticket-controls";
@@ -24,10 +24,12 @@ import { CancelTicketButton } from "@/components/tickets/cancel-ticket-button";
 import { CopyTicketButton } from "@/components/tickets/copy-ticket-button";
 import { UserValidationControls } from "@/components/tickets/user-validation-controls";
 import { CommentForm } from "@/components/tickets/comment-form";
+import { DerivationForm } from "@/components/tickets/derivation-form";
 import { TicketAttachmentUploader } from "@/components/tickets/ticket-attachment-uploader";
 import { DeleteAttachmentButton } from "@/components/tickets/delete-attachment-button";
 import dynamic from "next/dynamic";
 import type { Metadata } from "next";
+import type { DerivationMetadata } from "@/types";
 
 // Client Components for interactivity
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
@@ -117,6 +119,17 @@ export default async function TicketDetailPage({ params }: { params: Promise<{ c
   const allUsers = await db.select({
     id: users.id, name: users.name, email: users.email, image: users.image,
   }).from(users);
+
+  // Fetch providers for derivation form (only for agents/admins)
+  let areaProviders: { id: number; name: string }[] = [];
+  if ((isAdmin || isAgentForArea) && ticket.attentionAreaId) {
+    areaProviders = await db.select({ id: providers.id, name: providers.name })
+      .from(providers)
+      .where(and(
+        eq(providers.attentionAreaId, ticket.attentionAreaId),
+        eq(providers.isActive, true),
+      ));
+  }
 
   const watchersList = ticket.watchers?.length
     ? allUsers.filter(u => ticket.watchers!.includes(u.id))
@@ -266,8 +279,8 @@ export default async function TicketDetailPage({ params }: { params: Promise<{ c
             <Collapsible defaultOpen className="space-y-6">
               <div className="flex items-center justify-between">
                 <CollapsibleTrigger className="flex items-center gap-2 text-xs font-semibold text-muted-foreground uppercase tracking-wider hover:text-foreground transition-colors group cursor-pointer">
-                  <MessageSquareIcon className="w-3.5 h-3.5" />
-                  Comentarios
+                  <Activity className="w-3.5 h-3.5" />
+                  Actividad
                   <ChevronDown className="w-3 h-3 transition-transform group-data-[state=open]:rotate-180" />
                 </CollapsibleTrigger>
                 <span className="text-xs text-muted-foreground bg-muted px-2 py-0.5 rounded-full">{ticket.comments.length}</span>
@@ -288,34 +301,92 @@ export default async function TicketDetailPage({ params }: { params: Promise<{ c
                     <div className="absolute left-[26px] top-4 bottom-4 w-px bg-linear-to-b from-border/80 via-border/40 to-transparent" />
                   )}
 
-                  {ticket.comments.map((comment) => (
-                    <div key={comment.id} className="relative pl-12 group">
-                      {/* Avatar */}
-                      <div className="absolute left-0 top-0 z-10">
-                        <UserAvatar
-                          name={comment.author.name}
-                          image={comment.author.image}
-                          size="md"
-                          className="ring-4 ring-background h-10 w-10 shadow-sm"
-                        />
-                      </div>
+                  {ticket.comments.map((entry) => {
+                    const entryType = (entry.type as string) || 'comment';
 
-                      {/* Comment Body */}
-                      <div className="space-y-2">
-                        <div className="flex items-baseline gap-2">
-                          <span className="text-sm font-semibold text-foreground">{comment.author.name}</span>
-                          <span className="text-xs text-muted-foreground">{formatDate(comment.createdAt)}</span>
+                    // --- Derivation banner ---
+                    if (entryType === 'derivation') {
+                      const meta = entry.metadata as DerivationMetadata | null;
+                      return (
+                        <div key={entry.id} className="relative pl-12 group">
+                          {/* Icon */}
+                          <div className="absolute left-0 top-0 z-10">
+                            <div className="h-10 w-10 rounded-full bg-amber-100 dark:bg-amber-950 ring-4 ring-background flex items-center justify-center shadow-sm">
+                              <Share2 className="h-4 w-4 text-amber-600 dark:text-amber-400" />
+                            </div>
+                          </div>
+
+                          {/* Derivation Body */}
+                          <div className="space-y-1">
+                            <div className="flex items-baseline gap-2">
+                              <span className="text-sm font-semibold text-foreground">{entry.author.name}</span>
+                              <span className="text-xs text-muted-foreground">{formatDate(entry.createdAt)}</span>
+                            </div>
+                            <div className="bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-800/50 rounded-xl px-4 py-3 text-sm text-amber-800 dark:text-amber-300 group-hover:border-amber-300 dark:group-hover:border-amber-700 transition-colors">
+                              <span>Se derivó la atención al proveedor: <strong>{meta?.providerName || 'Desconocido'}</strong></span>
+                              {meta?.estimatedDate && (
+                                <span> — Fecha estimada de atención: <strong>{formatDateShort(meta.estimatedDate)}</strong></span>
+                              )}
+                            </div>
+                          </div>
                         </div>
-                        <div className="bg-sidebar border border-border/50 rounded-xl px-4 py-2 text-sm text-foreground shadow-sm group-hover:border-border/80 transition-colors">
-                          <RichTextEditor
-                            value={comment.content}
-                            disabled={true}
-                            className="border-0 px-0 bg-transparent min-h-0 p-0 shadow-none"
+                      );
+                    }
+
+                    // --- System event (grey text) ---
+                    if (entryType === 'system') {
+                      return (
+                        <div key={entry.id} className="relative pl-12 group">
+                          {/* Icon */}
+                          <div className="absolute left-0 top-0 z-10">
+                            <div className="h-10 w-10 rounded-full bg-muted ring-4 ring-background flex items-center justify-center shadow-sm">
+                              <ArrowRight className="h-4 w-4 text-muted-foreground" />
+                            </div>
+                          </div>
+
+                          {/* System Body */}
+                          <div className="flex items-baseline gap-2 min-h-10 pt-2.5">
+                            <span className="text-xs text-muted-foreground">
+                              <span className="font-medium">{entry.author.name}</span>
+                              {' — '}
+                              <span dangerouslySetInnerHTML={{ __html: entry.content }} />
+                            </span>
+                            <span className="text-xs text-muted-foreground/60">{formatDate(entry.createdAt)}</span>
+                          </div>
+                        </div>
+                      );
+                    }
+
+                    // --- Regular comment (default) ---
+                    return (
+                      <div key={entry.id} className="relative pl-12 group">
+                        {/* Avatar */}
+                        <div className="absolute left-0 top-0 z-10">
+                          <UserAvatar
+                            name={entry.author.name}
+                            image={entry.author.image}
+                            size="md"
+                            className="ring-4 ring-background h-10 w-10 shadow-sm"
                           />
                         </div>
+
+                        {/* Comment Body */}
+                        <div className="space-y-2">
+                          <div className="flex items-baseline gap-2">
+                            <span className="text-sm font-semibold text-foreground">{entry.author.name}</span>
+                            <span className="text-xs text-muted-foreground">{formatDate(entry.createdAt)}</span>
+                          </div>
+                          <div className="bg-sidebar border border-border/50 rounded-xl px-4 py-2 text-sm text-foreground shadow-sm group-hover:border-border/80 transition-colors">
+                            <RichTextEditor
+                              value={entry.content}
+                              disabled={true}
+                              className="border-0 px-0 bg-transparent min-h-0 p-0 shadow-none"
+                            />
+                          </div>
+                        </div>
                       </div>
-                    </div>
-                  ))}
+                    );
+                  })}
                 </div>
               </CollapsibleContent>
             </Collapsible>
@@ -324,9 +395,9 @@ export default async function TicketDetailPage({ params }: { params: Promise<{ c
             {ticket.comments.length === 0 && (
               <div className="text-center py-8 px-4 border border-dashed rounded-lg bg-muted/5">
                 <div className="mx-auto h-12 w-12 rounded-full bg-muted/20 flex items-center justify-center mb-3">
-                  <MessageSquareIcon className="h-6 w-6 text-muted-foreground/50" />
+                  <Activity className="h-6 w-6 text-muted-foreground/50" />
                 </div>
-                <h3 className="text-sm font-medium text-foreground">Sin comentarios aún</h3>
+                <h3 className="text-sm font-medium text-foreground">Sin actividad aún</h3>
                 <p className="text-xs text-muted-foreground mt-1 max-w-xs mx-auto">
                   Inicia la conversación preguntando detalles o añadiendo actualizaciones.
                 </p>
@@ -496,6 +567,11 @@ export default async function TicketDetailPage({ params }: { params: Promise<{ c
                     currentStatus={ticket.status}
                     isAssigned={!!ticket.assignedToId}
                   />
+                  {canComment && areaProviders.length > 0 && (
+                    <div className="mt-3 pt-3 border-t border-orange-100 dark:border-orange-900/50">
+                      <DerivationForm ticketId={ticket.id} providers={areaProviders} />
+                    </div>
+                  )}
                 </div>
               </div>
             </div>

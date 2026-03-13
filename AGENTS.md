@@ -242,7 +242,8 @@ if (!result.success) {
 
 - **Rate Limiting implementado**: Las acciones críticas tienen protección contra abuso
   - Creación de tickets: 10 por minuto por usuario
-  - Comentarios: 10 por minuto por usuario  
+  - Comentarios: 10 por minuto por usuario
+  - Derivaciones: 10 por minuto por agente
   - Acciones de admin: 30 por minuto por admin
 - Rate limiter ubicado en: `src/lib/utils/rate-limit.ts`
 - Para crear nuevos limiters: `createRateLimiter('MODERATE')` o `createRateLimiter('STRICT')`
@@ -265,7 +266,7 @@ El plan completo con todas las fases está documentado en:
 - **Fase 4:** Completada - Formularios por área de atención (clasificación-first flow, campos Difusión, prioridad para todas las áreas, Calendar date pickers)
 - **Fase 5:** Completada - Prioridades configurables por área (tabla `priority_config`, admin/agent UI, tooltips dinámicos, SLA en detalle)
 - **Fase 6:** Completada - Módulo de proveedores y tickets derivados (tablas `providers` + `provider_tickets`, CRUD admin/agente, página tickets derivados con filtros)
-- **Fase 7:** Pendiente - Sección Actividad y derivaciones
+- **Fase 7:** Completada - Sección Actividad y derivaciones (columnas `type`+`metadata` en comments, timeline diferenciada, formulario derivación para agentes)
 
 ### Reglas de desarrollo
 - Cada fase se implementa en una **branch independiente**

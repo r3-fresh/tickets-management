@@ -236,6 +236,7 @@ export async function requestValidation(ticketId: number, message?: string) {
         ticketId: ticketId,
         userId: session.user.id,
         isInternal: false,
+        type: "comment",
       });
     }
 

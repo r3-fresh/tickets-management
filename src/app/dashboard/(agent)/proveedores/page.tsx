@@ -8,7 +8,7 @@ import { Breadcrumb } from "@/components/shared/breadcrumb";
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "Tickets derivados",
+  title: "Tickets de proveedores",
 };
 
 export default async function ProviderTicketsPage() {
@@ -54,12 +54,12 @@ export default async function ProviderTicketsPage() {
 
   return (
     <div className="flex flex-col gap-6">
-      <Breadcrumb items={[{ label: "Tickets derivados" }]} />
+      <Breadcrumb items={[{ label: "Tickets de proveedores" }]} />
 
       <div>
-        <h1 className="text-3xl font-bold tracking-tight">Tickets derivados</h1>
+        <h1 className="text-3xl font-bold tracking-tight">Tickets de proveedores</h1>
         <p className="text-muted-foreground mt-1">
-          Gestión de tickets derivados a proveedores externos de tu área
+          Gestión de tickets de proveedores externos de tu área
         </p>
       </div>
 

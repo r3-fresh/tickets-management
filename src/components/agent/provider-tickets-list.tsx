@@ -158,7 +158,7 @@ export function ProviderTicketsList({ providerTickets, providers, areaTickets }:
       if (result.error) {
         toast.error(result.error);
       } else {
-        toast.success("Ticket derivado eliminado");
+        toast.success("Ticket de proveedor eliminado");
         setDeleteId(null);
         router.refresh();
       }
@@ -172,7 +172,7 @@ export function ProviderTicketsList({ providerTickets, providers, areaTickets }:
       if (result.error) {
         toast.error(result.error);
       } else {
-        toast.success("Ticket derivado reabierto");
+        toast.success("Ticket de proveedor reabierto");
         router.refresh();
       }
     });
@@ -221,7 +221,7 @@ export function ProviderTicketsList({ providerTickets, providers, areaTickets }:
           }}
         >
           <Plus className="mr-2 h-4 w-4" />
-          Nuevo ticket derivado
+          Nuevo ticket de proveedor
         </Button>
       </div>
 
@@ -245,7 +245,7 @@ export function ProviderTicketsList({ providerTickets, providers, areaTickets }:
               <TableRow>
                 <TableCell colSpan={8} className="h-24 text-center text-muted-foreground">
                   {providerTickets.length === 0
-                    ? "No hay tickets derivados registrados."
+                    ? "No hay tickets de proveedores registrados."
                     : "No hay tickets que coincidan con los filtros."}
                 </TableCell>
               </TableRow>
@@ -350,7 +350,7 @@ export function ProviderTicketsList({ providerTickets, providers, areaTickets }:
 
       {/* Count */}
       <p className="text-sm text-muted-foreground">
-        {filteredTickets.length} de {providerTickets.length} ticket{providerTickets.length !== 1 ? "s" : ""} derivado{providerTickets.length !== 1 ? "s" : ""}
+        {filteredTickets.length} de {providerTickets.length} ticket{providerTickets.length !== 1 ? "s" : ""} de proveedor{providerTickets.length !== 1 ? "es" : ""}
       </p>
 
       {/* Create/Edit Dialog — key forces re-mount so state resets properly */}
@@ -376,8 +376,8 @@ export function ProviderTicketsList({ providerTickets, providers, areaTickets }:
         open={deleteId !== null}
         onOpenChange={(open) => !open && setDeleteId(null)}
         onConfirm={handleDelete}
-        title="¿Eliminar ticket derivado?"
-        description="Esta acción no se puede deshacer. Se eliminará permanentemente el ticket derivado."
+        title="¿Eliminar ticket de proveedor?"
+        description="Esta acción no se puede deshacer. Se eliminará permanentemente el ticket de proveedor."
       />
     </div>
   );
@@ -510,7 +510,7 @@ function CloseProviderTicketDialog({
       if (result?.error) {
         toast.error(result.error);
       } else {
-        toast.success("Ticket derivado cerrado");
+        toast.success("Ticket de proveedor cerrado");
         onOpenChange(false);
         router.refresh();
       }
@@ -521,7 +521,7 @@ function CloseProviderTicketDialog({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-md">
         <DialogHeader>
-          <DialogTitle>Cerrar ticket derivado</DialogTitle>
+          <DialogTitle>Cerrar ticket de proveedor</DialogTitle>
           <DialogDescription>
             {ticket
               ? `Vas a cerrar el ticket "${ticket.externalCode}". Indica la fecha en la que el proveedor atendió el requerimiento.`
@@ -623,7 +623,7 @@ function ProviderTicketDialog({
         if (result?.error) {
           toast.error(result.error);
         } else {
-          toast.success("Ticket derivado actualizado");
+          toast.success("Ticket de proveedor actualizado");
           onOpenChange(false);
         }
       } else {
@@ -631,7 +631,7 @@ function ProviderTicketDialog({
         if (result?.error) {
           toast.error(result.error);
         } else {
-          toast.success("Ticket derivado creado");
+          toast.success("Ticket de proveedor creado");
           onOpenChange(false);
         }
       }
@@ -643,12 +643,12 @@ function ProviderTicketDialog({
       <DialogContent className="max-w-lg max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>
-            {ticket ? "Editar ticket derivado" : "Nuevo ticket derivado"}
+            {ticket ? "Editar ticket de proveedor" : "Nuevo ticket de proveedor"}
           </DialogTitle>
           <DialogDescription>
             {ticket
-              ? "Modifica los datos del ticket derivado al proveedor."
-              : "Registra un nuevo ticket derivado a un proveedor externo."}
+              ? "Modifica los datos del ticket de proveedor."
+              : "Registra un nuevo ticket de proveedor externo."}
           </DialogDescription>
         </DialogHeader>
         <form action={handleSubmit} className="space-y-4">
@@ -738,7 +738,7 @@ function ProviderTicketDialog({
               name="description"
               defaultValue={ticket?.description}
               required
-              placeholder="Detalle del requerimiento derivado"
+              placeholder="Detalle del requerimiento al proveedor"
               rows={3}
             />
           </div>

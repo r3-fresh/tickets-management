@@ -31,6 +31,15 @@ export type TicketPriority = 'low' | 'medium' | 'high' | 'critical';
 
 export type ClosedBy = 'user' | 'admin' | 'system';
 
+export type CommentType = 'comment' | 'derivation' | 'system';
+
+// Metadata types for activity entries
+export interface DerivationMetadata {
+  providerName: string;
+  estimatedDate?: string; // ISO date string (YYYY-MM-DD)
+  providerTicketId?: number;
+}
+
 // ============================================
 // Database Inference Types
 // ============================================

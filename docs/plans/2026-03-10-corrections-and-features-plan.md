@@ -75,23 +75,20 @@
 
 ## Fases pendientes
 
+(Ninguna — todas las fases han sido completadas.)
+
+---
+
+## Fases completadas (cont. 2)
+
 ### Fase 7: Seccion Actividad y derivaciones
-- **Branch:** `feat/activity-section`
-- **Prioridad:** Media
-
-#### 7.1 Schema
-- Agregar columna `type` a tabla `comments`:
-  - Valores: `comment` (default), `derivation`, `system`
-- Agregar columna `metadata` (jsonb, nullable) para datos extra de eventos.
-
-#### 7.2 UI - Renombrar
-- "Comentarios" pasa a llamarse "Actividad" en el detalle del ticket.
-
-#### 7.3 Eventos de derivacion
-- Cuando el agente informa una derivacion, se crea un registro tipo `derivation`.
-- Se muestra como banner especial en la linea de tiempo (diferente a un comentario normal).
-- Metadata: `{ provider: "Elogim", area: "TSI" }` o similar.
-
-#### 7.4 Timeline unificada
-- Comentarios + eventos de sistema en orden cronologico.
-- Estilos diferenciados: comentarios con burbujas, derivaciones con banners, eventos de sistema con texto gris.
+- **Branch:** `feat/activity-section` (mergeada)
+- Schema: columnas `type` (text, default 'comment') y `metadata` (jsonb, nullable) en tabla `comments`.
+- Tipos: `CommentType` ('comment' | 'derivation' | 'system'), `DerivationMetadata` interface.
+- Constantes: `COMMENT_TYPE`, `COMMENT_TYPE_LABELS`.
+- Server action `addDerivationAction`: agentes registran derivaciones con proveedor + codigo externo opcional.
+- Queries: `commentCount` y `unreadCommentCount` filtran solo `type='comment'` para badges en listas.
+- UI: "Comentarios" renombrado a "Actividad" en detalle del ticket.
+- Timeline diferenciada: comentarios (burbujas), derivaciones (banner amber con icono Truck), sistema (texto gris).
+- Formulario de derivacion: dialog con select de proveedores del area, visible solo para agentes/admins.
+- Dashboard admin: "Comentarios totales" renombrado a "Actividad total".
