@@ -1,6 +1,6 @@
 
 import { db } from "@/db";
-import { tickets, comments, users, priorityConfig, providers } from "@/db/schema";
+import { tickets, comments, users, priorityConfig, providers, satisfactionSurveys } from "@/db/schema";
 import { requireAuth } from "@/lib/auth/helpers";
 import { notFound, redirect } from "next/navigation";
 import { eq, desc, and } from "drizzle-orm";
@@ -27,6 +27,7 @@ import { CommentForm } from "@/components/tickets/comment-form";
 import { DerivationForm } from "@/components/tickets/derivation-form";
 import { TicketAttachmentUploader } from "@/components/tickets/ticket-attachment-uploader";
 import { DeleteAttachmentButton } from "@/components/tickets/delete-attachment-button";
+import { FloatingSurvey } from "@/components/surveys/pending-survey-banner";
 import dynamic from "next/dynamic";
 import type { Metadata } from "next";
 import type { DerivationMetadata } from "@/types";
@@ -105,6 +106,16 @@ export default async function TicketDetailPage({ params }: { params: Promise<{ c
     slaInfo = config ?? null;
   }
 
+  // Check if satisfaction survey exists (for TSI resolved tickets)
+  let hasSurvey = false;
+  if (ticket.status === "resolved" && ticket.attentionArea?.slug === "TSI") {
+    const existingSurvey = await db.query.satisfactionSurveys.findFirst({
+      where: eq(satisfactionSurveys.ticketId, ticket.id),
+      columns: { id: true },
+    });
+    hasSurvey = !!existingSurvey;
+  }
+
   // Permissions
   const isCreator = ticket.createdById === session.user.id;
   const isWatcher = ticket.watchers?.includes(session.user.id) || false;
@@ -139,18 +150,24 @@ export default async function TicketDetailPage({ params }: { params: Promise<{ c
   const canComment = !isTicketClosed;
 
   return (
-    <div className="mx-auto max-w-[1600px] space-y-8 pb-10 animate-in fade-in duration-500">
-      <MarkAsViewed ticketId={ticket.id} />
-
-      {/* Top Navigation */}
-      <div>
-        <Breadcrumb items={[{ label: ticket.ticketCode }]} />
-      </div>
-
-      {/* Floating Validation Controls */}
+    <>
+      {/* Floating Validation Controls (outside animated container to preserve fixed positioning) */}
       {ticket.status === 'pending_validation' && ticket.createdById === session.user.id && (
         <UserValidationControls ticketId={ticket.id} />
       )}
+
+      {/* Floating Survey (for resolved TSI tickets without survey) */}
+      {ticket.status === "resolved" && ticket.attentionArea?.slug === "TSI" && isCreator && !hasSurvey && (
+        <FloatingSurvey ticketId={ticket.id} />
+      )}
+
+      <div className="mx-auto max-w-[1600px] space-y-8 pb-10 animate-in fade-in duration-500">
+        <MarkAsViewed ticketId={ticket.id} />
+
+        {/* Top Navigation */}
+        <div>
+          <Breadcrumb items={[{ label: ticket.ticketCode }]} />
+        </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-[1fr_340px] gap-10 items-start">
 
@@ -579,5 +596,6 @@ export default async function TicketDetailPage({ params }: { params: Promise<{ c
         </div>
       </div >
     </div >
+    </>
   );
 }

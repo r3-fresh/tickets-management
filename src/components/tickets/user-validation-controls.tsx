@@ -1,10 +1,9 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useTransition } from "react";
 import { Button } from "@/components/ui/button";
 import { approveTicketValidation, rejectTicketValidation } from "@/actions/tickets";
 import { toast } from "sonner";
-import { useTransition } from "react";
 import { CheckCircle2, XCircle, AlertCircle, ChevronUp, ChevronDown } from "lucide-react";
 import {
   AlertDialog,

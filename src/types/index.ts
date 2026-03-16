@@ -44,7 +44,7 @@ export interface DerivationMetadata {
 // Database Inference Types
 // ============================================
 
-import type { tickets, users, comments, ticketAttachments, priorityConfig, providers, providerTickets } from "@/db/schema";
+import type { tickets, users, comments, ticketAttachments, priorityConfig, providers, providerTickets, satisfactionSurveys } from "@/db/schema";
 
 export type Ticket = typeof tickets.$inferSelect;
 export type User = typeof users.$inferSelect;
@@ -53,10 +53,12 @@ export type TicketAttachment = typeof ticketAttachments.$inferSelect;
 export type PriorityConfig = typeof priorityConfig.$inferSelect;
 export type Provider = typeof providers.$inferSelect;
 export type ProviderTicket = typeof providerTickets.$inferSelect;
+export type SatisfactionSurvey = typeof satisfactionSurveys.$inferSelect;
 
 export type NewTicket = typeof tickets.$inferInsert;
 export type NewComment = typeof comments.$inferInsert;
 export type NewProviderTicket = typeof providerTickets.$inferInsert;
+export type NewSatisfactionSurvey = typeof satisfactionSurveys.$inferInsert;
 
 // ============================================
 // Provider Ticket Types
@@ -64,3 +66,9 @@ export type NewProviderTicket = typeof providerTickets.$inferInsert;
 
 export type ProviderTicketStatus = 'en_proceso' | 'cerrado';
 export type ProviderTicketPriority = 'baja' | 'media' | 'alta' | 'critica';
+
+// ============================================
+// Satisfaction Survey Types
+// ============================================
+
+export type SurveyRating = 1 | 2 | 3 | 4 | 5;
