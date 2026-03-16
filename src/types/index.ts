@@ -63,3 +63,4 @@ export type NewProviderTicket = typeof providerTickets.$inferInsert;
 // ============================================
 
 export type ProviderTicketStatus = 'en_proceso' | 'cerrado';
+export type ProviderTicketPriority = 'baja' | 'media' | 'alta' | 'critica';

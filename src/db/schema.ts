@@ -343,6 +343,7 @@ export const providerTickets = pgTable("provider_ticket", {
   description: text("description").notNull(),
   requestedById: text("requested_by_id").notNull().references(() => users.id), // Agente que solicita
   status: text("status").notNull().default("en_proceso"), // 'en_proceso' | 'cerrado'
+  priority: text("priority"), // 'baja' | 'media' | 'alta' | 'critica' (nullable)
   completionDate: date("completion_date"), // Fecha de atención (para calcular tiempos)
   providerId: integer("provider_id").notNull().references(() => providers.id),
   ticketId: integer("ticket_id").references(() => tickets.id), // Enlace opcional con ticket del sistema
