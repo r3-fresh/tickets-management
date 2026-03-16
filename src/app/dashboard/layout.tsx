@@ -69,12 +69,12 @@ export default function DashboardLayout({
 }: {
   children: React.ReactNode;
 }) {
-  const [isSidebarOpen, setIsSidebarOpen] = useState(false); // Mobile toggle
-  const [isCollapsed, setIsCollapsed] = useState(false); // Desktop collapse
-  const [isKnowledgeBaseOpen, setIsKnowledgeBaseOpen] = useState(false); // Knowledge base collapsible
-  const [knowledgeBaseUrl, setKnowledgeBaseUrl] = useState(DEFAULT_KNOWLEDGE_BASE_URL);
   const pathname = usePathname();
   const router = useRouter();
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false); // Mobile toggle
+  const [isCollapsed, setIsCollapsed] = useState(false); // Desktop collapse
+  const [isKnowledgeBaseOpen, setIsKnowledgeBaseOpen] = useState(() => pathname.startsWith("/dashboard/manual/")); // Knowledge base collapsible
+  const [knowledgeBaseUrl, setKnowledgeBaseUrl] = useState(DEFAULT_KNOWLEDGE_BASE_URL);
 
   // Close mobile sidebar on Escape key
   const handleEscape = useCallback((e: KeyboardEvent) => {
@@ -292,17 +292,59 @@ export default function DashboardLayout({
                             <span>Enlace</span>
                           </Link>
                           <Link
-                            href="/dashboard/manual/base-de-conocimiento"
+                            href="/dashboard/manual/usuario"
                             className={cn(
                               "group flex items-center px-3 py-1.5 text-sm font-medium rounded-md transition-colors",
-                              pathname === "/dashboard/manual/base-de-conocimiento"
+                              pathname === "/dashboard/manual/usuario"
                                 ? "bg-sidebar-accent text-sidebar-accent-foreground"
                                 : "text-muted-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"
                             )}
                           >
                             <FileText className="h-4 w-4 shrink-0 mr-2" aria-hidden="true" />
-                            <span>Manual de uso</span>
+                            <span>Manual de usuario</span>
                           </Link>
+                          {(userRole === "agent" || userRole === "admin") && (
+                            <Link
+                              href="/dashboard/manual/agente"
+                              className={cn(
+                                "group flex items-center px-3 py-1.5 text-sm font-medium rounded-md transition-colors",
+                                pathname === "/dashboard/manual/agente"
+                                  ? "bg-sidebar-accent text-sidebar-accent-foreground"
+                                  : "text-muted-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"
+                              )}
+                            >
+                              <FileText className="h-4 w-4 shrink-0 mr-2" aria-hidden="true" />
+                              <span>Manual de agente</span>
+                            </Link>
+                          )}
+                          {userRole === "admin" && (
+                            <Link
+                              href="/dashboard/manual/admin"
+                              className={cn(
+                                "group flex items-center px-3 py-1.5 text-sm font-medium rounded-md transition-colors",
+                                pathname === "/dashboard/manual/admin"
+                                  ? "bg-sidebar-accent text-sidebar-accent-foreground"
+                                  : "text-muted-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"
+                              )}
+                            >
+                              <FileText className="h-4 w-4 shrink-0 mr-2" aria-hidden="true" />
+                              <span>Manual de administrador</span>
+                            </Link>
+                          )}
+                          {userRole === "admin" && (
+                            <Link
+                              href="/dashboard/manual/tecnico"
+                              className={cn(
+                                "group flex items-center px-3 py-1.5 text-sm font-medium rounded-md transition-colors",
+                                pathname === "/dashboard/manual/tecnico"
+                                  ? "bg-sidebar-accent text-sidebar-accent-foreground"
+                                  : "text-muted-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"
+                              )}
+                            >
+                              <FileText className="h-4 w-4 shrink-0 mr-2" aria-hidden="true" />
+                              <span>Manual técnico</span>
+                            </Link>
+                          )}
                         </div>
                       )}
                     </CollapsibleContent>
@@ -495,18 +537,63 @@ export default function DashboardLayout({
                             <span>Enlace</span>
                           </Link>
                           <Link
-                            href="/dashboard/manual/base-de-conocimiento"
+                            href="/dashboard/manual/usuario"
                             onClick={() => setIsSidebarOpen(false)}
                             className={cn(
                               "group flex items-center px-3 py-2 text-sm font-medium rounded-lg transition-colors",
-                              pathname === "/dashboard/manual/base-de-conocimiento"
+                              pathname === "/dashboard/manual/usuario"
                                 ? "bg-sidebar-accent text-sidebar-accent-foreground"
                                 : "text-muted-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"
                             )}
                           >
                             <FileText className="h-4 w-4 shrink-0 mr-2" aria-hidden="true" />
-                            <span>Manual de uso</span>
+                            <span>Manual de usuario</span>
                           </Link>
+                          {(userRole === "agent" || userRole === "admin") && (
+                            <Link
+                              href="/dashboard/manual/agente"
+                              onClick={() => setIsSidebarOpen(false)}
+                              className={cn(
+                                "group flex items-center px-3 py-2 text-sm font-medium rounded-lg transition-colors",
+                                pathname === "/dashboard/manual/agente"
+                                  ? "bg-sidebar-accent text-sidebar-accent-foreground"
+                                  : "text-muted-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"
+                              )}
+                            >
+                              <FileText className="h-4 w-4 shrink-0 mr-2" aria-hidden="true" />
+                              <span>Manual de agente</span>
+                            </Link>
+                          )}
+                          {userRole === "admin" && (
+                            <Link
+                              href="/dashboard/manual/admin"
+                              onClick={() => setIsSidebarOpen(false)}
+                              className={cn(
+                                "group flex items-center px-3 py-2 text-sm font-medium rounded-lg transition-colors",
+                                pathname === "/dashboard/manual/admin"
+                                  ? "bg-sidebar-accent text-sidebar-accent-foreground"
+                                  : "text-muted-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"
+                              )}
+                            >
+                              <FileText className="h-4 w-4 shrink-0 mr-2" aria-hidden="true" />
+                              <span>Manual de administrador</span>
+                            </Link>
+                          )}
+                          {userRole === "admin" && (
+                            <Link
+                              href="/dashboard/manual/tecnico"
+                              onClick={() => setIsSidebarOpen(false)}
+                              className={cn(
+                                "group flex items-center px-3 py-2 text-sm font-medium rounded-lg transition-colors",
+                                pathname === "/dashboard/manual/tecnico"
+                                  ? "bg-sidebar-accent text-sidebar-accent-foreground"
+                                  : "text-muted-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"
+                              )}
+                            >
+                              <FileText className="h-4 w-4 shrink-0 mr-2" aria-hidden="true" />
+                              <span>Manual técnico</span>
+                            </Link>
+                          )}
                         </div>
                       </CollapsibleContent>
                     </Collapsible>
