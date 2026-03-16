@@ -58,6 +58,7 @@ interface ProviderItem {
 interface AdminSettingsTabsProps {
   initialAllowNewTickets: boolean;
   initialDisabledMessage?: string;
+  initialKnowledgeBaseUrl?: string;
   initialCategories: Category[];
   initialSubcategories: Subcategory[];
   initialAttentionAreas: AttentionArea[];
@@ -68,6 +69,7 @@ interface AdminSettingsTabsProps {
 export function AdminSettingsTabs({
   initialAllowNewTickets,
   initialDisabledMessage,
+  initialKnowledgeBaseUrl,
   initialCategories,
   initialSubcategories,
   initialAttentionAreas,
@@ -112,6 +114,7 @@ export function AdminSettingsTabs({
             <SettingsForm
               initialAllowNewTickets={initialAllowNewTickets}
               initialDisabledMessage={initialDisabledMessage}
+              initialKnowledgeBaseUrl={initialKnowledgeBaseUrl}
             />
           </CardContent>
         </Card>
