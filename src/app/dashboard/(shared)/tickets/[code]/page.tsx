@@ -1,6 +1,6 @@
 
 import { db } from "@/db";
-import { tickets, comments, users, priorityConfig, providers } from "@/db/schema";
+import { tickets, comments, users, priorityConfig, providers, satisfactionSurveys } from "@/db/schema";
 import { requireAuth } from "@/lib/auth/helpers";
 import { notFound, redirect } from "next/navigation";
 import { eq, desc, and } from "drizzle-orm";
@@ -27,6 +27,7 @@ import { CommentForm } from "@/components/tickets/comment-form";
 import { DerivationForm } from "@/components/tickets/derivation-form";
 import { TicketAttachmentUploader } from "@/components/tickets/ticket-attachment-uploader";
 import { DeleteAttachmentButton } from "@/components/tickets/delete-attachment-button";
+import { PendingSurveyBanner } from "@/components/surveys/pending-survey-banner";
 import dynamic from "next/dynamic";
 import type { Metadata } from "next";
 import type { DerivationMetadata } from "@/types";
@@ -105,6 +106,16 @@ export default async function TicketDetailPage({ params }: { params: Promise<{ c
     slaInfo = config ?? null;
   }
 
+  // Check if satisfaction survey exists (for TSI resolved tickets)
+  let hasSurvey = false;
+  if (ticket.status === "resolved" && ticket.attentionArea?.slug === "TSI") {
+    const existingSurvey = await db.query.satisfactionSurveys.findFirst({
+      where: eq(satisfactionSurveys.ticketId, ticket.id),
+      columns: { id: true },
+    });
+    hasSurvey = !!existingSurvey;
+  }
+
   // Permissions
   const isCreator = ticket.createdById === session.user.id;
   const isWatcher = ticket.watchers?.includes(session.user.id) || false;
@@ -149,7 +160,7 @@ export default async function TicketDetailPage({ params }: { params: Promise<{ c
 
       {/* Floating Validation Controls */}
       {ticket.status === 'pending_validation' && ticket.createdById === session.user.id && (
-        <UserValidationControls ticketId={ticket.id} />
+        <UserValidationControls ticketId={ticket.id} isTSI={ticket.attentionArea?.slug === "TSI"} />
       )}
 
       <div className="grid grid-cols-1 lg:grid-cols-[1fr_340px] gap-10 items-start">
@@ -184,6 +195,11 @@ export default async function TicketDetailPage({ params }: { params: Promise<{ c
               </span>
             </div>
           </div>
+
+          {/* Pending Survey Banner (for resolved TSI tickets without survey) */}
+          {ticket.status === "resolved" && ticket.attentionArea?.slug === "TSI" && isCreator && !hasSurvey && (
+            <PendingSurveyBanner ticketId={ticket.id} />
+          )}
 
           {/* Main Content - Description & Attachments */}
           <div className="ml-1">

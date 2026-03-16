@@ -23,7 +23,8 @@ import {
   Share2,
   Inbox,
   ExternalLink,
-  FileText
+  FileText,
+  BarChart3
 } from "lucide-react";
 import { authClient } from "@/lib/auth/client";
 import { useRouter } from "next/navigation";
@@ -52,11 +53,13 @@ const AGENT_NAV_ITEMS = [
   { href: "/dashboard/seguimiento", label: "En seguimiento", icon: Eye },
   { href: "/dashboard/area", label: "Tickets del área", icon: Inbox },
   { href: "/dashboard/proveedores", label: "Tickets de proveedores", icon: Share2 },
+  { href: "/dashboard/encuestas", label: "Encuestas", icon: BarChart3 },
 ];
 
 const ADMIN_NAV_ITEMS = [
   { href: "/dashboard", label: "Panel de control", icon: LayoutDashboard },
   { href: "/dashboard/explorador", label: "Explorador de tickets", icon: Ticket },
+  { href: "/dashboard/encuestas", label: "Encuestas", icon: BarChart3 },
 ];
 
 const ROLES_ITEM = { href: "/dashboard/usuarios", label: "Gestión de usuarios", icon: Shield, external: false };

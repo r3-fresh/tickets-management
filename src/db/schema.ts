@@ -199,6 +199,7 @@ export const ticketsRelations = relations(tickets, ({ one, many }) => ({
   comments: many(comments),
   attachments: many(ticketAttachments),
   providerTickets: many(providerTickets),
+  satisfactionSurvey: one(satisfactionSurveys),
 }));
 
 export const commentsRelations = relations(comments, ({ one }) => ({
@@ -293,6 +294,7 @@ export const attentionAreasRelations = relations(attentionAreas, ({ many }) => (
   priorityConfigs: many(priorityConfig),
   providers: many(providers),
   providerTickets: many(providerTickets),
+  satisfactionSurveys: many(satisfactionSurveys),
 }));
 
 // --- PRIORITY CONFIG (per area + priority level) ---
@@ -352,6 +354,36 @@ export const providerTickets = pgTable("provider_ticket", {
   createdAt: timestamp("created_at").defaultNow().notNull(),
   updatedAt: timestamp("updated_at").defaultNow().notNull(),
 });
+
+// --- SATISFACTION SURVEYS ---
+
+export const satisfactionSurveys = pgTable("satisfaction_survey", {
+  id: serial("id").primaryKey(),
+  ticketId: integer("ticket_id").notNull().references(() => tickets.id).unique(),
+  userId: text("user_id").notNull().references(() => users.id),
+  attentionAreaId: integer("attention_area_id").notNull().references(() => attentionAreas.id),
+  responseTimeRating: smallint("response_time_rating").notNull(), // 1-5
+  communicationRating: smallint("communication_rating").notNull(), // 1-5
+  solutionRating: smallint("solution_rating").notNull(), // 1-5
+  overallRating: smallint("overall_rating").notNull(), // 1-5
+  improvementSuggestion: text("improvement_suggestion"),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+});
+
+export const satisfactionSurveysRelations = relations(satisfactionSurveys, ({ one }) => ({
+  ticket: one(tickets, {
+    fields: [satisfactionSurveys.ticketId],
+    references: [tickets.id],
+  }),
+  user: one(users, {
+    fields: [satisfactionSurveys.userId],
+    references: [users.id],
+  }),
+  attentionArea: one(attentionAreas, {
+    fields: [satisfactionSurveys.attentionAreaId],
+    references: [attentionAreas.id],
+  }),
+}));
 
 export const providerTicketsRelations = relations(providerTickets, ({ one }) => ({
   provider: one(providers, {

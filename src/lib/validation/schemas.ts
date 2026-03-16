@@ -99,3 +99,18 @@ export const updateProviderTicketSchema = z.object({
 
 export type CreateProviderTicketSchema = z.infer<typeof createProviderTicketSchema>;
 export type UpdateProviderTicketSchema = z.infer<typeof updateProviderTicketSchema>;
+
+// ─── Satisfaction Survey schemas ───
+
+const ratingField = z.coerce.number().min(1, "La calificación mínima es 1").max(5, "La calificación máxima es 5");
+
+export const submitSurveySchema = z.object({
+  ticketId: z.coerce.number().min(1),
+  responseTimeRating: ratingField,
+  communicationRating: ratingField,
+  solutionRating: ratingField,
+  overallRating: ratingField,
+  improvementSuggestion: z.string().max(1000, "Máximo 1000 caracteres").optional(),
+});
+
+export type SubmitSurveySchema = z.infer<typeof submitSurveySchema>;
