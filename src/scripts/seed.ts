@@ -126,6 +126,10 @@ async function seed() {
         key: "ticket_disabled_message",
         value: "Estamos en mantenimiento. Por favor, inténtelo más tarde."
       },
+      {
+        key: "knowledge_base_url",
+        value: "https://docs.google.com/spreadsheets/d/1F23_z7fQJbfGCmvavge3Igw-FcyG4Xd_A-MR3s5WURc/"
+      },
     ]).onConflictDoNothing();
 
     console.log("✅ App settings configured");

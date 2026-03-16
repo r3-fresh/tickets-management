@@ -6,15 +6,22 @@ import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { toast } from "sonner";
 import { Textarea } from "@/components/ui/textarea";
+import { Input } from "@/components/ui/input";
 
 interface SettingsFormProps {
   initialAllowNewTickets: boolean;
   initialDisabledMessage?: string;
+  initialKnowledgeBaseUrl?: string;
 }
 
-export function SettingsForm({ initialAllowNewTickets, initialDisabledMessage = "" }: SettingsFormProps) {
+export function SettingsForm({
+  initialAllowNewTickets,
+  initialDisabledMessage = "",
+  initialKnowledgeBaseUrl = "",
+}: SettingsFormProps) {
   const [allowNewTickets, setAllowNewTickets] = useState(initialAllowNewTickets);
   const [disabledMessage, setDisabledMessage] = useState(initialDisabledMessage);
+  const [knowledgeBaseUrl, setKnowledgeBaseUrl] = useState(initialKnowledgeBaseUrl);
   const [isPending, startTransition] = useTransition();
 
   const handleToggle = (checked: boolean) => {
@@ -31,7 +38,7 @@ export function SettingsForm({ initialAllowNewTickets, initialDisabledMessage = 
   };
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-6">
       <div className="flex items-center justify-between space-x-2">
         <div className="flex flex-col space-y-1">
           <Label htmlFor="allow-tickets" className="font-medium">
@@ -80,6 +87,38 @@ export function SettingsForm({ initialAllowNewTickets, initialDisabledMessage = 
           </span>
         </div>
       )}
+
+      <div className="border-t pt-6 space-y-2">
+        <Label htmlFor="knowledge-base-url" className="font-medium">
+          Enlace de base de conocimiento
+        </Label>
+        <span className="text-sm text-muted-foreground block">
+          URL que se mostrará en el menú lateral para todos los usuarios.
+        </span>
+        <Input
+          id="knowledge-base-url"
+          type="url"
+          value={knowledgeBaseUrl}
+          onChange={(e) => setKnowledgeBaseUrl(e.target.value)}
+          onBlur={() => {
+            if (knowledgeBaseUrl !== initialKnowledgeBaseUrl) {
+              startTransition(async () => {
+                const result = await updateAppSetting("knowledge_base_url", knowledgeBaseUrl);
+                if (result.error) {
+                  toast.error(result.error);
+                } else {
+                  toast.success("Enlace actualizado");
+                }
+              });
+            }
+          }}
+          placeholder="https://docs.google.com/spreadsheets/d/..."
+          disabled={isPending}
+        />
+        <span className="text-xs text-muted-foreground">
+          Este enlace aparece en la sección &quot;Recursos&quot; del menú de navegación.
+        </span>
+      </div>
     </div>
   );
 }

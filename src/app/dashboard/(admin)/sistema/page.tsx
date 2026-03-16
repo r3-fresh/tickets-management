@@ -13,6 +13,7 @@ export default async function SistemaPage() {
   const [
     allowNewTicketsSetting,
     disabledMessageSetting,
+    knowledgeBaseUrlSetting,
     categories,
     subcategories,
     attentionAreasList,
@@ -21,6 +22,7 @@ export default async function SistemaPage() {
   ] = await Promise.all([
     getAppSetting("allow_new_tickets"),
     getAppSetting("ticket_disabled_message"),
+    getAppSetting("knowledge_base_url"),
     db.query.ticketCategories.findMany({
       orderBy: [asc(ticketCategories.displayOrder)],
       with: {
@@ -44,6 +46,7 @@ export default async function SistemaPage() {
 
   const allowNewTickets = allowNewTicketsSetting === null || allowNewTicketsSetting === "true";
   const disabledMessage = disabledMessageSetting || "";
+  const knowledgeBaseUrl = knowledgeBaseUrlSetting || "";
 
   return (
     <div className="space-y-6">
@@ -57,6 +60,7 @@ export default async function SistemaPage() {
       <AdminSettingsTabs
         initialAllowNewTickets={allowNewTickets}
         initialDisabledMessage={disabledMessage}
+        initialKnowledgeBaseUrl={knowledgeBaseUrl}
         initialCategories={categories}
         initialSubcategories={subcategories}
         initialAttentionAreas={attentionAreasList}

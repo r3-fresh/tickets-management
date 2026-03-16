@@ -17,26 +17,26 @@ import {
   Settings,
   ChevronLeft,
   ChevronRight,
+  ChevronDown,
   BookOpen,
   PlusCircle,
   Share2,
-  Inbox
+  Inbox,
+  ExternalLink,
+  FileText
 } from "lucide-react";
 import { authClient } from "@/lib/auth/client";
 import { useRouter } from "next/navigation";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { ModeToggle } from "@/components/shared/mode-toggle";
 import { SidebarUserInfo } from "@/components/dashboard/sidebar-user-info";
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { cn } from "@/lib/utils/cn";
+import { getAppSettingAction } from "@/actions/admin/settings";
 
 // --- STATIC NAVIGATION ITEMS (hoisted outside component) ---
 
-const KNOWLEDGE_BASE_ITEM = {
-  href: "https://docs.google.com/spreadsheets/d/1F23_z7fQJbfGCmvavge3Igw-FcyG4Xd_A-MR3s5WURc/",
-  label: "Base de conocimiento",
-  icon: BookOpen,
-  external: true
-};
+const DEFAULT_KNOWLEDGE_BASE_URL = "https://docs.google.com/spreadsheets/d/1F23_z7fQJbfGCmvavge3Igw-FcyG4Xd_A-MR3s5WURc/";
 
 const USER_NAV_ITEMS = [
   { href: "/dashboard", label: "Mi panel", icon: LayoutDashboard },
@@ -68,6 +68,8 @@ export default function DashboardLayout({
 }) {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false); // Mobile toggle
   const [isCollapsed, setIsCollapsed] = useState(false); // Desktop collapse
+  const [isKnowledgeBaseOpen, setIsKnowledgeBaseOpen] = useState(false); // Knowledge base collapsible
+  const [knowledgeBaseUrl, setKnowledgeBaseUrl] = useState(DEFAULT_KNOWLEDGE_BASE_URL);
   const pathname = usePathname();
   const router = useRouter();
 
@@ -82,6 +84,13 @@ export default function DashboardLayout({
       return () => document.removeEventListener("keydown", handleEscape);
     }
   }, [isSidebarOpen, handleEscape]);
+
+  // Load knowledge base URL from settings
+  useEffect(() => {
+    getAppSettingAction("knowledge_base_url").then((url) => {
+      if (url) setKnowledgeBaseUrl(url);
+    });
+  }, []);
 
   // Use auth hook to get session data
   const { data: session, isPending } = authClient.useSession();
@@ -110,14 +119,14 @@ export default function DashboardLayout({
   };
 
   let navigationSection = USER_NAV_ITEMS;
-  let resourcesSection = [KNOWLEDGE_BASE_ITEM];
+  let resourcesSection: typeof USER_NAV_ITEMS = [];
 
   if (userRole === "admin") {
     navigationSection = ADMIN_NAV_ITEMS;
-    resourcesSection = [...resourcesSection, ROLES_ITEM, settingsItem];
+    resourcesSection = [ROLES_ITEM, settingsItem];
   } else if (userRole === "agent") {
     navigationSection = AGENT_NAV_ITEMS;
-    resourcesSection = [...resourcesSection, settingsItem];
+    resourcesSection = [settingsItem];
   }
 
   return (
@@ -246,6 +255,57 @@ export default function DashboardLayout({
                   </h3>
                 )}
                 <nav className="space-y-1">
+                  {/* Base de conocimiento - Collapsible */}
+                  <Collapsible open={isKnowledgeBaseOpen} onOpenChange={setIsKnowledgeBaseOpen}>
+                    <CollapsibleTrigger
+                      className={cn(
+                        "flex items-center w-full px-3 py-2 text-sm font-medium rounded-md transition-colors cursor-pointer",
+                        isCollapsed ? "justify-center" : "",
+                        "text-muted-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"
+                      )}
+                      title={isCollapsed ? "Base de conocimiento" : undefined}
+                    >
+                      <BookOpen className={cn("h-5 w-5 shrink-0", !isCollapsed && "mr-3")} aria-hidden="true" />
+                      {!isCollapsed && (
+                        <>
+                          <span className="flex-1 text-left">Base de conocimiento</span>
+                          <ChevronDown className={cn(
+                            "h-4 w-4 text-muted-foreground transition-transform duration-200",
+                            isKnowledgeBaseOpen && "rotate-180"
+                          )} />
+                        </>
+                      )}
+                    </CollapsibleTrigger>
+                    <CollapsibleContent>
+                      {!isCollapsed && (
+                        <div className="ml-8 space-y-1 mt-1">
+                          <Link
+                            href={knowledgeBaseUrl}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="group flex items-center px-3 py-1.5 text-sm font-medium rounded-md transition-colors text-muted-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"
+                          >
+                            <ExternalLink className="h-4 w-4 shrink-0 mr-2" aria-hidden="true" />
+                            <span>Enlace</span>
+                          </Link>
+                          <Link
+                            href="/dashboard/manual/base-de-conocimiento"
+                            className={cn(
+                              "group flex items-center px-3 py-1.5 text-sm font-medium rounded-md transition-colors",
+                              pathname === "/dashboard/manual/base-de-conocimiento"
+                                ? "bg-sidebar-accent text-sidebar-accent-foreground"
+                                : "text-muted-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"
+                            )}
+                          >
+                            <FileText className="h-4 w-4 shrink-0 mr-2" aria-hidden="true" />
+                            <span>Manual de uso</span>
+                          </Link>
+                        </div>
+                      )}
+                    </CollapsibleContent>
+                  </Collapsible>
+
+                  {/* Other resource items */}
                   {resourcesSection.map((item) => {
                     const Icon = item.icon;
                     const isActive = pathname === item.href;
@@ -253,8 +313,6 @@ export default function DashboardLayout({
                       <Link
                         key={item.href}
                         href={item.href}
-                        target={item.external ? "_blank" : undefined}
-                        rel={item.external ? "noopener noreferrer" : undefined}
                         aria-current={isActive ? "page" : undefined}
                         className={cn(
                           "group flex items-center px-3 py-2 text-sm font-medium rounded-md transition-colors",
@@ -265,7 +323,7 @@ export default function DashboardLayout({
                         )}
                         title={isCollapsed ? item.label : undefined}
                       >
-                        <Icon className={cn("h-5 w-5 shrink-0", !isCollapsed && "mr-3")} aria-hidden="true" />
+                        <Icon className={cn("h-5 w-5 shrink-0", !isCollapsed && "mr-3", isActive && "text-primary")} aria-hidden="true" />
                         {!isCollapsed && <span>{item.label}</span>}
                       </Link>
                     );
@@ -409,14 +467,60 @@ export default function DashboardLayout({
                     Recursos
                   </h3>
                   <div className="space-y-1">
+                    {/* Base de conocimiento - Collapsible */}
+                    <Collapsible open={isKnowledgeBaseOpen} onOpenChange={setIsKnowledgeBaseOpen}>
+                      <CollapsibleTrigger
+                        className="flex items-center w-full px-3 py-3 text-base font-medium rounded-lg transition-colors cursor-pointer text-muted-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"
+                      >
+                        <BookOpen className="mr-4 h-6 w-6 shrink-0" aria-hidden="true" />
+                        <span className="flex-1 text-left">Base de conocimiento</span>
+                        <ChevronDown className={cn(
+                          "h-4 w-4 text-muted-foreground transition-transform duration-200",
+                          isKnowledgeBaseOpen && "rotate-180"
+                        )} />
+                      </CollapsibleTrigger>
+                      <CollapsibleContent>
+                        <div className="ml-10 space-y-1 mt-1">
+                          <Link
+                            href={knowledgeBaseUrl}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            onClick={() => setIsSidebarOpen(false)}
+                            className="group flex items-center px-3 py-2 text-sm font-medium rounded-lg transition-colors text-muted-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"
+                          >
+                            <ExternalLink className="h-4 w-4 shrink-0 mr-2" aria-hidden="true" />
+                            <span>Enlace</span>
+                          </Link>
+                          <Link
+                            href="/dashboard/manual/base-de-conocimiento"
+                            onClick={() => setIsSidebarOpen(false)}
+                            className={cn(
+                              "group flex items-center px-3 py-2 text-sm font-medium rounded-lg transition-colors",
+                              pathname === "/dashboard/manual/base-de-conocimiento"
+                                ? "bg-sidebar-accent text-sidebar-accent-foreground"
+                                : "text-muted-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"
+                            )}
+                          >
+                            <FileText className="h-4 w-4 shrink-0 mr-2" aria-hidden="true" />
+                            <span>Manual de uso</span>
+                          </Link>
+                        </div>
+                      </CollapsibleContent>
+                    </Collapsible>
+
+                    {/* Other resource items */}
                     {resourcesSection.map((item) => (
                       <Link
                         key={item.href}
                         href={item.href}
-                        target={item.external ? "_blank" : undefined}
-                        rel={item.external ? "noopener noreferrer" : undefined}
                         onClick={() => setIsSidebarOpen(false)}
-                        className="group flex items-center px-3 py-3 text-base font-medium rounded-lg text-muted-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"
+                        aria-current={pathname === item.href ? "page" : undefined}
+                        className={cn(
+                          "group flex items-center px-3 py-3 text-base font-medium rounded-lg",
+                          pathname === item.href
+                            ? "bg-sidebar-accent text-sidebar-accent-foreground"
+                            : "text-muted-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"
+                        )}
                       >
                         <item.icon className="mr-4 h-6 w-6 shrink-0" aria-hidden="true" />
                         {item.label}
