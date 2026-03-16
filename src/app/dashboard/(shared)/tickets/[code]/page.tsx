@@ -150,15 +150,8 @@ export default async function TicketDetailPage({ params }: { params: Promise<{ c
   const canComment = !isTicketClosed;
 
   return (
-    <div className="mx-auto max-w-[1600px] space-y-8 pb-10 animate-in fade-in duration-500">
-      <MarkAsViewed ticketId={ticket.id} />
-
-      {/* Top Navigation */}
-      <div>
-        <Breadcrumb items={[{ label: ticket.ticketCode }]} />
-      </div>
-
-      {/* Floating Validation Controls */}
+    <>
+      {/* Floating Validation Controls (outside animated container to preserve fixed positioning) */}
       {ticket.status === 'pending_validation' && ticket.createdById === session.user.id && (
         <UserValidationControls ticketId={ticket.id} />
       )}
@@ -167,6 +160,14 @@ export default async function TicketDetailPage({ params }: { params: Promise<{ c
       {ticket.status === "resolved" && ticket.attentionArea?.slug === "TSI" && isCreator && !hasSurvey && (
         <FloatingSurvey ticketId={ticket.id} />
       )}
+
+      <div className="mx-auto max-w-[1600px] space-y-8 pb-10 animate-in fade-in duration-500">
+        <MarkAsViewed ticketId={ticket.id} />
+
+        {/* Top Navigation */}
+        <div>
+          <Breadcrumb items={[{ label: ticket.ticketCode }]} />
+        </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-[1fr_340px] gap-10 items-start">
 
@@ -595,5 +596,6 @@ export default async function TicketDetailPage({ params }: { params: Promise<{ c
         </div>
       </div >
     </div >
+    </>
   );
 }
