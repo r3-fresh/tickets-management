@@ -30,6 +30,7 @@ export async function createProviderTicketAction(formData: FormData) {
     description: formData.get("description"),
     providerId: formData.get("providerId"),
     ticketId: formData.get("ticketId") || undefined,
+    priority: formData.get("priority") || undefined,
   };
 
   const result = createProviderTicketSchema.safeParse(rawData);
@@ -57,6 +58,7 @@ export async function createProviderTicketAction(formData: FormData) {
       description: result.data.description,
       providerId: result.data.providerId,
       ticketId: result.data.ticketId || null,
+      priority: result.data.priority || null,
       attentionAreaId: session.user.attentionAreaId,
       requestedById: session.user.id,
       createdById: session.user.id,
@@ -87,6 +89,7 @@ export async function updateProviderTicketAction(formData: FormData) {
     status: formData.get("status"),
     ticketId: formData.get("ticketId") || undefined,
     completionDate: formData.get("completionDate") || undefined,
+    priority: formData.get("priority") || undefined,
   };
 
   const result = updateProviderTicketSchema.safeParse(rawData);
@@ -134,6 +137,7 @@ export async function updateProviderTicketAction(formData: FormData) {
         status: result.data.status,
         ticketId: result.data.ticketId || null,
         completionDate: result.data.completionDate || null,
+        priority: result.data.priority || null,
         updatedAt: new Date(),
       })
       .where(eq(providerTickets.id, result.data.id));

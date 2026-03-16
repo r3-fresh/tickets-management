@@ -49,10 +49,10 @@ import {
 import { Textarea } from "@/components/ui/textarea";
 import { DeleteConfirmDialog } from "@/components/shared/delete-confirm-dialog";
 import { UserAvatar } from "@/components/shared/user-avatar";
-import { PROVIDER_TICKET_STATUS_LABELS } from "@/lib/constants/tickets";
+import { PROVIDER_TICKET_STATUS_LABELS, PROVIDER_TICKET_PRIORITY_LABELS, PROVIDER_TICKET_PRIORITY_STYLES } from "@/lib/constants/tickets";
 import { cn } from "@/lib/utils/cn";
 import { dayjs, formatDateShort } from "@/lib/utils/date";
-import type { Provider, ProviderTicketStatus } from "@/types";
+import type { Provider, ProviderTicketStatus, ProviderTicketPriority } from "@/types";
 import {
   CalendarIcon,
   Check,
@@ -83,6 +83,7 @@ interface ProviderTicketRow {
   requestDate: string;
   description: string;
   status: string;
+  priority: string | null;
   providerId: number;
   ticketId: number | null;
   completionDate: string | null;
@@ -234,6 +235,7 @@ export function ProviderTicketsList({ providerTickets, providers, areaTickets }:
               <TableHead>Título</TableHead>
               <TableHead>Proveedor</TableHead>
               <TableHead>Estado</TableHead>
+              <TableHead>Prioridad</TableHead>
               <TableHead>Fecha requerimiento</TableHead>
               <TableHead>Registrado por</TableHead>
               <TableHead>Ticket vinculado</TableHead>
@@ -243,7 +245,7 @@ export function ProviderTicketsList({ providerTickets, providers, areaTickets }:
           <TableBody>
             {filteredTickets.length === 0 ? (
               <TableRow>
-                <TableCell colSpan={8} className="h-24 text-center text-muted-foreground">
+                <TableCell colSpan={9} className="h-24 text-center text-muted-foreground">
                   {providerTickets.length === 0
                     ? "No hay tickets de proveedores registrados."
                     : "No hay tickets que coincidan con los filtros."}
@@ -259,6 +261,9 @@ export function ProviderTicketsList({ providerTickets, providers, areaTickets }:
                   <TableCell>{ticket.provider.name}</TableCell>
                   <TableCell>
                     <StatusBadge status={ticket.status as ProviderTicketStatus} />
+                  </TableCell>
+                  <TableCell>
+                    <PriorityBadge priority={ticket.priority} />
                   </TableCell>
                   <TableCell>{formatDateShort(ticket.requestDate)}</TableCell>
                   <TableCell>
@@ -396,6 +401,21 @@ function StatusBadge({ status }: { status: ProviderTicketStatus }) {
           : "bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400"
       )}
     >
+      {label}
+    </div>
+  );
+}
+
+// --- Priority Badge ---
+
+function PriorityBadge({ priority }: { priority: string | null }) {
+  if (!priority) {
+    return <span className="text-muted-foreground text-sm">—</span>;
+  }
+  const label = PROVIDER_TICKET_PRIORITY_LABELS[priority as ProviderTicketPriority] || priority;
+  const style = PROVIDER_TICKET_PRIORITY_STYLES[priority as ProviderTicketPriority] || "";
+  return (
+    <div className={cn("inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium", style)}>
       {label}
     </div>
   );
@@ -600,6 +620,7 @@ function ProviderTicketDialog({
   // these initial values are always correct on mount.
   const [requestDate, setRequestDate] = useState<string>(ticket?.requestDate || "");
   const [linkedTicketId, setLinkedTicketId] = useState<number | null>(ticket?.ticketId ?? null);
+  const [priority, setPriority] = useState<string>(ticket?.priority || "");
 
   async function handleSubmit(formData: FormData) {
     // Append calendar-managed fields
@@ -609,6 +630,12 @@ function ProviderTicketDialog({
       formData.set("ticketId", linkedTicketId.toString());
     } else {
       formData.delete("ticketId");
+    }
+    // Append priority
+    if (priority && priority !== "none") {
+      formData.set("priority", priority);
+    } else {
+      formData.delete("priority");
     }
 
     startTransition(async () => {
@@ -741,6 +768,26 @@ function ProviderTicketDialog({
               placeholder="Detalle del requerimiento al proveedor"
               rows={3}
             />
+          </div>
+
+          {/* Priority */}
+          <div className="grid gap-2">
+            <Label>
+              Prioridad <span className="text-muted-foreground text-xs">(opcional)</span>
+            </Label>
+            <Select value={priority} onValueChange={setPriority}>
+              <SelectTrigger>
+                <SelectValue placeholder="Selecciona una prioridad" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="none">Sin prioridad</SelectItem>
+                {Object.entries(PROVIDER_TICKET_PRIORITY_LABELS).map(([value, label]) => (
+                  <SelectItem key={value} value={value}>
+                    {label}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
           </div>
 
           {/* Linked Ticket (searchable combobox) */}

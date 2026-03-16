@@ -81,6 +81,7 @@ export const createProviderTicketSchema = z.object({
   description: z.string().min(10, "La descripción debe tener al menos 10 caracteres"),
   providerId: z.coerce.number().min(1, "Selecciona un proveedor"),
   ticketId: z.coerce.number().optional(), // Enlace opcional
+  priority: z.enum(["baja", "media", "alta", "critica"]).optional(),
 });
 
 export const updateProviderTicketSchema = z.object({
@@ -93,6 +94,7 @@ export const updateProviderTicketSchema = z.object({
   status: z.enum(["en_proceso", "cerrado"]),
   ticketId: z.coerce.number().optional(),
   completionDate: z.string().optional(), // Fecha de atención (para calcular tiempos)
+  priority: z.enum(["baja", "media", "alta", "critica"]).optional(),
 });
 
 export type CreateProviderTicketSchema = z.infer<typeof createProviderTicketSchema>;

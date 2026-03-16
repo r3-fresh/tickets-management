@@ -1,4 +1,4 @@
-import type { TicketStatus, TicketPriority, ClosedBy, ProviderTicketStatus, CommentType } from "@/types";
+import type { TicketStatus, TicketPriority, ClosedBy, ProviderTicketStatus, ProviderTicketPriority, CommentType } from "@/types";
 
 // ============================================
 // Ticket Status Constants
@@ -88,6 +88,27 @@ export const PROVIDER_TICKET_STATUS: Record<string, ProviderTicketStatus> = {
 export const PROVIDER_TICKET_STATUS_LABELS: Record<ProviderTicketStatus, string> = {
   en_proceso: "En proceso",
   cerrado: "Cerrado",
+};
+
+export const PROVIDER_TICKET_PRIORITY: Record<string, ProviderTicketPriority> = {
+  LOW: 'baja',
+  MEDIUM: 'media',
+  HIGH: 'alta',
+  CRITICAL: 'critica',
+} as const;
+
+export const PROVIDER_TICKET_PRIORITY_LABELS: Record<ProviderTicketPriority, string> = {
+  baja: "Baja",
+  media: "Media",
+  alta: "Alta",
+  critica: "Crítica",
+};
+
+export const PROVIDER_TICKET_PRIORITY_STYLES: Record<ProviderTicketPriority, string> = {
+  baja: "bg-slate-100 text-slate-700 dark:bg-slate-800/40 dark:text-slate-300",
+  media: "bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-400",
+  alta: "bg-orange-100 text-orange-800 dark:bg-orange-900/30 dark:text-orange-400",
+  critica: "bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400",
 };
 
 // ============================================
