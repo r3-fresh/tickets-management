@@ -20,8 +20,10 @@ import {
   HourglassIcon,
   Users,
   Building2,
-  Plus
+  Plus,
+  PieChart as PieChartIcon,
 } from "lucide-react";
+import { StatusDonutChart } from "@/components/dashboard/charts/status-donut-chart";
 
 interface AgentDashboardProps {
   userId: string;
@@ -135,79 +137,52 @@ export async function AgentDashboard({ userId, attentionAreaId }: AgentDashboard
         </Button>
       </div>
 
-      {/* Statistics Grid - Simplified */}
+      {/* Status Distribution Charts */}
       <div className="grid gap-6 md:grid-cols-2">
-        {/* Area Stats */}
-        <div className="space-y-3">
-          <div className="flex items-center gap-2 px-1">
-            <Building2 className="h-4 w-4 text-muted-foreground" />
-            <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wide">Área de atención</h3>
-          </div>
-          <div className="grid gap-4 grid-cols-2">
-            <Card>
-              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium">
-                  Abiertos
-                </CardTitle>
-                <div className="p-2 rounded-full bg-muted">
-                  <AlertCircle className="h-4 w-4 text-muted-foreground" />
-                </div>
-              </CardHeader>
-              <CardContent>
-                <div className="text-3xl font-bold">{getAreaStat("open")}</div>
-              </CardContent>
-            </Card>
-            <Card>
-              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium">
-                  En proceso
-                </CardTitle>
-                <div className="p-2 rounded-full bg-muted">
-                  <Clock className="h-4 w-4 text-muted-foreground" />
-                </div>
-              </CardHeader>
-              <CardContent>
-                <div className="text-3xl font-bold">{getAreaStat("in_progress")}</div>
-              </CardContent>
-            </Card>
-          </div>
-        </div>
+        {/* Area Donut */}
+        <Card>
+          <CardHeader className="pb-2">
+            <CardTitle className="flex items-center gap-2 text-base">
+              <Building2 className="h-4 w-4 text-muted-foreground" />
+              {areaDetails?.name || "Tickets del área"}
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <StatusDonutChart
+              centerValue={getAreaStat("open") + getAreaStat("in_progress")}
+              centerLabel="activos"
+              data={[
+                { name: "Abiertos", value: getAreaStat("open"), color: "#f97316" },
+                { name: "En proceso", value: getAreaStat("in_progress"), color: "#3b82f6" },
+                { name: "Resueltos", value: getAreaStat("resolved"), color: "#22c55e" },
+                { name: "Anulados", value: getAreaStat("voided"), color: "#94a3b8" },
+              ]}
+            />
+          </CardContent>
+        </Card>
 
-        {/* User Stats */}
-        <div className="space-y-3">
-          <div className="flex items-center gap-2 px-1">
-            <Users className="h-4 w-4 text-muted-foreground" />
-            <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wide">Mis tickets personales</h3>
-          </div>
-          <div className="grid gap-4 grid-cols-2">
-            <Card>
-              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium">
-                  Abiertos
-                </CardTitle>
-                <div className="p-2 rounded-full bg-muted">
-                  <AlertCircle className="h-4 w-4 text-muted-foreground" />
-                </div>
-              </CardHeader>
-              <CardContent>
-                <div className="text-3xl font-bold">{getUserStat("open")}</div>
-              </CardContent>
-            </Card>
-            <Card>
-              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium">
-                  Pendientes
-                </CardTitle>
-                <div className="p-2 rounded-full bg-muted">
-                  <HourglassIcon className="h-4 w-4 text-muted-foreground" />
-                </div>
-              </CardHeader>
-              <CardContent>
-                <div className="text-3xl font-bold">{getUserStat("pending_validation")}</div>
-              </CardContent>
-            </Card>
-          </div>
-        </div>
+        {/* Personal Donut */}
+        <Card>
+          <CardHeader className="pb-2">
+            <CardTitle className="flex items-center gap-2 text-base">
+              <PieChartIcon className="h-4 w-4 text-muted-foreground" />
+              Mis tickets personales
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <StatusDonutChart
+              centerValue={getUserStat("open") + getUserStat("in_progress") + getUserStat("pending_validation")}
+              centerLabel="activos"
+              data={[
+                { name: "Abiertos", value: getUserStat("open"), color: "#f97316" },
+                { name: "En proceso", value: getUserStat("in_progress"), color: "#3b82f6" },
+                { name: "Pend. validación", value: getUserStat("pending_validation"), color: "#eab308" },
+                { name: "Resueltos", value: getUserStat("resolved"), color: "#22c55e" },
+                { name: "Anulados", value: getUserStat("voided"), color: "#94a3b8" },
+              ]}
+            />
+          </CardContent>
+        </Card>
       </div>
 
       {/* Area Tickets Table */}

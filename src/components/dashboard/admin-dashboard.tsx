@@ -17,10 +17,13 @@ import {
   MessageSquare,
   Activity,
   Building2,
-  TrendingUp
+  TrendingUp,
+  BarChart3,
 } from "lucide-react";
 import { Breadcrumb } from "@/components/shared/breadcrumb";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { AreaBarChart } from "@/components/dashboard/charts/area-bar-chart";
+import type { AreaBarData } from "@/components/dashboard/charts/area-bar-chart";
 
 export async function AdminDashboard() {
   // --- Statistics Gathering (parallelized) ---
@@ -40,28 +43,43 @@ export async function AdminDashboard() {
     db.select({ count: count() }).from(attentionAreas),
     db.select({ count: count() }).from(comments),
     db.query.users.findMany({ limit: 5, orderBy: (users, { desc }) => [desc(users.createdAt)] }),
-    db.select({ areaId: tickets.attentionAreaId, count: count() })
+    // Tickets by area + status for chart
+    db.select({
+      areaId: tickets.attentionAreaId,
+      status: tickets.status,
+      count: count(),
+    })
       .from(tickets)
       .where(sql`${tickets.attentionAreaId} IS NOT NULL`)
-      .groupBy(tickets.attentionAreaId)
-      .limit(5),
+      .groupBy(tickets.attentionAreaId, tickets.status),
   ]);
 
   const getStat = (status: string) => statusStats.find(s => s.status === status)?.count || 0;
   const getUsersStat = (role: string) => usersByRole.find(r => r.role === role)?.count || 0;
 
-  // This depends on ticketsByArea result, so it runs after Promise.all
-  const areasWithTickets = await db.query.attentionAreas.findMany({
-    where: (areas, { inArray }) => inArray(areas.id, ticketsByArea.map(t => t.areaId!)),
-  });
+  // Resolve area names
+  const uniqueAreaIds = [...new Set(ticketsByArea.map(t => t.areaId!))].filter(Boolean);
+  const areasWithTickets = uniqueAreaIds.length > 0
+    ? await db.query.attentionAreas.findMany({
+      where: (areas, { inArray }) => inArray(areas.id, uniqueAreaIds),
+    })
+    : [];
 
-  const topAreas = ticketsByArea.map(stat => {
-    const area = areasWithTickets.find(a => a.id === stat.areaId);
+  // Build grouped bar data
+  const areaBarData: AreaBarData[] = areasWithTickets.map((area) => {
+    const getAreaStatusCount = (st: string) =>
+      ticketsByArea.find((t) => t.areaId === area.id && t.status === st)?.count ?? 0;
     return {
-      name: area?.name || "Desconocida",
-      count: stat.count
+      area: area.name,
+      Abiertos: getAreaStatusCount("open"),
+      "En proceso": getAreaStatusCount("in_progress"),
+      "Pend. validación": getAreaStatusCount("pending_validation"),
+      Resueltos: getAreaStatusCount("resolved"),
     };
-  }).sort((a, b) => b.count - a.count);
+  }).sort((a, b) =>
+    (b.Abiertos + b["En proceso"] + b["Pend. validación"] + b.Resueltos) -
+    (a.Abiertos + a["En proceso"] + a["Pend. validación"] + a.Resueltos)
+  );
 
   const mainStatsCards = [
     {
@@ -204,33 +222,19 @@ export async function AdminDashboard() {
         </Card>
       </div>
 
-      {/* Top Areas by Tickets */}
-      {topAreas.length > 0 && (
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <TrendingUp className="h-5 w-5" />
-              Áreas más activas
-            </CardTitle>
-            <CardDescription>Departamentos con mayor volumen de tickets</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-4">
-              {topAreas.map((area, index) => (
-                <div key={index} className="flex items-center">
-                  <div className="flex items-center justify-center w-8 h-8 rounded-full bg-primary/10 text-primary font-bold text-sm mr-4">
-                    {index + 1}
-                  </div>
-                  <div className="flex-1">
-                    <p className="text-sm font-medium">{area.name}</p>
-                  </div>
-                  <div className="text-sm font-bold">{area.count} tickets</div>
-                </div>
-              ))}
-            </div>
-          </CardContent>
-        </Card>
-      )}
+      {/* Tickets by Area Chart */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <BarChart3 className="h-5 w-5" />
+            Tickets por área y estado
+          </CardTitle>
+          <CardDescription>Distribución de tickets activos por departamento</CardDescription>
+        </CardHeader>
+        <CardContent>
+          <AreaBarChart data={areaBarData} />
+        </CardContent>
+      </Card>
     </div>
   );
 }

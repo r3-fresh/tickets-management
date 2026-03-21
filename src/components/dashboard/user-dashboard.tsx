@@ -20,8 +20,10 @@ import {
   Eye,
   HourglassIcon,
   Plus,
-  Users
+  Users,
+  PieChart as PieChartIcon,
 } from "lucide-react";
+import { StatusDonutChart } from "@/components/dashboard/charts/status-donut-chart";
 
 interface UserDashboardProps {
   userId: string;
@@ -177,7 +179,29 @@ export async function UserDashboard({ userId }: UserDashboardProps) {
         ))}
       </div>
 
-      {/* My Recent Tickets */}
+      {/* Status Distribution Chart */}
+      <Card>
+        <CardHeader className="pb-2">
+          <CardTitle className="flex items-center gap-2 text-base">
+            <PieChartIcon className="h-4 w-4 text-muted-foreground" />
+            Distribución de mis tickets
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <StatusDonutChart
+            centerValue={getStat("open") + getStat("in_progress") + getStat("pending_validation") + getStat("resolved") + getStat("voided")}
+            centerLabel="total"
+            data={[
+              { name: "Abiertos", value: getStat("open"), color: "#f97316" },
+              { name: "En proceso", value: getStat("in_progress"), color: "#3b82f6" },
+              { name: "Pend. validación", value: getStat("pending_validation"), color: "#eab308" },
+              { name: "Resueltos", value: getStat("resolved"), color: "#22c55e" },
+              { name: "Anulados", value: getStat("voided"), color: "#94a3b8" },
+            ]}
+          />
+        </CardContent>
+      </Card>
+
       <div className="space-y-4">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
