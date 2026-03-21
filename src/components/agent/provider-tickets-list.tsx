@@ -499,7 +499,33 @@ function TicketCombobox({
   );
 }
 
-// --- Close Provider Ticket Dialog (requires completionDate) ---
+// --- Close Provider Ticket Dialog (completionDate obligatorio + encuesta opcional) ---
+
+const PROVIDER_SURVEY_QUESTIONS = [
+  { key: "responseTimeRating", label: "Tiempo de respuesta del proveedor" },
+  { key: "deadlineRating", label: "Cumplimiento de plazos acordados" },
+  { key: "qualityRating", label: "Calidad del entregable / solución" },
+  { key: "requirementUnderstandingRating", label: "Comprensión del requerimiento" },
+  { key: "attentionRating", label: "Atención y comunicación del proveedor" },
+] as const;
+
+type ProviderSurveyKey = typeof PROVIDER_SURVEY_QUESTIONS[number]["key"];
+
+const RATING_STYLES: Record<number, string> = {
+  1: "border-red-300 text-red-700 hover:bg-red-50 dark:border-red-700 dark:text-red-400 dark:hover:bg-red-950/30",
+  2: "border-orange-300 text-orange-700 hover:bg-orange-50 dark:border-orange-700 dark:text-orange-400 dark:hover:bg-orange-950/30",
+  3: "border-yellow-300 text-yellow-700 hover:bg-yellow-50 dark:border-yellow-700 dark:text-yellow-400 dark:hover:bg-yellow-950/30",
+  4: "border-lime-300 text-lime-700 hover:bg-lime-50 dark:border-lime-700 dark:text-lime-400 dark:hover:bg-lime-950/30",
+  5: "border-green-300 text-green-700 hover:bg-green-50 dark:border-green-700 dark:text-green-400 dark:hover:bg-green-950/30",
+};
+
+const RATING_SELECTED_STYLES: Record<number, string> = {
+  1: "bg-red-100 border-red-500 text-red-700 dark:bg-red-950/50 dark:border-red-500 dark:text-red-300",
+  2: "bg-orange-100 border-orange-500 text-orange-700 dark:bg-orange-950/50 dark:border-orange-500 dark:text-orange-300",
+  3: "bg-yellow-100 border-yellow-500 text-yellow-700 dark:bg-yellow-950/50 dark:border-yellow-500 dark:text-yellow-300",
+  4: "bg-lime-100 border-lime-500 text-lime-700 dark:bg-lime-950/50 dark:border-lime-500 dark:text-lime-300",
+  5: "bg-green-100 border-green-500 text-green-700 dark:bg-green-950/50 dark:border-green-500 dark:text-green-300",
+};
 
 function CloseProviderTicketDialog({
   open,
@@ -513,6 +539,20 @@ function CloseProviderTicketDialog({
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
   const [completionDate, setCompletionDate] = useState<string>("");
+  const [includeSurvey, setIncludeSurvey] = useState(false);
+  const [ratings, setRatings] = useState<Partial<Record<ProviderSurveyKey, number>>>({});
+  const [observations, setObservations] = useState("");
+
+  function resetForm() {
+    setCompletionDate("");
+    setIncludeSurvey(false);
+    setRatings({});
+    setObservations("");
+  }
+
+  const allRatingsFilled = includeSurvey
+    ? PROVIDER_SURVEY_QUESTIONS.every((q) => ratings[q.key] !== undefined)
+    : true;
 
   function handleClose() {
     if (!ticket) return;
@@ -520,35 +560,55 @@ function CloseProviderTicketDialog({
       toast.error("Selecciona la fecha de atención para cerrar el ticket");
       return;
     }
+    if (includeSurvey && !allRatingsFilled) {
+      toast.error("Completa todas las calificaciones antes de cerrar");
+      return;
+    }
 
     const formData = new FormData();
     formData.set("id", ticket.id.toString());
     formData.set("completionDate", completionDate);
+
+    if (includeSurvey && allRatingsFilled) {
+      PROVIDER_SURVEY_QUESTIONS.forEach((q) => {
+        formData.set(q.key, ratings[q.key]!.toString());
+      });
+      if (observations.trim()) {
+        formData.set("observations", observations.trim());
+      }
+    }
 
     startTransition(async () => {
       const result = await closeProviderTicketAction(formData);
       if (result?.error) {
         toast.error(result.error);
       } else {
-        toast.success("Ticket de proveedor cerrado");
+        toast.success(
+          includeSurvey && allRatingsFilled
+            ? "Ticket cerrado y evaluación registrada"
+            : "Ticket de proveedor cerrado"
+        );
         onOpenChange(false);
+        resetForm();
         router.refresh();
       }
     });
   }
 
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-md">
+    <Dialog open={open} onOpenChange={(val) => { onOpenChange(val); if (!val) resetForm(); }}>
+      <DialogContent className="max-w-lg max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>Cerrar ticket de proveedor</DialogTitle>
           <DialogDescription>
             {ticket
-              ? `Vas a cerrar el ticket "${ticket.externalCode}". Indica la fecha en la que el proveedor atendió el requerimiento.`
+              ? `Vas a cerrar "${ticket.externalCode}". Indica la fecha de atención y, opcionalmente, evalúa al proveedor.`
               : "Indica la fecha de atención para cerrar el ticket."}
           </DialogDescription>
         </DialogHeader>
-        <div className="space-y-4 py-2">
+
+        <div className="space-y-5 py-2">
+          {/* Fecha de atención */}
           <div className="grid gap-2">
             <Label>Fecha de atención <span className="text-destructive">*</span></Label>
             <Popover>
@@ -583,20 +643,96 @@ function CloseProviderTicketDialog({
               Fecha en la que el proveedor atendió el requerimiento.
             </p>
           </div>
+
+          {/* Toggle para encuesta */}
+          <div className="border rounded-lg overflow-hidden">
+            <button
+              type="button"
+              onClick={() => setIncludeSurvey((v) => !v)}
+              className="w-full flex items-center justify-between px-4 py-3 bg-muted/30 hover:bg-muted/50 transition-colors text-sm font-medium"
+            >
+              <span className="flex items-center gap-2">
+                <span className="text-base">⭐</span>
+                Evaluar al proveedor
+                <span className="text-xs font-normal text-muted-foreground">(opcional)</span>
+              </span>
+              <span className={cn(
+                "text-xs px-2 py-0.5 rounded-full font-medium transition-colors",
+                includeSurvey
+                  ? "bg-green-100 text-green-700 dark:bg-green-950/40 dark:text-green-400"
+                  : "bg-muted text-muted-foreground"
+              )}>
+                {includeSurvey ? "Activada" : "Omitir"}
+              </span>
+            </button>
+
+            {includeSurvey && (
+              <div className="px-4 py-4 space-y-4 border-t">
+                <p className="text-xs text-muted-foreground">
+                  Califica del 1 (muy malo) al 5 (excelente) el desempeño del proveedor.
+                </p>
+
+                {PROVIDER_SURVEY_QUESTIONS.map((q) => (
+                  <div key={q.key} className="space-y-1.5">
+                    <Label className="text-xs font-medium">{q.label}</Label>
+                    <div className="flex gap-1.5">
+                      {([1, 2, 3, 4, 5] as const).map((val) => (
+                        <button
+                          key={val}
+                          type="button"
+                          disabled={isPending}
+                          onClick={() => setRatings((prev) => ({ ...prev, [q.key]: val }))}
+                          className={cn(
+                            "h-9 w-9 rounded-lg border text-sm font-bold transition-all duration-150 cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-primary",
+                            ratings[q.key] === val
+                              ? RATING_SELECTED_STYLES[val]
+                              : RATING_STYLES[val]
+                          )}
+                        >
+                          {val}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                ))}
+
+                {/* Observaciones */}
+                <div className="space-y-1.5">
+                  <Label className="text-xs font-medium">
+                    Observaciones <span className="font-normal text-muted-foreground">(opcional)</span>
+                  </Label>
+                  <Textarea
+                    value={observations}
+                    onChange={(e) => setObservations(e.target.value)}
+                    placeholder="Comentarios adicionales sobre el desempeño del proveedor..."
+                    rows={2}
+                    maxLength={1000}
+                    className="resize-none text-sm"
+                    disabled={isPending}
+                  />
+                </div>
+              </div>
+            )}
+          </div>
         </div>
+
         <DialogFooter>
-          <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
+          <Button type="button" variant="outline" onClick={() => { onOpenChange(false); resetForm(); }} disabled={isPending}>
             Cancelar
           </Button>
-          <Button onClick={handleClose} disabled={isPending || !completionDate}>
+          <Button
+            onClick={handleClose}
+            disabled={isPending || !completionDate || (includeSurvey && !allRatingsFilled)}
+          >
             {isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-            Cerrar ticket
+            {includeSurvey ? "Cerrar y evaluar" : "Cerrar ticket"}
           </Button>
         </DialogFooter>
       </DialogContent>
     </Dialog>
   );
 }
+
 
 // --- Create/Edit Dialog ---
 

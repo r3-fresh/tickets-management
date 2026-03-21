@@ -1,7 +1,7 @@
 "use server";
 
 import { db } from "@/db";
-import { providerTickets, providers } from "@/db/schema";
+import { providerTickets, providers, providerSatisfactionSurveys } from "@/db/schema";
 import { requireAgent, getSession } from "@/lib/auth/helpers";
 import { createProviderTicketSchema, updateProviderTicketSchema } from "@/lib/validation/schemas";
 import { eq, and } from "drizzle-orm";
@@ -150,11 +150,20 @@ export async function updateProviderTicketAction(formData: FormData) {
   }
 }
 
-// --- Close provider ticket (requires completionDate) ---
+// --- Close provider ticket (requires completionDate, optional survey) ---
+
+const surveyRatingField = z.coerce.number().int().min(1).max(5).optional();
 
 const closeProviderTicketSchema = z.object({
   id: z.coerce.number().min(1),
   completionDate: z.string().min(1, "La fecha de atención es obligatoria"),
+  // Survey fields (all optional; only saved when all 5 are present)
+  responseTimeRating: surveyRatingField,
+  deadlineRating: surveyRatingField,
+  qualityRating: surveyRatingField,
+  requirementUnderstandingRating: surveyRatingField,
+  attentionRating: surveyRatingField,
+  observations: z.string().max(1000).optional(),
 });
 
 export async function closeProviderTicketAction(formData: FormData) {
@@ -167,6 +176,12 @@ export async function closeProviderTicketAction(formData: FormData) {
   const rawData = {
     id: formData.get("id"),
     completionDate: formData.get("completionDate"),
+    responseTimeRating: formData.get("responseTimeRating") || undefined,
+    deadlineRating: formData.get("deadlineRating") || undefined,
+    qualityRating: formData.get("qualityRating") || undefined,
+    requirementUnderstandingRating: formData.get("requirementUnderstandingRating") || undefined,
+    attentionRating: formData.get("attentionRating") || undefined,
+    observations: (formData.get("observations") as string)?.trim() || undefined,
   };
 
   const result = closeProviderTicketSchema.safeParse(rawData);
@@ -190,16 +205,39 @@ export async function closeProviderTicketAction(formData: FormData) {
     return { error: "El ticket ya se encuentra cerrado" };
   }
 
+  // Determine if all survey ratings are present
+  const { responseTimeRating, deadlineRating, qualityRating, requirementUnderstandingRating, attentionRating, observations } = result.data;
+  const hasSurvey = [
+    responseTimeRating, deadlineRating, qualityRating, requirementUnderstandingRating, attentionRating,
+  ].every((r) => r !== undefined);
+
   try {
-    await db.update(providerTickets)
-      .set({
-        status: "cerrado",
-        completionDate: result.data.completionDate,
-        updatedAt: new Date(),
-      })
-      .where(eq(providerTickets.id, result.data.id));
+    await db.transaction(async (tx) => {
+      await tx.update(providerTickets)
+        .set({
+          status: "cerrado",
+          completionDate: result.data.completionDate,
+          updatedAt: new Date(),
+        })
+        .where(eq(providerTickets.id, result.data.id));
+
+      if (hasSurvey) {
+        await tx.insert(providerSatisfactionSurveys).values({
+          providerTicketId: result.data.id,
+          attentionAreaId: session.user.attentionAreaId!,
+          submittedById: session.user.id,
+          responseTimeRating: responseTimeRating!,
+          deadlineRating: deadlineRating!,
+          qualityRating: qualityRating!,
+          requirementUnderstandingRating: requirementUnderstandingRating!,
+          attentionRating: attentionRating!,
+          observations: observations || null,
+        });
+      }
+    });
 
     revalidatePath("/dashboard/proveedores");
+    revalidatePath("/dashboard/encuestas");
     return { success: true };
   } catch (error) {
     console.error("Error closing provider ticket:", error);

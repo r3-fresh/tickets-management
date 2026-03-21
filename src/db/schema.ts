@@ -410,3 +410,34 @@ export const providerTicketsRelations = relations(providerTickets, ({ one }) => 
   }),
 }));
 
+// --- PROVIDER SATISFACTION SURVEYS (evaluación del agente al proveedor) ---
+
+export const providerSatisfactionSurveys = pgTable("provider_satisfaction_survey", {
+  id: serial("id").primaryKey(),
+  providerTicketId: integer("provider_ticket_id").notNull().references(() => providerTickets.id).unique(),
+  attentionAreaId: integer("attention_area_id").notNull().references(() => attentionAreas.id),
+  submittedById: text("submitted_by_id").notNull().references(() => users.id),
+  // 5 preguntas de evaluación (escala 1-5)
+  responseTimeRating: smallint("response_time_rating").notNull(),                          // Tiempo de respuesta
+  deadlineRating: smallint("deadline_rating").notNull(),                                   // Cumplimiento de plazos
+  qualityRating: smallint("quality_rating").notNull(),                                     // Calidad del entregable
+  requirementUnderstandingRating: smallint("requirement_understanding_rating").notNull(),  // Comprensión del requerimiento
+  attentionRating: smallint("attention_rating").notNull(),                                 // Atención del proveedor
+  observations: text("observations"),                                                      // Comentarios opcionales
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+});
+
+export const providerSatisfactionSurveysRelations = relations(providerSatisfactionSurveys, ({ one }) => ({
+  providerTicket: one(providerTickets, {
+    fields: [providerSatisfactionSurveys.providerTicketId],
+    references: [providerTickets.id],
+  }),
+  attentionArea: one(attentionAreas, {
+    fields: [providerSatisfactionSurveys.attentionAreaId],
+    references: [attentionAreas.id],
+  }),
+  submittedBy: one(users, {
+    fields: [providerSatisfactionSurveys.submittedById],
+    references: [users.id],
+  }),
+}));
