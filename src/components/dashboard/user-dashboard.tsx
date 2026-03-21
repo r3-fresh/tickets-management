@@ -27,7 +27,7 @@ interface UserDashboardProps {
   userId: string;
 }
 
-const ACTIVE_STATUSES = ["open", "in_progress"] as const;
+const USER_ACTIVE_STATUSES = ["open", "in_progress", "pending_validation"] as const;
 
 export async function UserDashboard({ userId }: UserDashboardProps) {
   // --- All independent queries in parallel ---
@@ -52,10 +52,10 @@ export async function UserDashboard({ userId }: UserDashboardProps) {
       .from(tickets)
       .where(sql`${userId} = ANY(${tickets.watchers})`),
     // Recent user tickets (last 5, active only)
-    queryTicketsWithUnread(userId, and(eq(tickets.createdById, userId), inArray(tickets.status, [...ACTIVE_STATUSES])), 5),
+    queryTicketsWithUnread(userId, and(eq(tickets.createdById, userId), inArray(tickets.status, [...USER_ACTIVE_STATUSES])), 5),
     // User tickets with assigned (active only)
     db.query.tickets.findMany({
-      where: and(eq(tickets.createdById, userId), inArray(tickets.status, [...ACTIVE_STATUSES])),
+      where: and(eq(tickets.createdById, userId), inArray(tickets.status, [...USER_ACTIVE_STATUSES])),
       columns: { id: true },
       with: {
         assignedTo: true,
@@ -65,13 +65,13 @@ export async function UserDashboard({ userId }: UserDashboardProps) {
       limit: 5,
     }),
     // Recent watched tickets (last 3, active only)
-    queryTicketsWithUnread(userId, and(not(eq(tickets.createdById, userId)), sql`${userId} = ANY(${tickets.watchers})`, inArray(tickets.status, [...ACTIVE_STATUSES])), 3),
+    queryTicketsWithUnread(userId, and(not(eq(tickets.createdById, userId)), sql`${userId} = ANY(${tickets.watchers})`, inArray(tickets.status, [...USER_ACTIVE_STATUSES])), 3),
     // Watched tickets with relations (active only)
     db.query.tickets.findMany({
       where: and(
         not(eq(tickets.createdById, userId)),
         sql`${userId} = ANY(${tickets.watchers})`,
-        inArray(tickets.status, [...ACTIVE_STATUSES])
+        inArray(tickets.status, [...USER_ACTIVE_STATUSES])
       ),
       columns: { id: true },
       with: {
