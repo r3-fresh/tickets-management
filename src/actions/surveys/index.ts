@@ -110,7 +110,8 @@ export async function getSurveyByTicketAction(ticketId: number) {
 
 /**
  * Get aggregated survey results for the results page.
- * Agents see only their area; admins see all.
+ * - Agents: see only encuestas from their attentionArea.
+ * - Admins: see all encuestas across every area.
  */
 export async function getSurveyResultsAction() {
   const session = await requireAgent();
