@@ -423,7 +423,6 @@ export const providerSatisfactionSurveys = pgTable("provider_satisfaction_survey
   qualityRating: smallint("quality_rating").notNull(),                                     // Calidad del entregable
   requirementUnderstandingRating: smallint("requirement_understanding_rating").notNull(),  // Comprensión del requerimiento
   attentionRating: smallint("attention_rating").notNull(),                                 // Atención del proveedor
-  observations: text("observations"),                                                      // Comentarios opcionales
   createdAt: timestamp("created_at").defaultNow().notNull(),
 });
 

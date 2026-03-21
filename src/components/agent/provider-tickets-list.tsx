@@ -49,7 +49,8 @@ import {
 import { Textarea } from "@/components/ui/textarea";
 import { DeleteConfirmDialog } from "@/components/shared/delete-confirm-dialog";
 import { UserAvatar } from "@/components/shared/user-avatar";
-import { PROVIDER_TICKET_STATUS_LABELS, PROVIDER_TICKET_PRIORITY_LABELS, PROVIDER_TICKET_PRIORITY_STYLES } from "@/lib/constants/tickets";
+import { PROVIDER_TICKET_STATUS_LABELS, PROVIDER_TICKET_PRIORITY_LABELS, PROVIDER_TICKET_PRIORITY_STYLES, PROVIDER_SURVEY_QUESTIONS, SURVEY_RATING_STYLES, SURVEY_RATING_SELECTED_STYLES } from "@/lib/constants/tickets";
+import type { SurveyRating } from "@/types";
 import { cn } from "@/lib/utils/cn";
 import { dayjs, formatDateShort } from "@/lib/utils/date";
 import type { Provider, ProviderTicketStatus, ProviderTicketPriority } from "@/types";
@@ -293,7 +294,7 @@ export function ProviderTicketsList({ providerTickets, providers, areaTickets }:
                   </TableCell>
                   <TableCell className="text-right">
                     <div className="flex items-center justify-end gap-1">
-                      {/* Edit */}
+                      {/* Edit — disabled when closed */}
                       <Button
                         variant="ghost"
                         size="icon"
@@ -301,9 +302,9 @@ export function ProviderTicketsList({ providerTickets, providers, areaTickets }:
                           setEditingTicket(ticket);
                           setIsDialogOpen(true);
                         }}
-                        disabled={isPending}
+                        disabled={isPending || ticket.status === "cerrado"}
                         aria-label={`Editar ${ticket.externalCode}`}
-                        title="Editar"
+                        title={ticket.status === "cerrado" ? "No se puede editar un ticket cerrado" : "Editar"}
                       >
                         <Pencil className="h-4 w-4" />
                       </Button>
@@ -501,31 +502,7 @@ function TicketCombobox({
 
 // --- Close Provider Ticket Dialog (completionDate obligatorio + encuesta opcional) ---
 
-const PROVIDER_SURVEY_QUESTIONS = [
-  { key: "responseTimeRating", label: "Tiempo de respuesta del proveedor" },
-  { key: "deadlineRating", label: "Cumplimiento de plazos acordados" },
-  { key: "qualityRating", label: "Calidad del entregable / solución" },
-  { key: "requirementUnderstandingRating", label: "Comprensión del requerimiento" },
-  { key: "attentionRating", label: "Atención y comunicación del proveedor" },
-] as const;
-
 type ProviderSurveyKey = typeof PROVIDER_SURVEY_QUESTIONS[number]["key"];
-
-const RATING_STYLES: Record<number, string> = {
-  1: "border-red-300 text-red-700 hover:bg-red-50 dark:border-red-700 dark:text-red-400 dark:hover:bg-red-950/30",
-  2: "border-orange-300 text-orange-700 hover:bg-orange-50 dark:border-orange-700 dark:text-orange-400 dark:hover:bg-orange-950/30",
-  3: "border-yellow-300 text-yellow-700 hover:bg-yellow-50 dark:border-yellow-700 dark:text-yellow-400 dark:hover:bg-yellow-950/30",
-  4: "border-lime-300 text-lime-700 hover:bg-lime-50 dark:border-lime-700 dark:text-lime-400 dark:hover:bg-lime-950/30",
-  5: "border-green-300 text-green-700 hover:bg-green-50 dark:border-green-700 dark:text-green-400 dark:hover:bg-green-950/30",
-};
-
-const RATING_SELECTED_STYLES: Record<number, string> = {
-  1: "bg-red-100 border-red-500 text-red-700 dark:bg-red-950/50 dark:border-red-500 dark:text-red-300",
-  2: "bg-orange-100 border-orange-500 text-orange-700 dark:bg-orange-950/50 dark:border-orange-500 dark:text-orange-300",
-  3: "bg-yellow-100 border-yellow-500 text-yellow-700 dark:bg-yellow-950/50 dark:border-yellow-500 dark:text-yellow-300",
-  4: "bg-lime-100 border-lime-500 text-lime-700 dark:bg-lime-950/50 dark:border-lime-500 dark:text-lime-300",
-  5: "bg-green-100 border-green-500 text-green-700 dark:bg-green-950/50 dark:border-green-500 dark:text-green-300",
-};
 
 function CloseProviderTicketDialog({
   open,
@@ -541,13 +518,11 @@ function CloseProviderTicketDialog({
   const [completionDate, setCompletionDate] = useState<string>("");
   const [includeSurvey, setIncludeSurvey] = useState(false);
   const [ratings, setRatings] = useState<Partial<Record<ProviderSurveyKey, number>>>({});
-  const [observations, setObservations] = useState("");
 
   function resetForm() {
     setCompletionDate("");
     setIncludeSurvey(false);
     setRatings({});
-    setObservations("");
   }
 
   const allRatingsFilled = includeSurvey
@@ -573,9 +548,6 @@ function CloseProviderTicketDialog({
       PROVIDER_SURVEY_QUESTIONS.forEach((q) => {
         formData.set(q.key, ratings[q.key]!.toString());
       });
-      if (observations.trim()) {
-        formData.set("observations", observations.trim());
-      }
     }
 
     startTransition(async () => {
@@ -673,44 +645,38 @@ function CloseProviderTicketDialog({
                 </p>
 
                 {PROVIDER_SURVEY_QUESTIONS.map((q) => (
-                  <div key={q.key} className="space-y-1.5">
-                    <Label className="text-xs font-medium">{q.label}</Label>
-                    <div className="flex gap-1.5">
-                      {([1, 2, 3, 4, 5] as const).map((val) => (
-                        <button
-                          key={val}
-                          type="button"
-                          disabled={isPending}
-                          onClick={() => setRatings((prev) => ({ ...prev, [q.key]: val }))}
-                          className={cn(
-                            "h-9 w-9 rounded-lg border text-sm font-bold transition-all duration-150 cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-primary",
-                            ratings[q.key] === val
-                              ? RATING_SELECTED_STYLES[val]
-                              : RATING_STYLES[val]
-                          )}
-                        >
-                          {val}
-                        </button>
-                      ))}
+                  <div key={q.key} className="space-y-2">
+                    <label className="text-sm font-medium text-foreground">{q.label}</label>
+                    <div className="flex items-center gap-1.5">
+                      <span className="text-[10px] text-muted-foreground w-16 text-right shrink-0">
+                        {q.lowLabel}
+                      </span>
+                      <div className="flex gap-1.5 flex-1 justify-center">
+                        {([1, 2, 3, 4, 5] as SurveyRating[]).map((val) => (
+                          <button
+                            key={val}
+                            type="button"
+                            disabled={isPending}
+                            onClick={() => setRatings((prev) => ({ ...prev, [q.key]: val }))}
+                            className={cn(
+                              "h-9 w-9 rounded-lg border text-sm font-bold transition-all duration-200 cursor-pointer",
+                              "focus:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-1",
+                              ratings[q.key] === val
+                                ? SURVEY_RATING_SELECTED_STYLES[val]
+                                : SURVEY_RATING_STYLES[val],
+                              isPending && "opacity-50 cursor-not-allowed"
+                            )}
+                          >
+                            {val}
+                          </button>
+                        ))}
+                      </div>
+                      <span className="text-[10px] text-muted-foreground w-16 shrink-0">
+                        {q.highLabel}
+                      </span>
                     </div>
                   </div>
                 ))}
-
-                {/* Observaciones */}
-                <div className="space-y-1.5">
-                  <Label className="text-xs font-medium">
-                    Observaciones <span className="font-normal text-muted-foreground">(opcional)</span>
-                  </Label>
-                  <Textarea
-                    value={observations}
-                    onChange={(e) => setObservations(e.target.value)}
-                    placeholder="Comentarios adicionales sobre el desempeño del proveedor..."
-                    rows={2}
-                    maxLength={1000}
-                    className="resize-none text-sm"
-                    disabled={isPending}
-                  />
-                </div>
               </div>
             )}
           </div>

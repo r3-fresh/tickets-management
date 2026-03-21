@@ -13,7 +13,6 @@ interface ProviderSurveyData {
   qualityRating: number;
   requirementUnderstandingRating: number;
   attentionRating: number;
-  observations: string | null;
   createdAt: Date;
   providerTicket: {
     externalCode: string;
@@ -117,7 +116,6 @@ export function ProviderSurveyResultsView({ surveys, kpis }: ProviderSurveyResul
                   <th className="text-center py-3 px-4 font-medium text-muted-foreground">Calidad</th>
                   <th className="text-center py-3 px-4 font-medium text-muted-foreground">Comprensión</th>
                   <th className="text-center py-3 px-4 font-medium text-muted-foreground">Atención</th>
-                  <th className="text-left py-3 px-4 font-medium text-muted-foreground">Observaciones</th>
                 </tr>
               </thead>
               <tbody>
@@ -134,9 +132,6 @@ export function ProviderSurveyResultsView({ surveys, kpis }: ProviderSurveyResul
                     <td className="py-3 px-4 text-center"><RatingDisplay value={survey.qualityRating} /></td>
                     <td className="py-3 px-4 text-center"><RatingDisplay value={survey.requirementUnderstandingRating} /></td>
                     <td className="py-3 px-4 text-center"><RatingDisplay value={survey.attentionRating} /></td>
-                    <td className="py-3 px-4 text-xs text-muted-foreground max-w-[160px] truncate">
-                      {survey.observations || "—"}
-                    </td>
                   </tr>
                 ))}
               </tbody>

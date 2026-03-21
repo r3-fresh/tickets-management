@@ -163,7 +163,6 @@ const closeProviderTicketSchema = z.object({
   qualityRating: surveyRatingField,
   requirementUnderstandingRating: surveyRatingField,
   attentionRating: surveyRatingField,
-  observations: z.string().max(1000).optional(),
 });
 
 export async function closeProviderTicketAction(formData: FormData) {
@@ -181,7 +180,6 @@ export async function closeProviderTicketAction(formData: FormData) {
     qualityRating: formData.get("qualityRating") || undefined,
     requirementUnderstandingRating: formData.get("requirementUnderstandingRating") || undefined,
     attentionRating: formData.get("attentionRating") || undefined,
-    observations: (formData.get("observations") as string)?.trim() || undefined,
   };
 
   const result = closeProviderTicketSchema.safeParse(rawData);
@@ -206,7 +204,7 @@ export async function closeProviderTicketAction(formData: FormData) {
   }
 
   // Determine if all survey ratings are present
-  const { responseTimeRating, deadlineRating, qualityRating, requirementUnderstandingRating, attentionRating, observations } = result.data;
+  const { responseTimeRating, deadlineRating, qualityRating, requirementUnderstandingRating, attentionRating } = result.data;
   const hasSurvey = [
     responseTimeRating, deadlineRating, qualityRating, requirementUnderstandingRating, attentionRating,
   ].every((r) => r !== undefined);
@@ -231,7 +229,6 @@ export async function closeProviderTicketAction(formData: FormData) {
           qualityRating: qualityRating!,
           requirementUnderstandingRating: requirementUnderstandingRating!,
           attentionRating: attentionRating!,
-          observations: observations || null,
         });
       }
     });

@@ -153,3 +153,16 @@ export const SURVEY_RATING_SELECTED_STYLES: Record<SurveyRating, string> = {
   4: "bg-green-500 text-white border-green-600 hover:bg-green-500 dark:bg-green-600 dark:text-white dark:border-green-500 dark:hover:bg-green-600",
   5: "bg-emerald-500 text-white border-emerald-600 hover:bg-emerald-500 dark:bg-emerald-600 dark:text-white dark:border-emerald-500 dark:hover:bg-emerald-600",
 };
+
+// ============================================
+// Provider Satisfaction Survey Constants
+// ============================================
+
+export const PROVIDER_SURVEY_QUESTIONS = [
+  { key: "responseTimeRating", label: "Tiempo de respuesta", lowLabel: "Muy lento", highLabel: "Muy rápido" },
+  { key: "deadlineRating", label: "Cumplimiento de plazos", lowLabel: "Nunca cumple", highLabel: "Siempre puntual" },
+  { key: "qualityRating", label: "Calidad del entregable", lowLabel: "Muy deficiente", highLabel: "Excelente" },
+  { key: "requirementUnderstandingRating", label: "Comprensión del requerimiento", lowLabel: "Nada clara", highLabel: "Totalmente" },
+  { key: "attentionRating", label: "Atención y comunicación", lowLabel: "Muy mala", highLabel: "Muy buena" },
+] as const;
+
