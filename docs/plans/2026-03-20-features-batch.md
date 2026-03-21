@@ -300,12 +300,12 @@ Los dashboards muestran tarjetas de estadísticas numéricas. Se añadirán grá
 
 ## Orden de implementación recomendado
 
-| # | Fase | Branch | Impacto BD |
-|---|------|--------|-----------|
-| 1 | Mensaje de rechazo | `feature/rejection-message` | No |
-| 2 | Nota en derivación | `feature/derivation-notes` | No |
-| 5 | Corrección tablas dashboard | `feature/dashboard-table-fixes` | No |
-| 3 | Encuestas todas las áreas | `feature/surveys-all-areas` | No |
-| 4 | Encuesta proveedores | `feature/provider-survey` | Sí (`pnpm db:push`) |
-| 7 | Gráficos dashboard | `feature/dashboard-charts` | No |
-| 6 | Agrupación menú *(previa aprobación)* | `feature/sidebar-grouping` | No |
+| # | Fase | Branch | Impacto BD | Estado |
+|---|------|--------|-----------|--------|
+| 1 | Mensaje de rechazo | `feature/rejection-message` | No | ✅ Mergeado |
+| 2 | Nota en derivación | `feature/derivation-notes` | No | ✅ Mergeado |
+| 5 | Corrección tablas dashboard | `feature/dashboard-table-fixes` | No | ✅ Mergeado |
+| 3 | Encuestas todas las áreas | `feature/surveys-all-areas` | No | ✅ Mergeado |
+| 4 | Encuesta proveedores | `feature/provider-survey` | Sí (`pnpm db:push`) | ✅ Mergeado |
+| 7 | Gráficos dashboard | `feature/dashboard-charts` | No | ✅ Mergeado |
+| 6 | Agrupación menú *(pendiente aprobación)* | `feature/sidebar-grouping` | No | ⏳ Pendiente |

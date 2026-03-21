@@ -5,6 +5,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
+import type { LucideIcon } from "lucide-react";
 import {
   LayoutDashboard,
   Ticket,
@@ -39,27 +40,73 @@ import { getAppSettingAction } from "@/actions/admin/settings";
 
 const DEFAULT_KNOWLEDGE_BASE_URL = "https://docs.google.com/spreadsheets/d/1F23_z7fQJbfGCmvavge3Igw-FcyG4Xd_A-MR3s5WURc/";
 
-const USER_NAV_ITEMS = [
+interface NavItem {
+  href: string;
+  label: string;
+  icon: LucideIcon;
+  external?: boolean;
+}
+
+interface NavGroup {
+  groupLabel?: string; // undefined = no separator heading
+  items: NavItem[];
+}
+
+const USER_NAV_ITEMS: NavItem[] = [
   { href: "/dashboard", label: "Mi panel", icon: LayoutDashboard },
   { href: "/dashboard/tickets/nuevo", label: "Nuevo ticket", icon: PlusCircle },
   { href: "/dashboard/mis-tickets", label: "Mis tickets", icon: Ticket },
   { href: "/dashboard/seguimiento", label: "En seguimiento", icon: Eye },
 ];
 
-const AGENT_NAV_ITEMS = [
-  { href: "/dashboard", label: "Mi panel", icon: LayoutDashboard },
-  { href: "/dashboard/tickets/nuevo", label: "Nuevo ticket", icon: PlusCircle },
-  { href: "/dashboard/mis-tickets", label: "Mis tickets", icon: Ticket },
-  { href: "/dashboard/seguimiento", label: "En seguimiento", icon: Eye },
-  { href: "/dashboard/area", label: "Tickets del área", icon: Inbox },
-  { href: "/dashboard/proveedores", label: "Tickets de proveedores", icon: Share2 },
-  { href: "/dashboard/encuestas", label: "Encuestas", icon: BarChart3 },
+// Agents: flat items kept for USER_NAV_ITEMS; grouped for agents
+const AGENT_NAV_GROUPS: NavGroup[] = [
+  {
+    items: [
+      { href: "/dashboard", label: "Mi panel", icon: LayoutDashboard },
+    ],
+  },
+  {
+    groupLabel: "Tickets",
+    items: [
+      { href: "/dashboard/tickets/nuevo", label: "Nuevo ticket", icon: PlusCircle },
+      { href: "/dashboard/mis-tickets", label: "Mis tickets", icon: Ticket },
+      { href: "/dashboard/seguimiento", label: "En seguimiento", icon: Eye },
+      { href: "/dashboard/area", label: "Tickets del área", icon: Inbox },
+    ],
+  },
+  {
+    groupLabel: "Proveedores",
+    items: [
+      { href: "/dashboard/proveedores", label: "Tickets de proveedores", icon: Share2 },
+    ],
+  },
+  {
+    groupLabel: "Análisis",
+    items: [
+      { href: "/dashboard/encuestas", label: "Encuestas", icon: BarChart3 },
+    ],
+  },
 ];
 
-const ADMIN_NAV_ITEMS = [
-  { href: "/dashboard", label: "Panel de control", icon: LayoutDashboard },
-  { href: "/dashboard/explorador", label: "Explorador de tickets", icon: Ticket },
-  { href: "/dashboard/encuestas", label: "Encuestas", icon: BarChart3 },
+const ADMIN_NAV_GROUPS: NavGroup[] = [
+  {
+    items: [
+      { href: "/dashboard", label: "Panel de control", icon: LayoutDashboard },
+    ],
+  },
+  {
+    groupLabel: "Tickets",
+    items: [
+      { href: "/dashboard/explorador", label: "Explorador de tickets", icon: Ticket },
+    ],
+  },
+  {
+    groupLabel: "Análisis",
+    items: [
+      { href: "/dashboard/encuestas", label: "Encuestas", icon: BarChart3 },
+    ],
+  },
 ];
 
 const ROLES_ITEM = { href: "/dashboard/usuarios", label: "Gestión de usuarios", icon: Shield, external: false };
@@ -121,16 +168,59 @@ export default function DashboardLayout({
     external: false
   };
 
-  let navigationSection = USER_NAV_ITEMS;
-  let resourcesSection: typeof USER_NAV_ITEMS = [];
+  let navigationGroups: NavGroup[] = [{ items: USER_NAV_ITEMS }];
+  let resourcesSection: NavItem[] = [];
 
   if (userRole === "admin") {
-    navigationSection = ADMIN_NAV_ITEMS;
+    navigationGroups = ADMIN_NAV_GROUPS;
     resourcesSection = [ROLES_ITEM, settingsItem];
   } else if (userRole === "agent") {
-    navigationSection = AGENT_NAV_ITEMS;
+    navigationGroups = AGENT_NAV_GROUPS;
     resourcesSection = [settingsItem];
   }
+
+  // Helper: render nav link (reused in desktop + mobile)
+  const renderNavLink = (item: NavItem, mobile = false) => {
+    const Icon = item.icon;
+    const isActive = pathname === item.href;
+    if (mobile) {
+      return (
+        <Link
+          key={item.href}
+          href={item.href}
+          onClick={() => setIsSidebarOpen(false)}
+          aria-current={isActive ? "page" : undefined}
+          className={cn(
+            "group flex items-center px-3 py-3 text-base font-medium rounded-lg",
+            isActive
+              ? "bg-sidebar-accent text-sidebar-accent-foreground"
+              : "text-muted-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"
+          )}
+        >
+          <Icon className="mr-4 h-6 w-6 shrink-0" aria-hidden="true" />
+          {item.label}
+        </Link>
+      );
+    }
+    return (
+      <Link
+        key={item.href}
+        href={item.href}
+        aria-current={isActive ? "page" : undefined}
+        className={cn(
+          "group flex items-center px-3 py-2 text-sm font-medium rounded-md transition-colors",
+          isCollapsed ? "justify-center" : "",
+          isActive
+            ? "bg-sidebar-accent text-sidebar-accent-foreground"
+            : "text-muted-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"
+        )}
+        title={isCollapsed ? item.label : undefined}
+      >
+        <Icon className={cn("h-5 w-5 shrink-0", !isCollapsed && "mr-3", isActive && "text-primary")} aria-hidden="true" />
+        {!isCollapsed && <span>{item.label}</span>}
+      </Link>
+    );
+  };
 
   return (
     <div className="flex h-dvh overflow-hidden bg-background">
@@ -214,41 +304,28 @@ export default function DashboardLayout({
             </div>
           ) : (
             <>
-              {/* Navigation Section */}
-              <div className="px-3">
-                {!isCollapsed && (
-                  <h3 className="px-3 mb-2 text-xs font-semibold text-muted-foreground uppercase tracking-wider animate-in fade-in duration-300">
-                    Navegación
-                  </h3>
-                )}
-                <nav className="space-y-1">
-                  {navigationSection.map((item) => {
-                    const Icon = item.icon;
-                    const isActive = pathname === item.href;
-                    return (
-                      <Link
-                        key={item.href}
-                        href={item.href}
-                        aria-current={isActive ? "page" : undefined}
-                        className={cn(
-                          "group flex items-center px-3 py-2 text-sm font-medium rounded-md transition-colors",
-                          isCollapsed ? "justify-center" : "",
-                          isActive
-                            ? "bg-sidebar-accent text-sidebar-accent-foreground"
-                            : "text-muted-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"
+              {/* Navigation Groups */}
+              <div className="px-3 space-y-1">
+                {navigationGroups.map((group, gi) => (
+                  <div key={gi}>
+                    {/* Group separator + label (not first group, not collapsed) */}
+                    {gi > 0 && (
+                      <div className={cn("pt-3 pb-1", !isCollapsed && "px-3")}>
+                        {!isCollapsed ? (
+                          <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-widest animate-in fade-in duration-300">
+                            {group.groupLabel}
+                          </p>
+                        ) : (
+                          <div className="border-t border-sidebar-border" />
                         )}
-                        title={isCollapsed ? item.label : undefined}
-                      >
-                        <Icon className={cn("h-5 w-5 shrink-0", !isCollapsed && "mr-3", isActive && "text-primary")} aria-hidden="true" />
-                        {!isCollapsed && <span>{item.label}</span>}
-                      </Link>
-                    );
-                  })}
-                </nav>
+                      </div>
+                    )}
+                    <nav className="space-y-0.5">
+                      {group.items.map((item) => renderNavLink(item))}
+                    </nav>
+                  </div>
+                ))}
               </div>
-
-              {/* Separator */}
-              <div className="mx-4 border-t border-sidebar-border" />
 
               {/* Resources Section */}
               <div className="px-3">
@@ -486,23 +563,20 @@ export default function DashboardLayout({
                   <h3 className="px-2 mb-2 text-xs font-semibold text-muted-foreground uppercase tracking-wider">
                     Navegación
                   </h3>
-                  <div className="space-y-1">
-                    {navigationSection.map((item) => (
-                      <Link
-                        key={item.href}
-                        href={item.href}
-                        onClick={() => setIsSidebarOpen(false)}
-                        aria-current={pathname === item.href ? "page" : undefined}
-                        className={cn(
-                          "group flex items-center px-3 py-3 text-base font-medium rounded-lg",
-                          pathname === item.href
-                            ? "bg-sidebar-accent text-sidebar-accent-foreground"
-                            : "text-muted-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"
+                  <div className="space-y-2">
+                    {navigationGroups.map((group, gi) => (
+                      <div key={gi}>
+                        {gi > 0 && (
+                          <div className="pt-2 pb-1 px-2">
+                            <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-widest">
+                              {group.groupLabel}
+                            </p>
+                          </div>
                         )}
-                      >
-                        <item.icon className="mr-4 h-6 w-6 shrink-0" aria-hidden="true" />
-                        {item.label}
-                      </Link>
+                        <div className="space-y-0.5">
+                          {group.items.map((item) => renderNavLink(item, true))}
+                        </div>
+                      </div>
                     ))}
                   </div>
                 </div>
