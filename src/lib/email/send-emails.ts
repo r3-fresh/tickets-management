@@ -287,6 +287,7 @@ export async function sendTicketResolvedEmail(params: SendTicketResolvedEmailPar
 export interface SendTicketRejectedEmailParams extends TicketContext {
   categoryName: string;
   subcategoryName: string;
+  rejectionMessage?: string;
 }
 
 export async function sendTicketRejectedEmail(params: SendTicketRejectedEmailParams) {
@@ -297,6 +298,7 @@ export async function sendTicketRejectedEmail(params: SendTicketRejectedEmailPar
     ticketCode: params.ticketCode,
     ticketUrl,
     attentionAreaName: params.attentionAreaName,
+    rejectionMessage: params.rejectionMessage,
   });
 
   const { to, cc } = getUnifiedRecipients(params);

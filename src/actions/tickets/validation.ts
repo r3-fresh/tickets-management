@@ -104,7 +104,7 @@ export async function approveTicketValidation(ticketId: number) {
 /**
  * User rejects ticket closure - moves from pending_validation back to in_progress
  */
-export async function rejectTicketValidation(ticketId: number) {
+export async function rejectTicketValidation(ticketId: number, rejectionMessage: string) {
   const session = await requireAuth();
 
   try {
@@ -131,14 +131,25 @@ export async function rejectTicketValidation(ticketId: number) {
       return { error: "El ticket no está pendiente de validación" };
     }
 
-    // Reject and move back to in_progress
-    await db.update(tickets)
-      .set({
-        status: TICKET_STATUS.IN_PROGRESS,
-        validationRequestedAt: null, // Clear validation request
-        updatedAt: new Date()
-      })
-      .where(eq(tickets.id, ticketId));
+    // Reject and move back to in_progress + insert rejection comment
+    await db.transaction(async (tx) => {
+      await tx.update(tickets)
+        .set({
+          status: TICKET_STATUS.IN_PROGRESS,
+          validationRequestedAt: null, // Clear validation request
+          updatedAt: new Date()
+        })
+        .where(eq(tickets.id, ticketId));
+
+      // Always insert rejection comment so agents see why it was rejected
+      await tx.insert(comments).values({
+        content: rejectionMessage,
+        ticketId: ticketId,
+        userId: session.user.id,
+        isInternal: false,
+        type: "comment",
+      });
+    });
 
     // Defer email notification after response is sent to user
     if (ticket.attentionAreaId) {
@@ -175,6 +186,7 @@ export async function rejectTicketValidation(ticketId: number) {
             attentionAreaName: ticketData.attentionArea?.name || 'Hub de Información',
             emailThreadId: ticketData.emailThreadId,
             initialMessageId: ticketData.initialMessageId,
+            rejectionMessage,
           });
         } catch (emailError) {
           console.error("Error sending rejected email:", emailError);
@@ -190,6 +202,7 @@ export async function rejectTicketValidation(ticketId: number) {
     return { error: "Error al rechazar la validación" };
   }
 }
+
 
 /**
  * Admin/Agent requests validation from user - moves from in_progress to pending_validation

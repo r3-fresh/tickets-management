@@ -2,9 +2,11 @@
 
 import { useState, useTransition } from "react";
 import { Button } from "@/components/ui/button";
+import { Textarea } from "@/components/ui/textarea";
+import { Label } from "@/components/ui/label";
 import { approveTicketValidation, rejectTicketValidation } from "@/actions/tickets";
 import { toast } from "sonner";
-import { CheckCircle2, XCircle, AlertCircle, ChevronUp, ChevronDown } from "lucide-react";
+import { CheckCircle2, XCircle, AlertCircle, ChevronUp, ChevronDown, Loader2 } from "lucide-react";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -16,6 +18,14 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import { cn } from "@/lib/utils/cn";
 
 interface UserValidationControlsProps {
@@ -25,6 +35,8 @@ interface UserValidationControlsProps {
 export function UserValidationControls({ ticketId }: UserValidationControlsProps) {
   const [isPending, startTransition] = useTransition();
   const [isExpanded, setIsExpanded] = useState(true);
+  const [isRejectDialogOpen, setIsRejectDialogOpen] = useState(false);
+  const [rejectionMessage, setRejectionMessage] = useState("");
 
   const handleApprove = () => {
     startTransition(async () => {
@@ -37,13 +49,21 @@ export function UserValidationControls({ ticketId }: UserValidationControlsProps
     });
   };
 
-  const handleReject = () => {
+  const handleRejectSubmit = () => {
+    const trimmed = rejectionMessage.trim();
+    if (trimmed.length < 10) {
+      toast.error("Por favor describe con más detalle qué necesita ajustarse (mínimo 10 caracteres)");
+      return;
+    }
+
     startTransition(async () => {
-      const result = await rejectTicketValidation(ticketId);
+      const result = await rejectTicketValidation(ticketId, trimmed);
       if (result?.error) {
         toast.error(result.error);
       } else {
         toast.success("Ticket regresado a 'En progreso' para ajustes");
+        setIsRejectDialogOpen(false);
+        setRejectionMessage("");
       }
     });
   };
@@ -82,6 +102,7 @@ export function UserValidationControls({ ticketId }: UserValidationControlsProps
               </p>
 
               <div className="flex gap-3">
+                {/* Confirmar solución */}
                 <AlertDialog>
                   <AlertDialogTrigger asChild>
                     <Button
@@ -108,35 +129,16 @@ export function UserValidationControls({ ticketId }: UserValidationControlsProps
                   </AlertDialogContent>
                 </AlertDialog>
 
-                <AlertDialog>
-                  <AlertDialogTrigger asChild>
-                    <Button
-                      variant="outline"
-                      className="flex-1 h-10"
-                      disabled={isPending}
-                    >
-                      <XCircle className="mr-2 h-4 w-4" />
-                      Solicitar mejoras
-                    </Button>
-                  </AlertDialogTrigger>
-                  <AlertDialogContent>
-                    <AlertDialogHeader>
-                      <AlertDialogTitle>¿Solicitar mejoras?</AlertDialogTitle>
-                      <AlertDialogDescription>
-                        El ticket volverá a "En progreso". Agrega un comentario indicando qué necesita ajustarse.
-                      </AlertDialogDescription>
-                    </AlertDialogHeader>
-                    <AlertDialogFooter>
-                      <AlertDialogCancel>Cancelar</AlertDialogCancel>
-                      <AlertDialogAction
-                        onClick={handleReject}
-                        className="bg-destructive hover:bg-destructive/90 text-destructive-foreground"
-                      >
-                        Solicitar mejoras
-                      </AlertDialogAction>
-                    </AlertDialogFooter>
-                  </AlertDialogContent>
-                </AlertDialog>
+                {/* Solicitar mejoras — Dialog con textarea */}
+                <Button
+                  variant="outline"
+                  className="flex-1 h-10"
+                  disabled={isPending}
+                  onClick={() => setIsRejectDialogOpen(true)}
+                >
+                  <XCircle className="mr-2 h-4 w-4" />
+                  Solicitar mejoras
+                </Button>
               </div>
             </div>
           </>
@@ -156,6 +158,58 @@ export function UserValidationControls({ ticketId }: UserValidationControlsProps
           </button>
         )}
       </div>
+
+      {/* Dialog de solicitud de mejoras */}
+      <Dialog open={isRejectDialogOpen} onOpenChange={(open) => {
+        setIsRejectDialogOpen(open);
+        if (!open) setRejectionMessage("");
+      }}>
+        <DialogContent className="sm:max-w-[500px]">
+          <DialogHeader>
+            <DialogTitle>Solicitar mejoras</DialogTitle>
+            <DialogDescription>
+              El ticket volverá a &quot;En progreso&quot;. Describe qué necesita ajustarse para que el agente pueda continuar.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="grid gap-3 py-2">
+            <Label htmlFor="rejection-message">
+              Motivo del rechazo <span className="text-destructive">*</span>
+            </Label>
+            <Textarea
+              id="rejection-message"
+              placeholder="Ej: La solución propuesta no cubre el problema original porque..."
+              value={rejectionMessage}
+              onChange={(e) => setRejectionMessage(e.target.value)}
+              rows={4}
+              className="resize-none"
+              disabled={isPending}
+            />
+            <p className="text-xs text-muted-foreground">
+              Este mensaje se añadirá al historial de actividad y se enviará por correo al agente.
+            </p>
+          </div>
+          <DialogFooter>
+            <Button
+              variant="outline"
+              onClick={() => {
+                setIsRejectDialogOpen(false);
+                setRejectionMessage("");
+              }}
+              disabled={isPending}
+            >
+              Cancelar
+            </Button>
+            <Button
+              variant="destructive"
+              onClick={handleRejectSubmit}
+              disabled={isPending || rejectionMessage.trim().length < 10}
+            >
+              {isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+              Solicitar mejoras
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
