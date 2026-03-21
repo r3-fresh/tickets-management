@@ -1,9 +1,9 @@
 "use server";
 
 import { db } from "@/db";
-import { satisfactionSurveys, tickets, attentionAreas } from "@/db/schema";
+import { satisfactionSurveys, tickets } from "@/db/schema";
 import { requireAuth, requireAgent } from "@/lib/auth/helpers";
-import { eq, and, count, avg, sql, desc } from "drizzle-orm";
+import { eq, and, count, desc } from "drizzle-orm";
 import { revalidatePath } from "next/cache";
 import { submitSurveySchema } from "@/lib/validation/schemas";
 import { createRateLimiter } from "@/lib/utils/rate-limit";
@@ -55,8 +55,8 @@ export async function submitSurveyAction(data: {
       return { error: "El ticket debe estar resuelto para completar la encuesta" };
     }
 
-    if (ticket.attentionArea?.slug !== "TSI") {
-      return { error: "Las encuestas solo están disponibles para tickets de TSI" };
+    if (!ticket.attentionAreaId) {
+      return { error: "El ticket no tiene un área de atención asignada" };
     }
 
     // Check if survey already exists
@@ -172,20 +172,12 @@ export async function getSurveyResultsAction() {
     const avgCommunication = surveysList.reduce((sum, s) => sum + s.communicationRating, 0) / totalSurveys;
     const avgSolution = surveysList.reduce((sum, s) => sum + s.solutionRating, 0) / totalSurveys;
 
-    // Calculate response rate (surveys / resolved TSI tickets)
+    // Calculate response rate (surveys / resolved tickets in scope)
     const resolvedTicketsConditions = [
       eq(tickets.status, "resolved"),
     ];
     if (!isAdmin && areaId) {
       resolvedTicketsConditions.push(eq(tickets.attentionAreaId, areaId));
-    }
-    // Only count TSI tickets for response rate
-    const tsiArea = await db.query.attentionAreas.findFirst({
-      where: eq(attentionAreas.slug, "TSI"),
-      columns: { id: true },
-    });
-    if (tsiArea) {
-      resolvedTicketsConditions.push(eq(tickets.attentionAreaId, tsiArea.id));
     }
 
     const [resolvedCount] = await db.select({ count: count() })

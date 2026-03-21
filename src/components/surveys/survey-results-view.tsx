@@ -146,7 +146,7 @@ export function SurveyResultsView({ surveys, kpis, distributions }: SurveyResult
         </div>
         <h3 className="text-lg font-semibold text-foreground">Sin encuestas aún</h3>
         <p className="text-sm text-muted-foreground mt-2 max-w-md mx-auto">
-          Las encuestas de satisfacción aparecerán aquí cuando los usuarios confirmen la resolución de tickets TSI.
+          Las encuestas de satisfacción aparecerán aquí cuando los usuarios confirmen la resolución de tickets de tu área.
         </p>
       </div>
     );

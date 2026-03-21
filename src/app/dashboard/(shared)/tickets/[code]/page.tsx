@@ -106,9 +106,9 @@ export default async function TicketDetailPage({ params }: { params: Promise<{ c
     slaInfo = config ?? null;
   }
 
-  // Check if satisfaction survey exists (for TSI resolved tickets)
+  // Check if satisfaction survey exists (for resolved tickets)
   let hasSurvey = false;
-  if (ticket.status === "resolved" && ticket.attentionArea?.slug === "TSI") {
+  if (ticket.status === "resolved") {
     const existingSurvey = await db.query.satisfactionSurveys.findFirst({
       where: eq(satisfactionSurveys.ticketId, ticket.id),
       columns: { id: true },
@@ -156,8 +156,8 @@ export default async function TicketDetailPage({ params }: { params: Promise<{ c
         <UserValidationControls ticketId={ticket.id} />
       )}
 
-      {/* Floating Survey (for resolved TSI tickets without survey) */}
-      {ticket.status === "resolved" && ticket.attentionArea?.slug === "TSI" && isCreator && !hasSurvey && (
+      {/* Floating Survey (for resolved tickets without survey, creator only) */}
+      {ticket.status === "resolved" && isCreator && !hasSurvey && (
         <FloatingSurvey ticketId={ticket.id} />
       )}
 

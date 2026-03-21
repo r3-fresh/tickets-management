@@ -1,6 +1,10 @@
 import { getSurveyResultsAction } from "@/actions/surveys";
 import { SurveyResultsView } from "@/components/surveys/survey-results-view";
 import { Breadcrumb } from "@/components/shared/breadcrumb";
+import { requireAgent } from "@/lib/auth/helpers";
+import { db } from "@/db";
+import { attentionAreas } from "@/db/schema";
+import { eq } from "drizzle-orm";
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
@@ -8,7 +12,25 @@ export const metadata: Metadata = {
 };
 
 export default async function SurveyResultsPage() {
+  const session = await requireAgent();
   const results = await getSurveyResultsAction();
+
+  // Resolve area name for subtitle
+  const isAdmin = session.user.role === "admin";
+  let areaName: string | null = null;
+  if (!isAdmin && session.user.attentionAreaId) {
+    const area = await db.query.attentionAreas.findFirst({
+      where: eq(attentionAreas.id, session.user.attentionAreaId),
+      columns: { name: true },
+    });
+    areaName = area?.name ?? null;
+  }
+
+  const subtitle = isAdmin
+    ? "Resultados globales de encuestas post-atención de todas las áreas."
+    : areaName
+      ? `Resultados de las encuestas post-atención del área de ${areaName}.`
+      : "Resultados de las encuestas post-atención de tickets de tu área.";
 
   if ("error" in results) {
     return (
@@ -27,9 +49,7 @@ export default async function SurveyResultsPage() {
 
       <div className="space-y-2">
         <h1 className="text-3xl font-bold tracking-tight">Encuestas de satisfacción</h1>
-        <p className="text-muted-foreground">
-          Resultados de las encuestas post-atención de tickets TSI
-        </p>
+        <p className="text-muted-foreground">{subtitle}</p>
       </div>
 
       <SurveyResultsView
