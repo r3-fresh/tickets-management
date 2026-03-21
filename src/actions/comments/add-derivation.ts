@@ -27,6 +27,7 @@ export async function addDerivationAction(formData: FormData) {
   const ticketId = Number(formData.get("ticketId"));
   const providerName = (formData.get("providerName") as string)?.trim();
   const estimatedDate = (formData.get("estimatedDate") as string)?.trim() || undefined;
+  const note = (formData.get("note") as string)?.trim() || undefined;
   const providerTicketId = formData.get("providerTicketId")
     ? Number(formData.get("providerTicketId"))
     : undefined;
@@ -54,6 +55,7 @@ export async function addDerivationAction(formData: FormData) {
       providerName,
       ...(estimatedDate && { estimatedDate }),
       ...(providerTicketId && { providerTicketId }),
+      ...(note && { note }),
     };
 
     // Construir mensaje descriptivo para la actividad
@@ -108,6 +110,7 @@ export async function addDerivationAction(formData: FormData) {
               ? formatDateShort(derivationEstimatedDate)
               : undefined,
             userName,
+            note,
           });
         } catch (emailError) {
           console.error("Error sending derivation notification email:", emailError);

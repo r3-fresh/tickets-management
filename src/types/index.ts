@@ -38,6 +38,7 @@ export interface DerivationMetadata {
   providerName: string;
   estimatedDate?: string; // ISO date string (YYYY-MM-DD)
   providerTicketId?: number;
+  note?: string; // Nota adicional del agente
 }
 
 // ============================================

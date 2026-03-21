@@ -4,6 +4,7 @@ import { useState, useTransition } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
 import {
   Dialog,
   DialogContent,
@@ -47,6 +48,13 @@ export function DerivationForm({ ticketId, providers }: DerivationFormProps) {
   const [isPending, startTransition] = useTransition();
   const [providerName, setProviderName] = useState("");
   const [estimatedDate, setEstimatedDate] = useState("");
+  const [note, setNote] = useState("");
+
+  const resetForm = () => {
+    setProviderName("");
+    setEstimatedDate("");
+    setNote("");
+  };
 
   const handleSubmit = () => {
     if (!providerName) {
@@ -61,6 +69,9 @@ export function DerivationForm({ ticketId, providers }: DerivationFormProps) {
       if (estimatedDate) {
         formData.append("estimatedDate", estimatedDate);
       }
+      if (note.trim()) {
+        formData.append("note", note.trim());
+      }
 
       const result = await addDerivationAction(formData);
       if (result?.error) {
@@ -68,14 +79,13 @@ export function DerivationForm({ ticketId, providers }: DerivationFormProps) {
       } else {
         toast.success("Derivación registrada");
         setOpen(false);
-        setProviderName("");
-        setEstimatedDate("");
+        resetForm();
       }
     });
   };
 
   return (
-    <Dialog open={open} onOpenChange={setOpen}>
+    <Dialog open={open} onOpenChange={(val) => { setOpen(val); if (!val) resetForm(); }}>
       <DialogTrigger asChild>
         <Button variant="outline" size="sm" className="gap-2 w-full">
           <Share2 className="h-3.5 w-3.5" />
@@ -90,6 +100,7 @@ export function DerivationForm({ ticketId, providers }: DerivationFormProps) {
           </DialogDescription>
         </DialogHeader>
         <div className="space-y-4 py-4">
+          {/* Proveedor */}
           <div className="space-y-2">
             <Label htmlFor="provider">Proveedor</Label>
             {providers.length > 0 ? (
@@ -114,6 +125,8 @@ export function DerivationForm({ ticketId, providers }: DerivationFormProps) {
               />
             )}
           </div>
+
+          {/* Fecha estimada */}
           <div className="space-y-2">
             <Label>Fecha estimada de atención (opcional)</Label>
             <Popover>
@@ -145,9 +158,25 @@ export function DerivationForm({ ticketId, providers }: DerivationFormProps) {
               </PopoverContent>
             </Popover>
           </div>
+
+          {/* Nota adicional */}
+          <div className="space-y-2">
+            <Label htmlFor="derivation-note">
+              Nota adicional <span className="text-muted-foreground font-normal">(opcional)</span>
+            </Label>
+            <Textarea
+              id="derivation-note"
+              placeholder="Ej: Se requiere que el proveedor coordine directamente con el usuario para el acceso..."
+              value={note}
+              onChange={(e) => setNote(e.target.value)}
+              rows={3}
+              className="resize-none text-sm"
+              disabled={isPending}
+            />
+          </div>
         </div>
         <DialogFooter>
-          <Button variant="ghost" onClick={() => setOpen(false)} disabled={isPending}>
+          <Button variant="ghost" onClick={() => { setOpen(false); resetForm(); }} disabled={isPending}>
             Cancelar
           </Button>
           <Button onClick={handleSubmit} disabled={isPending || !providerName}>

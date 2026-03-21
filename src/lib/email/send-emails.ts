@@ -330,6 +330,7 @@ export interface SendDerivationEmailParams extends TicketContext {
   providerName: string;
   estimatedDate?: string;
   userName: string; // Agente que registró la derivación
+  note?: string;   // Nota adicional del agente
 }
 
 export async function sendDerivationEmail(params: SendDerivationEmailParams) {
@@ -342,6 +343,7 @@ export async function sendDerivationEmail(params: SendDerivationEmailParams) {
     estimatedDate: params.estimatedDate,
     ticketUrl,
     attentionAreaName: params.attentionAreaName,
+    note: params.note,
   });
 
   const { to, cc } = getUnifiedRecipients(params);
