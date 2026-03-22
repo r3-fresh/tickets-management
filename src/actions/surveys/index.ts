@@ -178,6 +178,8 @@ export async function getSurveyResultsAction(filters?: SurveyFilterParams) {
         surveys: [],
         kpis: {
           totalSurveys: 0,
+          resolvedCount: 0,
+          avgGeneral: 0,
           avgOverall: 0,
           avgResponseTime: 0,
           avgCommunication: 0,
@@ -228,10 +230,15 @@ export async function getSurveyResultsAction(filters?: SurveyFilterParams) {
       distributions.overall[survey.overallRating - 1]++;
     }
 
+    // avgGeneral = promedio de los 4 criterios (tiempo, comunicación, solución, general)
+    const avgGeneral = (avgResponseTime + avgCommunication + avgSolution + avgOverall) / 4;
+
     return {
       surveys: surveysList,
       kpis: {
         totalSurveys,
+        resolvedCount: resolvedCount.count,
+        avgGeneral: Math.round(avgGeneral * 10) / 10,
         avgOverall: Math.round(avgOverall * 10) / 10,
         avgResponseTime: Math.round(avgResponseTime * 10) / 10,
         avgCommunication: Math.round(avgCommunication * 10) / 10,

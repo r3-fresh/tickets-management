@@ -1,9 +1,7 @@
 "use client";
 
 import { Card, CardContent } from "@/components/ui/card";
-import {
-  Star, Clock, MessageSquare, CheckCircle, Percent, Brain, BarChart3, Link as LinkIcon,
-} from "lucide-react";
+import { Star, Clock, MessageSquare, CheckCircle, BarChart3, TrendingUp, Layers } from "lucide-react";
 import { cn } from "@/lib/utils/cn";
 import { formatDate } from "@/lib/utils/format";
 import Link from "next/link";
@@ -17,13 +15,15 @@ interface SurveyData {
   overallRating: number;
   improvementSuggestion: string | null;
   createdAt: Date;
-  ticket: { ticketCode: string; title: string; assignedTo?: { id: string; name: string } | null };
+  ticket: { ticketCode: string; title: string };
   user: { name: string };
   attentionArea: { name: string; slug: string };
 }
 
 interface KPIs {
   totalSurveys: number;
+  resolvedCount: number;
+  avgGeneral: number;
   avgOverall: number;
   avgResponseTime: number;
   avgCommunication: number;
@@ -44,14 +44,8 @@ interface SurveyResultsViewProps {
   distributions: Distributions;
 }
 
-function MiniBar({ value }: { value: number }) {
-  const pct = (value / 5) * 100;
-  const color = pct >= 80 ? "bg-emerald-500" : pct >= 60 ? "bg-yellow-500" : "bg-red-500";
-  return (
-    <div className="mt-1.5 h-1.5 bg-muted rounded-full overflow-hidden">
-      <div className={cn("h-full rounded-full transition-all duration-500", color)} style={{ width: `${pct}%` }} />
-    </div>
-  );
+function ratingColor(pct: number) {
+  return pct >= 80 ? "bg-emerald-500" : pct >= 60 ? "bg-yellow-500" : "bg-red-500";
 }
 
 function RatingDisplay({ value }: { value: number }) {
@@ -64,49 +58,42 @@ function RatingDisplay({ value }: { value: number }) {
   return <span className={cn("font-bold tabular-nums", color)}>{value}</span>;
 }
 
-const KPI_DEFINITIONS = [
-  {
-    key: "avgOverall" as keyof KPIs,
-    label: "Satisfacción general",
-    icon: Star,
-    color: "bg-emerald-100 text-emerald-600 dark:bg-emerald-950/40 dark:text-emerald-400",
-  },
-  {
-    key: "totalSurveys" as keyof KPIs,
-    label: "Total de encuestas",
-    icon: CheckCircle,
-    color: "bg-blue-100 text-blue-600 dark:bg-blue-950/40 dark:text-blue-400",
-    noBar: true,
-  },
-  {
-    key: "responseRate" as keyof KPIs,
-    label: "Tasa de respuesta",
-    icon: Percent,
-    color: "bg-purple-100 text-purple-600 dark:bg-purple-950/40 dark:text-purple-400",
-    noBar: true,
-    suffix: "%",
-  },
-  {
-    key: "avgResponseTime" as keyof KPIs,
-    label: "Tiempo de respuesta",
-    icon: Clock,
-    color: "bg-amber-100 text-amber-600 dark:bg-amber-950/40 dark:text-amber-400",
-  },
-  {
-    key: "avgCommunication" as keyof KPIs,
-    label: "Comunicación",
-    icon: MessageSquare,
-    color: "bg-rose-100 text-rose-600 dark:bg-rose-950/40 dark:text-rose-400",
-  },
-  {
-    key: "avgSolution" as keyof KPIs,
-    label: "Calidad de solución",
-    icon: Brain,
-    color: "bg-teal-100 text-teal-600 dark:bg-teal-950/40 dark:text-teal-400",
-  },
-];
+function CriterionCard({
+  label,
+  avg,
+  icon: Icon,
+  iconBg,
+}: {
+  label: string;
+  avg: number;
+  icon: React.ComponentType<{ className?: string }>;
+  iconBg: string;
+}) {
+  const pct = Math.round((avg / 5) * 100);
+  return (
+    <Card>
+      <CardContent className="pt-4 pb-4">
+        <div className={cn("h-8 w-8 rounded-lg flex items-center justify-center mb-2", iconBg)}>
+          <Icon className="h-4 w-4" />
+        </div>
+        <p className="text-xs text-muted-foreground leading-tight mb-1">{label}</p>
+        <div className="flex items-baseline gap-1.5">
+          <span className="text-2xl font-bold tracking-tight">{avg}</span>
+          <span className="text-sm text-muted-foreground">/5</span>
+          <span className="text-sm font-semibold text-muted-foreground ml-1">{pct}%</span>
+        </div>
+        <div className="mt-2 h-1.5 bg-muted rounded-full overflow-hidden">
+          <div
+            className={cn("h-full rounded-full transition-all duration-700", ratingColor(pct))}
+            style={{ width: `${pct}%` }}
+          />
+        </div>
+      </CardContent>
+    </Card>
+  );
+}
 
-export function SurveyResultsView({ surveys, kpis }: SurveyResultsViewProps) {
+export function SurveyResultsView({ surveys, kpis, distributions }: SurveyResultsViewProps) {
   if (kpis.totalSurveys === 0) {
     return (
       <div className="text-center py-16 px-4 border border-dashed rounded-lg bg-muted/5">
@@ -115,40 +102,104 @@ export function SurveyResultsView({ surveys, kpis }: SurveyResultsViewProps) {
         </div>
         <h3 className="text-lg font-semibold text-foreground">Sin encuestas aún</h3>
         <p className="text-sm text-muted-foreground mt-2 max-w-md mx-auto">
-          Las encuestas de satisfacción aparecerán aquí cuando los usuarios confirmen la resolución de tickets de tu área.
+          Las encuestas de satisfacción aparecerán aquí cuando los usuarios confirmen la resolución de
+          tickets de tu área.
         </p>
       </div>
     );
   }
 
+  const generalPct = Math.round((kpis.avgGeneral / 5) * 100);
+
   return (
     <div className="space-y-8">
-      {/* KPI Cards — same compact style as provider surveys */}
-      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
-        {KPI_DEFINITIONS.map(({ key, label, icon: Icon, color, noBar, suffix }) => {
-          const rawVal = kpis[key] as number;
-          const displayVal = suffix ? `${rawVal}${suffix}` : rawVal;
-          return (
-            <Card key={key}>
-              <CardContent className="pt-4 pb-4">
-                <div className={cn("h-8 w-8 rounded-lg flex items-center justify-center mb-2", color)}>
-                  <Icon className="h-4 w-4" />
-                </div>
-                <p className="text-xs text-muted-foreground leading-tight mb-1">{label}</p>
-                <p className="text-xl font-bold tracking-tight">
-                  {displayVal}
-                  {!suffix && !noBar && (
-                    <span className="text-sm font-normal text-muted-foreground">/5</span>
-                  )}
-                </p>
-                {!noBar && <MiniBar value={rawVal} />}
-              </CardContent>
-            </Card>
-          );
-        })}
+      {/* Row 1: 4 criterion KPIs */}
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+        <CriterionCard
+          label="Tiempo de respuesta"
+          avg={kpis.avgResponseTime}
+          icon={Clock}
+          iconBg="bg-amber-100 text-amber-600 dark:bg-amber-950/40 dark:text-amber-400"
+        />
+        <CriterionCard
+          label="Comunicación"
+          avg={kpis.avgCommunication}
+          icon={MessageSquare}
+          iconBg="bg-blue-100 text-blue-600 dark:bg-blue-950/40 dark:text-blue-400"
+        />
+        <CriterionCard
+          label="Solución"
+          avg={kpis.avgSolution}
+          icon={CheckCircle}
+          iconBg="bg-purple-100 text-purple-600 dark:bg-purple-950/40 dark:text-purple-400"
+        />
+        <CriterionCard
+          label="Satisfacción general"
+          avg={kpis.avgOverall}
+          icon={Star}
+          iconBg="bg-emerald-100 text-emerald-600 dark:bg-emerald-950/40 dark:text-emerald-400"
+        />
       </div>
 
-      {/* Detail Table */}
+      {/* Row 2: Promedio General + Total Encuestas */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+        {/* Promedio General */}
+        <Card>
+          <CardContent className="pt-4 pb-4">
+            <div className="flex items-center gap-4">
+              <div className="h-12 w-12 rounded-xl flex items-center justify-center bg-teal-100 text-teal-600 dark:bg-teal-950/40 dark:text-teal-400 shrink-0">
+                <Layers className="h-6 w-6" />
+              </div>
+              <div className="flex-1 min-w-0">
+                <p className="text-sm text-muted-foreground">Promedio general</p>
+                <p className="text-xs text-muted-foreground/70 mb-1">Promedio de los 4 criterios</p>
+                <div className="flex items-baseline gap-2">
+                  <span className="text-3xl font-bold tracking-tight">{generalPct}%</span>
+                  <span className="text-sm text-muted-foreground">{kpis.avgGeneral}/5</span>
+                </div>
+                <div className="mt-2 h-2 bg-muted rounded-full overflow-hidden">
+                  <div
+                    className={cn("h-full rounded-full transition-all duration-700", ratingColor(generalPct))}
+                    style={{ width: `${generalPct}%` }}
+                  />
+                </div>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Total Encuestas / Tasa de respuesta */}
+        <Card>
+          <CardContent className="pt-4 pb-4">
+            <div className="flex items-center gap-4">
+              <div className="h-12 w-12 rounded-xl flex items-center justify-center bg-indigo-100 text-indigo-600 dark:bg-indigo-950/40 dark:text-indigo-400 shrink-0">
+                <TrendingUp className="h-6 w-6" />
+              </div>
+              <div className="flex-1 min-w-0">
+                <p className="text-sm text-muted-foreground">Total de encuestas</p>
+                <p className="text-xs text-muted-foreground/70 mb-1">Realizadas / Tickets resueltos</p>
+                <div className="flex items-baseline gap-2">
+                  <span className="text-3xl font-bold tracking-tight">
+                    {kpis.totalSurveys}
+                    <span className="text-base font-normal text-muted-foreground">
+                      /{kpis.resolvedCount}
+                    </span>
+                  </span>
+                  <span className="text-sm font-semibold text-muted-foreground">{kpis.responseRate}%</span>
+                </div>
+                <div className="mt-2 h-2 bg-muted rounded-full overflow-hidden">
+                  <div
+                    className="h-full rounded-full bg-indigo-500 transition-all duration-700"
+                    style={{ width: `${Math.min(kpis.responseRate, 100)}%` }}
+                  />
+                </div>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+
+      {/* Data Table */}
       <div>
         <h2 className="text-lg font-semibold mb-4 flex items-center gap-2">
           <MessageSquare className="h-5 w-5 text-muted-foreground" />
@@ -160,7 +211,6 @@ export function SurveyResultsView({ surveys, kpis }: SurveyResultsViewProps) {
               <thead>
                 <tr className="border-b bg-muted/30">
                   <th className="text-left py-3 px-4 font-medium text-muted-foreground">Ticket</th>
-                  <th className="text-left py-3 px-4 font-medium text-muted-foreground">Solicitante</th>
                   <th className="text-left py-3 px-4 font-medium text-muted-foreground">Fecha</th>
                   <th className="text-center py-3 px-4 font-medium text-muted-foreground">Tiempo</th>
                   <th className="text-center py-3 px-4 font-medium text-muted-foreground">Comunicación</th>
@@ -180,7 +230,6 @@ export function SurveyResultsView({ surveys, kpis }: SurveyResultsViewProps) {
                         {survey.ticket.ticketCode}
                       </Link>
                     </td>
-                    <td className="py-3 px-4 text-muted-foreground text-xs">{survey.user?.name ?? "—"}</td>
                     <td className="py-3 px-4 text-muted-foreground text-xs whitespace-nowrap">
                       {formatDate(survey.createdAt)}
                     </td>
