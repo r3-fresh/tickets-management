@@ -1,13 +1,9 @@
 "use client";
 
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Star, Clock, MessageSquare, CheckCircle, BarChart3, TrendingUp, Percent } from "lucide-react";
+import { Card, CardContent } from "@/components/ui/card";
+import { Star, Clock, MessageSquare, CheckCircle, BarChart3, TrendingUp, Layers } from "lucide-react";
 import { cn } from "@/lib/utils/cn";
 import { formatDate } from "@/lib/utils/format";
-import { SURVEY_QUESTIONS } from "@/lib/constants/tickets";
-import {
-  BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Cell,
-} from "recharts";
 import Link from "next/link";
 
 interface SurveyData {
@@ -26,6 +22,8 @@ interface SurveyData {
 
 interface KPIs {
   totalSurveys: number;
+  resolvedCount: number;
+  avgGeneral: number;
   avgOverall: number;
   avgResponseTime: number;
   avgCommunication: number;
@@ -46,95 +44,53 @@ interface SurveyResultsViewProps {
   distributions: Distributions;
 }
 
-const BAR_COLORS = ["#ef4444", "#f97316", "#eab308", "#22c55e", "#10b981"];
-
-function KPICard({ title, value, subtitle, icon: Icon, color }: {
-  title: string;
-  value: string | number;
-  subtitle?: string;
-  icon: React.ComponentType<{ className?: string }>;
-  color: string;
-}) {
-  return (
-    <Card>
-      <CardContent className="pt-6">
-        <div className="flex items-center gap-4">
-          <div className={cn("flex items-center justify-center h-12 w-12 rounded-xl shrink-0", color)}>
-            <Icon className="h-6 w-6" />
-          </div>
-          <div className="min-w-0">
-            <p className="text-sm text-muted-foreground">{title}</p>
-            <p className="text-2xl font-bold tracking-tight">{value}</p>
-            {subtitle && <p className="text-xs text-muted-foreground mt-0.5">{subtitle}</p>}
-          </div>
-        </div>
-      </CardContent>
-    </Card>
-  );
-}
-
-function DistributionChart({ title, data, lowLabel, highLabel }: {
-  title: string;
-  data: number[];
-  lowLabel: string;
-  highLabel: string;
-}) {
-  const chartData = data.map((count, i) => ({
-    rating: `${i + 1}`,
-    count,
-  }));
-
-  return (
-    <Card>
-      <CardHeader className="pb-2">
-        <CardTitle className="text-sm font-medium">{title}</CardTitle>
-      </CardHeader>
-      <CardContent>
-        <div className="min-w-0">
-          <ResponsiveContainer width="100%" height={192} minWidth={0}>
-            <BarChart data={chartData} margin={{ top: 8, right: 8, bottom: 20, left: 0 }}>
-              <CartesianGrid strokeDasharray="3 3" className="stroke-border" />
-              <XAxis
-                dataKey="rating"
-                tick={{ fontSize: 12 }}
-                className="fill-muted-foreground"
-              />
-              <YAxis
-                allowDecimals={false}
-                tick={{ fontSize: 12 }}
-                className="fill-muted-foreground"
-                width={30}
-              />
-              <Tooltip
-                contentStyle={{
-                  backgroundColor: "hsl(var(--card))",
-                  border: "1px solid hsl(var(--border))",
-                  borderRadius: "0.5rem",
-                  fontSize: "0.875rem",
-                }}
-                labelFormatter={(label) => `Calificación: ${label}`}
-                formatter={(value) => [`${value} respuestas`, "Cantidad"]}
-              />
-              <Bar dataKey="count" radius={[4, 4, 0, 0]}>
-                {chartData.map((_, index) => (
-                  <Cell key={`cell-${index}`} fill={BAR_COLORS[index]} />
-                ))}
-              </Bar>
-            </BarChart>
-          </ResponsiveContainer>
-        </div>
-        <div className="flex justify-between text-[10px] text-muted-foreground mt-1 px-2">
-          <span>{lowLabel}</span>
-          <span>{highLabel}</span>
-        </div>
-      </CardContent>
-    </Card>
-  );
+function ratingColor(pct: number) {
+  return pct >= 80 ? "bg-emerald-500" : pct >= 60 ? "bg-yellow-500" : "bg-red-500";
 }
 
 function RatingDisplay({ value }: { value: number }) {
-  const color = value <= 2 ? "text-red-600 dark:text-red-400" : value === 3 ? "text-yellow-600 dark:text-yellow-400" : "text-green-600 dark:text-green-400";
+  const color =
+    value <= 2
+      ? "text-red-600 dark:text-red-400"
+      : value === 3
+        ? "text-yellow-600 dark:text-yellow-400"
+        : "text-green-600 dark:text-green-400";
   return <span className={cn("font-bold tabular-nums", color)}>{value}</span>;
+}
+
+function CriterionCard({
+  label,
+  avg,
+  icon: Icon,
+  iconBg,
+}: {
+  label: string;
+  avg: number;
+  icon: React.ComponentType<{ className?: string }>;
+  iconBg: string;
+}) {
+  const pct = Math.round((avg / 5) * 100);
+  return (
+    <Card>
+      <CardContent className="pt-4 pb-4">
+        <div className={cn("h-8 w-8 rounded-lg flex items-center justify-center mb-2", iconBg)}>
+          <Icon className="h-4 w-4" />
+        </div>
+        <p className="text-xs text-muted-foreground leading-tight mb-1">{label}</p>
+        <div className="flex items-baseline gap-1.5">
+          <span className="text-2xl font-bold tracking-tight">{avg}</span>
+          <span className="text-sm text-muted-foreground">/5</span>
+          <span className="text-sm font-semibold text-muted-foreground ml-1">{pct}%</span>
+        </div>
+        <div className="mt-2 h-1.5 bg-muted rounded-full overflow-hidden">
+          <div
+            className={cn("h-full rounded-full transition-all duration-700", ratingColor(pct))}
+            style={{ width: `${pct}%` }}
+          />
+        </div>
+      </CardContent>
+    </Card>
+  );
 }
 
 export function SurveyResultsView({ surveys, kpis, distributions }: SurveyResultsViewProps) {
@@ -146,111 +102,101 @@ export function SurveyResultsView({ surveys, kpis, distributions }: SurveyResult
         </div>
         <h3 className="text-lg font-semibold text-foreground">Sin encuestas aún</h3>
         <p className="text-sm text-muted-foreground mt-2 max-w-md mx-auto">
-          Las encuestas de satisfacción aparecerán aquí cuando los usuarios confirmen la resolución de tickets de tu área.
+          Las encuestas de satisfacción aparecerán aquí cuando los usuarios confirmen la resolución de
+          tickets de tu área.
         </p>
       </div>
     );
   }
 
+  const generalPct = Math.round((kpis.avgGeneral / 5) * 100);
+
   return (
     <div className="space-y-8">
-      {/* KPI Cards */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        <KPICard
-          title="Satisfacción general"
-          value={`${kpis.avgOverall}/5`}
-          subtitle="Promedio general"
-          icon={Star}
-          color="bg-emerald-100 text-emerald-600 dark:bg-emerald-950/40 dark:text-emerald-400"
-        />
-        <KPICard
-          title="Total de encuestas"
-          value={kpis.totalSurveys}
-          subtitle="Encuestas completadas"
-          icon={CheckCircle}
-          color="bg-blue-100 text-blue-600 dark:bg-blue-950/40 dark:text-blue-400"
-        />
-        <KPICard
-          title="Tasa de respuesta"
-          value={`${kpis.responseRate}%`}
-          subtitle="De tickets resueltos"
-          icon={Percent}
-          color="bg-purple-100 text-purple-600 dark:bg-purple-950/40 dark:text-purple-400"
-        />
-        <KPICard
-          title="Tiempo de respuesta"
-          value={`${kpis.avgResponseTime}/5`}
-          subtitle="Promedio de calificación"
+      {/* Row 1: 4 criterion KPIs */}
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+        <CriterionCard
+          label="Tiempo de respuesta"
+          avg={kpis.avgResponseTime}
           icon={Clock}
-          color="bg-amber-100 text-amber-600 dark:bg-amber-950/40 dark:text-amber-400"
+          iconBg="bg-amber-100 text-amber-600 dark:bg-amber-950/40 dark:text-amber-400"
+        />
+        <CriterionCard
+          label="Comunicación"
+          avg={kpis.avgCommunication}
+          icon={MessageSquare}
+          iconBg="bg-blue-100 text-blue-600 dark:bg-blue-950/40 dark:text-blue-400"
+        />
+        <CriterionCard
+          label="Solución"
+          avg={kpis.avgSolution}
+          icon={CheckCircle}
+          iconBg="bg-purple-100 text-purple-600 dark:bg-purple-950/40 dark:text-purple-400"
+        />
+        <CriterionCard
+          label="Satisfacción general"
+          avg={kpis.avgOverall}
+          icon={Star}
+          iconBg="bg-emerald-100 text-emerald-600 dark:bg-emerald-950/40 dark:text-emerald-400"
         />
       </div>
 
-      {/* Average per question cards */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-        {SURVEY_QUESTIONS.map((q) => {
-          const avgKey = `avg${q.key.charAt(0).toUpperCase()}${q.key.slice(1).replace("Rating", "")}` as keyof KPIs;
-          // Map question keys to KPI keys
-          const kpiMap: Record<string, keyof KPIs> = {
-            responseTimeRating: "avgResponseTime",
-            communicationRating: "avgCommunication",
-            solutionRating: "avgSolution",
-            overallRating: "avgOverall",
-          };
-          const avg = kpis[kpiMap[q.key]];
-          const numericAvg = typeof avg === "number" ? avg : 0;
-          const percentage = (numericAvg / 5) * 100;
-
-          return (
-            <Card key={q.key}>
-              <CardContent className="pt-4 pb-4">
-                <p className="text-xs text-muted-foreground mb-1">{q.label}</p>
-                <div className="flex items-baseline gap-1.5">
-                  <span className="text-xl font-bold">{numericAvg}</span>
-                  <span className="text-sm text-muted-foreground">/5</span>
+      {/* Row 2: Promedio General + Total Encuestas */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+        {/* Promedio General */}
+        <Card>
+          <CardContent className="pt-4 pb-4">
+            <div className="flex items-center gap-4">
+              <div className="h-12 w-12 rounded-xl flex items-center justify-center bg-teal-100 text-teal-600 dark:bg-teal-950/40 dark:text-teal-400 shrink-0">
+                <Layers className="h-6 w-6" />
+              </div>
+              <div className="flex-1 min-w-0">
+                <p className="text-sm text-muted-foreground">Promedio general</p>
+                <p className="text-xs text-muted-foreground/70 mb-1">Promedio de los 4 criterios</p>
+                <div className="flex items-baseline gap-2">
+                  <span className="text-3xl font-bold tracking-tight">{generalPct}%</span>
+                  <span className="text-sm text-muted-foreground">{kpis.avgGeneral}/5</span>
                 </div>
-                <div className="mt-2 h-1.5 bg-muted rounded-full overflow-hidden">
+                <div className="mt-2 h-2 bg-muted rounded-full overflow-hidden">
                   <div
-                    className={cn(
-                      "h-full rounded-full transition-all duration-500",
-                      percentage >= 80 ? "bg-emerald-500" : percentage >= 60 ? "bg-yellow-500" : "bg-red-500"
-                    )}
-                    style={{ width: `${percentage}%` }}
+                    className={cn("h-full rounded-full transition-all duration-700", ratingColor(generalPct))}
+                    style={{ width: `${generalPct}%` }}
                   />
                 </div>
-              </CardContent>
-            </Card>
-          );
-        })}
-      </div>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
 
-      {/* Distribution Charts */}
-      <div>
-        <h2 className="text-lg font-semibold mb-4 flex items-center gap-2">
-          <TrendingUp className="h-5 w-5 text-muted-foreground" />
-          Distribución de respuestas
-        </h2>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          {SURVEY_QUESTIONS.map((q) => {
-            const distKey = q.key.replace("Rating", "") as keyof Distributions;
-            // Map question keys to distribution keys
-            const distMap: Record<string, keyof Distributions> = {
-              responseTimeRating: "responseTime",
-              communicationRating: "communication",
-              solutionRating: "solution",
-              overallRating: "overall",
-            };
-            return (
-              <DistributionChart
-                key={q.key}
-                title={q.label}
-                data={distributions[distMap[q.key]]}
-                lowLabel={q.lowLabel}
-                highLabel={q.highLabel}
-              />
-            );
-          })}
-        </div>
+        {/* Total Encuestas / Tasa de respuesta */}
+        <Card>
+          <CardContent className="pt-4 pb-4">
+            <div className="flex items-center gap-4">
+              <div className="h-12 w-12 rounded-xl flex items-center justify-center bg-indigo-100 text-indigo-600 dark:bg-indigo-950/40 dark:text-indigo-400 shrink-0">
+                <TrendingUp className="h-6 w-6" />
+              </div>
+              <div className="flex-1 min-w-0">
+                <p className="text-sm text-muted-foreground">Total de encuestas</p>
+                <p className="text-xs text-muted-foreground/70 mb-1">Realizadas / Tickets resueltos</p>
+                <div className="flex items-baseline gap-2">
+                  <span className="text-3xl font-bold tracking-tight">
+                    {kpis.totalSurveys}
+                    <span className="text-base font-normal text-muted-foreground">
+                      /{kpis.resolvedCount}
+                    </span>
+                  </span>
+                  <span className="text-sm font-semibold text-muted-foreground">{kpis.responseRate}%</span>
+                </div>
+                <div className="mt-2 h-2 bg-muted rounded-full overflow-hidden">
+                  <div
+                    className="h-full rounded-full bg-indigo-500 transition-all duration-700"
+                    style={{ width: `${Math.min(kpis.responseRate, 100)}%` }}
+                  />
+                </div>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
       </div>
 
       {/* Data Table */}

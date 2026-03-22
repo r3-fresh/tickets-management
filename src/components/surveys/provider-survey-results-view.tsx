@@ -1,6 +1,6 @@
 "use client";
 
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { Star, Clock, CalendarCheck, Package, Brain, Handshake, BarChart3 } from "lucide-react";
 import { cn } from "@/lib/utils/cn";
 import { formatDate } from "@/lib/utils/format";
@@ -67,6 +67,10 @@ function MiniBar({ value }: { value: number }) {
   );
 }
 
+function pctColor(pct: number) {
+  return pct >= 80 ? "bg-emerald-500" : pct >= 60 ? "bg-yellow-500" : "bg-red-500";
+}
+
 export function ProviderSurveyResultsView({ surveys, kpis }: ProviderSurveyResultsViewProps) {
   if (kpis.totalSurveys === 0) {
     return (
@@ -82,22 +86,57 @@ export function ProviderSurveyResultsView({ surveys, kpis }: ProviderSurveyResul
     );
   }
 
+  const overallPct = Math.round((kpis.avgOverall / 5) * 100);
+
   return (
     <div className="space-y-8">
-      {/* KPI Cards */}
-      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
-        {KPI_DEFINITIONS.map(({ key, label, icon: Icon, color }) => (
-          <Card key={key}>
-            <CardContent className="pt-4 pb-4">
-              <div className={cn("h-8 w-8 rounded-lg flex items-center justify-center mb-2", color)}>
-                <Icon className="h-4 w-4" />
+      {/* Promedio general destacado */}
+      <Card>
+        <CardContent className="pt-4 pb-4">
+          <div className="flex items-center gap-4">
+            <div className={cn("h-12 w-12 rounded-xl flex items-center justify-center shrink-0", KPI_DEFINITIONS[0].color)}>
+              <Star className="h-6 w-6" />
+            </div>
+            <div className="flex-1 min-w-0">
+              <p className="text-sm text-muted-foreground">Promedio general</p>
+              <p className="text-xs text-muted-foreground/70 mb-1">Promedio de los 5 criterios de evaluación</p>
+              <div className="flex items-baseline gap-2">
+                <span className="text-3xl font-bold tracking-tight">{overallPct}%</span>
+                <span className="text-sm text-muted-foreground">{kpis.avgOverall}/5</span>
               </div>
-              <p className="text-xs text-muted-foreground leading-tight mb-1">{label}</p>
-              <p className="text-xl font-bold tracking-tight">{kpis[key]}<span className="text-sm font-normal text-muted-foreground">/5</span></p>
-              <MiniBar value={kpis[key] as number} />
-            </CardContent>
-          </Card>
-        ))}
+              <div className="mt-2 h-2 bg-muted rounded-full overflow-hidden">
+                <div
+                  className={cn("h-full rounded-full transition-all duration-700", pctColor(overallPct))}
+                  style={{ width: `${overallPct}%` }}
+                />
+              </div>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* KPI Cards — 5 criteria */}
+      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3">
+        {KPI_DEFINITIONS.slice(1).map(({ key, label, icon: Icon, color }) => {
+          const val = kpis[key] as number;
+          const pct = Math.round((val / 5) * 100);
+          return (
+            <Card key={key}>
+              <CardContent className="pt-4 pb-4">
+                <div className={cn("h-8 w-8 rounded-lg flex items-center justify-center mb-2", color)}>
+                  <Icon className="h-4 w-4" />
+                </div>
+                <p className="text-xs text-muted-foreground leading-tight mb-1">{label}</p>
+                <div className="flex items-baseline gap-1">
+                  <span className="text-xl font-bold tracking-tight">{val}</span>
+                  <span className="text-sm font-normal text-muted-foreground">/5</span>
+                  <span className="text-xs font-semibold text-muted-foreground ml-1">{pct}%</span>
+                </div>
+                <MiniBar value={val} />
+              </CardContent>
+            </Card>
+          );
+        })}
       </div>
 
       {/* Detail Table */}

@@ -3,24 +3,42 @@
 import { db } from "@/db";
 import { providerSatisfactionSurveys, providerTickets } from "@/db/schema";
 import { requireAgent } from "@/lib/auth/helpers";
-import { eq, and, count, desc } from "drizzle-orm";
+import { eq, and, count, desc, sql } from "drizzle-orm";
+
+export interface ProviderSurveyFilterParams {
+  agentId?: string;
+  dateFrom?: string;
+  dateTo?: string;
+}
 
 /**
  * Get provider satisfaction survey results.
  * Agents see only their area; admins see all.
+ * Optional filters: agentId (submitted by), dateFrom/dateTo.
  */
-export async function getProviderSurveyResultsAction() {
+export async function getProviderSurveyResultsAction(filters?: ProviderSurveyFilterParams) {
   const session = await requireAgent();
 
   try {
     const isAdmin = session.user.role === "admin";
     const areaId = session.user.attentionAreaId;
 
-    const whereCondition = isAdmin
-      ? undefined
-      : areaId
-        ? eq(providerSatisfactionSurveys.attentionAreaId, areaId)
-        : undefined;
+    const conditions = [];
+
+    if (!isAdmin && areaId) {
+      conditions.push(eq(providerSatisfactionSurveys.attentionAreaId, areaId));
+    }
+    if (filters?.agentId) {
+      conditions.push(eq(providerSatisfactionSurveys.submittedById, filters.agentId));
+    }
+    if (filters?.dateFrom) {
+      conditions.push(sql`${providerSatisfactionSurveys.createdAt} >= ${filters.dateFrom}::timestamp`);
+    }
+    if (filters?.dateTo) {
+      conditions.push(sql`${providerSatisfactionSurveys.createdAt} < (${filters.dateTo}::timestamp + interval '1 day')`);
+    }
+
+    const whereCondition = conditions.length > 0 ? and(...conditions) : undefined;
 
     const surveysList = await db.query.providerSatisfactionSurveys.findMany({
       where: whereCondition,
@@ -31,7 +49,7 @@ export async function getProviderSurveyResultsAction() {
             provider: { columns: { name: true } },
           },
         },
-        submittedBy: { columns: { name: true } },
+        submittedBy: { columns: { id: true, name: true } },
         attentionArea: { columns: { name: true, slug: true } },
       },
       orderBy: [desc(providerSatisfactionSurveys.createdAt)],
@@ -83,5 +101,38 @@ export async function getProviderSurveyResultsAction() {
   } catch (error) {
     console.error("Error fetching provider survey results:", error);
     return { error: "Error al obtener los resultados de encuestas de proveedores" };
+  }
+}
+
+/**
+ * Returns agents who have submitted at least one provider survey.
+ * Used for the agent filter dropdown.
+ */
+export async function getAgentsWithProviderSurveysAction() {
+  const session = await requireAgent();
+
+  try {
+    const isAdmin = session.user.role === "admin";
+    const areaId = session.user.attentionAreaId;
+
+    const whereCondition = isAdmin || !areaId
+      ? undefined
+      : eq(providerSatisfactionSurveys.attentionAreaId, areaId);
+
+    const rows = await db.query.providerSatisfactionSurveys.findMany({
+      where: whereCondition,
+      with: { submittedBy: { columns: { id: true, name: true } } },
+    });
+
+    const agentMap = new Map<string, string>();
+    for (const row of rows) {
+      if (!agentMap.has(row.submittedBy.id)) {
+        agentMap.set(row.submittedBy.id, row.submittedBy.name || row.submittedBy.id);
+      }
+    }
+
+    return Array.from(agentMap.entries()).map(([id, name]) => ({ id, name }));
+  } catch {
+    return [];
   }
 }
