@@ -23,6 +23,7 @@ export default async function ExploradorPage({ searchParams }: PageProps) {
   const filters: TicketFilterParams = {
     status: typeof params.status === "string" ? params.status : undefined,
     assignedTo: typeof params.assignedTo === "string" ? params.assignedTo : undefined,
+    attentionAreaId: typeof params.attentionAreaId === "string" ? params.attentionAreaId : undefined,
     category: typeof params.category === "string" ? params.category : undefined,
     search: typeof params.search === "string" ? params.search : undefined,
     year: typeof params.year === "string" ? params.year : undefined,
@@ -74,6 +75,7 @@ export default async function ExploradorPage({ searchParams }: PageProps) {
         totalCount={paginatedResult.totalCount}
         assignedUsers={filterOptions.assignedUsers}
         categories={filterOptions.categories}
+        attentionAreas={filterOptions.attentionAreas}
       />
     </div>
   );

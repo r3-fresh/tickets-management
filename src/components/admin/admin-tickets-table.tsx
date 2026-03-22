@@ -44,9 +44,10 @@ interface AdminTicketsTableProps {
   totalCount: number;
   assignedUsers: Array<{ id: string; name: string }>;
   categories: Array<{ id: number; name: string }>;
+  attentionAreas?: Array<{ id: number; name: string }>;
 }
 
-export function AdminTicketsTable({ tickets, totalCount, assignedUsers, categories }: AdminTicketsTableProps) {
+export function AdminTicketsTable({ tickets, totalCount, assignedUsers, categories, attentionAreas }: AdminTicketsTableProps) {
   const router = useRouter();
   const searchParams = useSearchParams();
 
@@ -91,7 +92,8 @@ export function AdminTicketsTable({ tickets, totalCount, assignedUsers, categori
         className="max-w-sm bg-transparent"
       />
 
-      <TicketFilters assignedUsers={assignedUsers} categories={categories} />
+      <TicketFilters assignedUsers={assignedUsers} categories={categories} attentionAreas={attentionAreas} />
+
 
       <div className="rounded-md border bg-card shadow-sm">
         <Table>

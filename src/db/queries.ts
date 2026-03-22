@@ -1,5 +1,5 @@
 import { db } from "@/db";
-import { tickets, comments, ticketViews, ticketCategories, ticketSubcategories, appSettings, users } from "@/db/schema";
+import { tickets, comments, ticketViews, ticketCategories, ticketSubcategories, appSettings, users, attentionAreas } from "@/db/schema";
 import { eq, desc, sql, and, or, ilike, SQL, count as drizzleCount } from "drizzle-orm";
 
 /**
@@ -13,6 +13,7 @@ export type TicketWithUnread = Awaited<ReturnType<typeof queryTicketsWithUnread>
 export interface TicketFilterParams {
   status?: string;
   assignedTo?: string;
+  attentionAreaId?: string;
   category?: string;
   subcategory?: string;
   search?: string;
@@ -47,6 +48,10 @@ function buildTicketFilterConditions(filters: TicketFilterParams): SQL[] {
     } else {
       conditions.push(eq(tickets.assignedToId, filters.assignedTo));
     }
+  }
+
+  if (filters.attentionAreaId) {
+    conditions.push(eq(tickets.attentionAreaId, Number(filters.attentionAreaId)));
   }
 
   if (filters.category) {
@@ -327,19 +332,29 @@ export async function getTicketFilterOptions(baseWhere?: SQL) {
     .from(tickets)
     .innerJoin(ticketSubcategories, eq(tickets.subcategoryId, ticketSubcategories.id));
 
+  const areaQuery = db
+    .selectDistinct({
+      id: attentionAreas.id,
+      name: attentionAreas.name,
+    })
+    .from(tickets)
+    .innerJoin(attentionAreas, eq(tickets.attentionAreaId, attentionAreas.id));
+
   if (baseWhere) {
     assignedQuery.where(baseWhere);
     categoryQuery.where(baseWhere);
     subcategoryQuery.where(baseWhere);
+    areaQuery.where(baseWhere);
   }
 
-  const [assignedUsers, categoriesList, subcategoriesList] = await Promise.all([
+  const [assignedUsers, categoriesList, subcategoriesList, areasList] = await Promise.all([
     assignedQuery,
     categoryQuery,
     subcategoryQuery,
+    areaQuery,
   ]);
 
-  return { assignedUsers, categories: categoriesList, subcategories: subcategoriesList };
+  return { assignedUsers, categories: categoriesList, subcategories: subcategoriesList, attentionAreas: areasList };
 }
 
 /**
