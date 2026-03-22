@@ -312,7 +312,7 @@ export default function DashboardLayout({
                     {gi > 0 && (
                       <div className={cn("pt-3 pb-1", !isCollapsed && "px-3")}>
                         {!isCollapsed ? (
-                          <h3 className="px-3 text-xs font-semibold text-muted-foreground uppercase tracking-wider animate-in fade-in duration-300">
+                          <h3 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider animate-in fade-in duration-300">
                             {group.groupLabel}
                           </h3>
                         ) : (
@@ -568,7 +568,7 @@ export default function DashboardLayout({
                       <div key={gi}>
                         {gi > 0 && (
                           <div className="pt-2 pb-1 px-2">
-                            <h3 className="px-2 text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+                            <h3 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
                               {group.groupLabel}
                             </h3>
                           </div>
