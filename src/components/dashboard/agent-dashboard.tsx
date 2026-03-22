@@ -8,8 +8,6 @@ import Link from "next/link";
 import {
   Card,
   CardContent,
-  CardHeader,
-  CardTitle,
 } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -21,20 +19,29 @@ import {
   Users,
   Building2,
   Plus,
-  PieChart as PieChartIcon,
+  CheckCircle2,
+  TrendingUp,
 } from "lucide-react";
-import { StatusDonutChart } from "@/components/dashboard/charts/status-donut-chart";
+import { cn } from "@/lib/utils/cn";
 
 interface AgentDashboardProps {
   userId: string;
   attentionAreaId: number;
 }
 
-const ACTIVE_STATUSES = ["open", "in_progress"] as const;                       // Para tickets del área
-const USER_ACTIVE_STATUSES = ["open", "in_progress", "pending_validation"] as const; // Para «Mis tickets» y «En seguimiento»
+const ACTIVE_STATUSES = ["open", "in_progress"] as const;
+const USER_ACTIVE_STATUSES = ["open", "in_progress", "pending_validation"] as const;
+
+function MiniBar({ value, max, color }: { value: number; max: number; color: string }) {
+  const pct = max > 0 ? Math.min((value / max) * 100, 100) : 0;
+  return (
+    <div className="mt-2 h-1.5 bg-muted rounded-full overflow-hidden">
+      <div className={cn("h-full rounded-full transition-all duration-700", color)} style={{ width: `${pct}%` }} />
+    </div>
+  );
+}
 
 export async function AgentDashboard({ userId, attentionAreaId }: AgentDashboardProps) {
-  // All queries are independent — run in parallel
   const [
     areaDetails,
     areaStatusStats,
@@ -47,27 +54,19 @@ export async function AgentDashboard({ userId, attentionAreaId }: AgentDashboard
     recentWatchedTickets,
     watchedTicketsWithRelations,
   ] = await Promise.all([
-    // Fetch details of the attention area
-    db.query.attentionAreas.findFirst({
-      where: eq(attentionAreas.id, attentionAreaId),
-    }),
-    // AREA Statistics
+    db.query.attentionAreas.findFirst({ where: eq(attentionAreas.id, attentionAreaId) }),
     db.select({ status: tickets.status, count: count() })
       .from(tickets)
       .where(eq(tickets.attentionAreaId, attentionAreaId))
       .groupBy(tickets.status),
-    // USER Statistics
     db.select({ status: tickets.status, count: count() })
       .from(tickets)
       .where(eq(tickets.createdById, userId))
       .groupBy(tickets.status),
-    // Count tickets where user is a watcher
     db.select({ count: count() })
       .from(tickets)
       .where(sql`${userId} = ANY(${tickets.watchers})`),
-    // Recent area tickets (last 5, active only)
     queryTicketsWithUnread(userId, and(eq(tickets.attentionAreaId, attentionAreaId), inArray(tickets.status, [...ACTIVE_STATUSES])), 5),
-    // Area tickets with assigned (active only)
     db.query.tickets.findMany({
       where: and(eq(tickets.attentionAreaId, attentionAreaId), inArray(tickets.status, [...ACTIVE_STATUSES])),
       columns: { id: true },
@@ -75,9 +74,7 @@ export async function AgentDashboard({ userId, attentionAreaId }: AgentDashboard
       orderBy: [desc(tickets.createdAt)],
       limit: 5,
     }),
-    // Recent user tickets (last 3, active only — includes pending_validation)
     queryTicketsWithUnread(userId, and(eq(tickets.createdById, userId), inArray(tickets.status, [...USER_ACTIVE_STATUSES])), 3),
-    // User tickets with assigned (active only)
     db.query.tickets.findMany({
       where: and(eq(tickets.createdById, userId), inArray(tickets.status, [...USER_ACTIVE_STATUSES])),
       columns: { id: true },
@@ -85,9 +82,7 @@ export async function AgentDashboard({ userId, attentionAreaId }: AgentDashboard
       orderBy: [desc(tickets.createdAt)],
       limit: 3,
     }),
-    // Recent watched tickets (last 3, active only — includes pending_validation)
     queryTicketsWithUnread(userId, and(not(eq(tickets.createdById, userId)), sql`${userId} = ANY(${tickets.watchers})`, inArray(tickets.status, [...USER_ACTIVE_STATUSES])), 3),
-    // Watched tickets with relations (active only)
     db.query.tickets.findMany({
       where: and(not(eq(tickets.createdById, userId)), sql`${userId} = ANY(${tickets.watchers})`, inArray(tickets.status, [...USER_ACTIVE_STATUSES])),
       columns: { id: true },
@@ -100,7 +95,32 @@ export async function AgentDashboard({ userId, attentionAreaId }: AgentDashboard
   const getAreaStat = (status: string) => areaStatusStats.find(s => s.status === status)?.count || 0;
   const getUserStat = (status: string) => userStatusStats.find(s => s.status === status)?.count || 0;
 
-  // Merge ticket data with relation data
+  const areaTotalTickets = areaStatusStats.reduce((sum, s) => sum + s.count, 0);
+  const areaActiveCount = getAreaStat("open") + getAreaStat("in_progress");
+  const areaResolvedCount = getAreaStat("resolved");
+  const areaResolutionRate = areaTotalTickets > 0 ? Math.round((areaResolvedCount / areaTotalTickets) * 100) : 0;
+
+  const userActiveCount = getUserStat("open") + getUserStat("in_progress") + getUserStat("pending_validation");
+  const userTotalTickets = userStatusStats.reduce((sum, s) => sum + s.count, 0);
+  const userResolvedCount = getUserStat("resolved");
+  const userResolutionRate = userTotalTickets > 0 ? Math.round((userResolvedCount / userTotalTickets) * 100) : 0;
+
+  const areaKPIs = [
+    { label: "Abiertos", value: getAreaStat("open"), max: areaActiveCount || 1, barColor: "bg-orange-500", iconBg: "bg-orange-100 text-orange-600 dark:bg-orange-950/40 dark:text-orange-400", icon: AlertCircle },
+    { label: "En proceso", value: getAreaStat("in_progress"), max: areaActiveCount || 1, barColor: "bg-blue-500", iconBg: "bg-blue-100 text-blue-600 dark:bg-blue-950/40 dark:text-blue-400", icon: Clock },
+    { label: "Resueltos", value: areaResolvedCount, max: areaTotalTickets || 1, barColor: "bg-emerald-500", iconBg: "bg-emerald-100 text-emerald-600 dark:bg-emerald-950/40 dark:text-emerald-400", icon: CheckCircle2 },
+    { label: "Tasa resolución", value: `${areaResolutionRate}%`, rawValue: areaResolutionRate, max: 100, barColor: areaResolutionRate >= 70 ? "bg-emerald-500" : areaResolutionRate >= 40 ? "bg-yellow-500" : "bg-red-500", iconBg: "bg-teal-100 text-teal-600 dark:bg-teal-950/40 dark:text-teal-400", icon: TrendingUp },
+  ];
+
+  const userKPIs = [
+    { label: "Abiertos", value: getUserStat("open"), max: userActiveCount || 1, barColor: "bg-orange-500", iconBg: "bg-orange-100 text-orange-600 dark:bg-orange-950/40 dark:text-orange-400", icon: AlertCircle },
+    { label: "En proceso", value: getUserStat("in_progress"), max: userActiveCount || 1, barColor: "bg-blue-500", iconBg: "bg-blue-100 text-blue-600 dark:bg-blue-950/40 dark:text-blue-400", icon: Clock },
+    { label: "Pend. validación", value: getUserStat("pending_validation"), max: userActiveCount || 1, barColor: "bg-yellow-500", iconBg: "bg-yellow-100 text-yellow-600 dark:bg-yellow-950/40 dark:text-yellow-400", icon: HourglassIcon },
+    { label: "En seguimiento", value: watcherCountResult?.count || 0, max: userTotalTickets || 1, barColor: "bg-purple-500", iconBg: "bg-purple-100 text-purple-600 dark:bg-purple-950/40 dark:text-purple-400", icon: Eye },
+    { label: "Resueltos", value: userResolvedCount, max: userTotalTickets || 1, barColor: "bg-emerald-500", iconBg: "bg-emerald-100 text-emerald-600 dark:bg-emerald-950/40 dark:text-emerald-400", icon: CheckCircle2 },
+    { label: "Tasa resolución", value: `${userResolutionRate}%`, rawValue: userResolutionRate, max: 100, barColor: userResolutionRate >= 70 ? "bg-emerald-500" : userResolutionRate >= 40 ? "bg-yellow-500" : "bg-red-500", iconBg: "bg-teal-100 text-teal-600 dark:bg-teal-950/40 dark:text-teal-400", icon: TrendingUp },
+  ];
+
   const mergedAreaTickets = recentAreaTickets.map((ticket) => {
     const withAssigned = areaTicketsWithAssigned.find((t) => t.id === ticket.id);
     return { ...ticket, assignedTo: withAssigned?.assignedTo || null, createdBy: withAssigned?.createdBy || null, commentCount: ticket.commentCount };
@@ -118,16 +138,12 @@ export async function AgentDashboard({ userId, attentionAreaId }: AgentDashboard
 
   return (
     <div className="space-y-6">
-      {/* Breadcrumbs */}
       <Breadcrumb items={[{ label: "Mi panel" }]} />
 
-      {/* Header */}
       <div className="flex justify-between items-start">
         <div>
           <h1 className="text-3xl font-bold tracking-tight">Mi panel</h1>
-          <p className="text-muted-foreground mt-1">
-            Vista rápida de {areaDetails?.name || "tu área"}
-          </p>
+          <p className="text-muted-foreground mt-1">Vista rápida de {areaDetails?.name || "tu área"}</p>
         </div>
         <Button asChild>
           <Link href="/dashboard/tickets/nuevo" className="flex items-center gap-2">
@@ -137,52 +153,48 @@ export async function AgentDashboard({ userId, attentionAreaId }: AgentDashboard
         </Button>
       </div>
 
-      {/* Status Distribution Charts */}
-      <div className="grid gap-6 md:grid-cols-2">
-        {/* Area Donut */}
-        <Card>
-          <CardHeader className="pb-2">
-            <CardTitle className="flex items-center gap-2 text-base">
-              <Building2 className="h-4 w-4 text-muted-foreground" />
-              {areaDetails?.name || "Tickets del área"}
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <StatusDonutChart
-              centerValue={getAreaStat("open") + getAreaStat("in_progress")}
-              centerLabel="activos"
-              data={[
-                { name: "Abiertos", value: getAreaStat("open"), color: "#f97316" },
-                { name: "En proceso", value: getAreaStat("in_progress"), color: "#3b82f6" },
-                { name: "Resueltos", value: getAreaStat("resolved"), color: "#22c55e" },
-                { name: "Anulados", value: getAreaStat("voided"), color: "#94a3b8" },
-              ]}
-            />
-          </CardContent>
-        </Card>
+      {/* Area KPIs */}
+      <div>
+        <div className="flex items-center gap-2 mb-3">
+          <Building2 className="h-4 w-4 text-muted-foreground" />
+          <h2 className="text-sm font-semibold text-muted-foreground uppercase tracking-wider">Tickets del área · {areaDetails?.name}</h2>
+        </div>
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+          {areaKPIs.map(({ label, value, rawValue, max, barColor, iconBg, icon: Icon }) => (
+            <Card key={label}>
+              <CardContent className="pt-4 pb-4">
+                <div className={cn("h-8 w-8 rounded-lg flex items-center justify-center mb-2", iconBg)}>
+                  <Icon className="h-4 w-4" />
+                </div>
+                <p className="text-xs text-muted-foreground leading-tight mb-1">{label}</p>
+                <p className="text-2xl font-bold tracking-tight">{value}</p>
+                <MiniBar value={rawValue ?? (value as number)} max={max} color={barColor} />
+              </CardContent>
+            </Card>
+          ))}
+        </div>
+      </div>
 
-        {/* Personal Donut */}
-        <Card>
-          <CardHeader className="pb-2">
-            <CardTitle className="flex items-center gap-2 text-base">
-              <PieChartIcon className="h-4 w-4 text-muted-foreground" />
-              Mis tickets personales
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <StatusDonutChart
-              centerValue={getUserStat("open") + getUserStat("in_progress") + getUserStat("pending_validation")}
-              centerLabel="activos"
-              data={[
-                { name: "Abiertos", value: getUserStat("open"), color: "#f97316" },
-                { name: "En proceso", value: getUserStat("in_progress"), color: "#3b82f6" },
-                { name: "Pend. validación", value: getUserStat("pending_validation"), color: "#eab308" },
-                { name: "Resueltos", value: getUserStat("resolved"), color: "#22c55e" },
-                { name: "Anulados", value: getUserStat("voided"), color: "#94a3b8" },
-              ]}
-            />
-          </CardContent>
-        </Card>
+      {/* Personal KPIs */}
+      <div>
+        <div className="flex items-center gap-2 mb-3">
+          <Users className="h-4 w-4 text-muted-foreground" />
+          <h2 className="text-sm font-semibold text-muted-foreground uppercase tracking-wider">Mis tickets personales</h2>
+        </div>
+        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
+          {userKPIs.map(({ label, value, rawValue, max, barColor, iconBg, icon: Icon }) => (
+            <Card key={label}>
+              <CardContent className="pt-4 pb-4">
+                <div className={cn("h-8 w-8 rounded-lg flex items-center justify-center mb-2", iconBg)}>
+                  <Icon className="h-4 w-4" />
+                </div>
+                <p className="text-xs text-muted-foreground leading-tight mb-1">{label}</p>
+                <p className="text-2xl font-bold tracking-tight">{value}</p>
+                <MiniBar value={rawValue ?? (value as number)} max={max} color={barColor} />
+              </CardContent>
+            </Card>
+          ))}
+        </div>
       </div>
 
       {/* Area Tickets Table */}
@@ -193,19 +205,10 @@ export async function AgentDashboard({ userId, attentionAreaId }: AgentDashboard
             <h2 className="text-xl font-semibold">Tickets recientes del área</h2>
           </div>
           <Button asChild variant="link" className="text-primary">
-            <Link href="/dashboard/area">
-              Ver todo el historial
-            </Link>
+            <Link href="/dashboard/area">Ver todo el historial</Link>
           </Button>
         </div>
-
-        <TicketsList
-          tickets={mergedAreaTickets}
-          isAdmin={false}
-          isAgent={true}
-          hideFilters={true}
-          hideHeader={true}
-        />
+        <TicketsList tickets={mergedAreaTickets} isAdmin={false} isAgent={true} hideFilters={true} hideHeader={true} />
       </div>
 
       {/* My Tickets Table */}
@@ -216,21 +219,13 @@ export async function AgentDashboard({ userId, attentionAreaId }: AgentDashboard
             <h2 className="text-xl font-semibold">Mis tickets</h2>
           </div>
           <Button asChild variant="link" className="text-primary">
-            <Link href="/dashboard/mis-tickets">
-              Ver todo el historial
-            </Link>
+            <Link href="/dashboard/mis-tickets">Ver todo el historial</Link>
           </Button>
         </div>
-
-        <TicketsList
-          tickets={mergedUserTickets}
-          isAdmin={false}
-          hideFilters={true}
-          hideHeader={true}
-        />
+        <TicketsList tickets={mergedUserTickets} isAdmin={false} hideFilters={true} hideHeader={true} />
       </div>
 
-      {/* Watched Tickets Table */}
+      {/* Watched Tickets */}
       <div className="space-y-4">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
@@ -241,19 +236,10 @@ export async function AgentDashboard({ userId, attentionAreaId }: AgentDashboard
             )}
           </div>
           <Button asChild variant="link" className="text-primary">
-            <Link href="/dashboard/seguimiento">
-              Ver todo el historial
-            </Link>
+            <Link href="/dashboard/seguimiento">Ver todo el historial</Link>
           </Button>
         </div>
-
-        <TicketsList
-          tickets={mergedWatchedTickets}
-          isAdmin={false}
-          isWatchedView={true}
-          hideFilters={true}
-          hideHeader={true}
-        />
+        <TicketsList tickets={mergedWatchedTickets} isAdmin={false} isWatchedView={true} hideFilters={true} hideHeader={true} />
       </div>
     </div>
   );
