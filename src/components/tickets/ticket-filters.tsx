@@ -15,14 +15,16 @@ interface TicketFiltersProps {
   assignedUsers: Array<{ id: string; name: string }>;
   categories?: Array<{ id: number; name: string }>;
   subcategories?: Array<{ id: number; name: string; categoryId: number | null }>;
+  attentionAreas?: Array<{ id: number; name: string }>;
 }
 
-export function TicketFilters({ assignedUsers, categories = [], subcategories = [] }: TicketFiltersProps) {
+export function TicketFilters({ assignedUsers, categories = [], subcategories = [], attentionAreas = [] }: TicketFiltersProps) {
   const router = useRouter();
   const searchParams = useSearchParams();
 
   const status = searchParams.get("status") ?? "";
   const assignedTo = searchParams.get("assignedTo") ?? "";
+  const attentionAreaId = searchParams.get("attentionAreaId") ?? "";
   const category = searchParams.get("category") ?? "";
   const subcategory = searchParams.get("subcategory") ?? "";
   const year = searchParams.get("year") ?? "all";
@@ -80,7 +82,7 @@ export function TicketFilters({ assignedUsers, categories = [], subcategories = 
     router.push("?", { scroll: false });
   };
 
-  const hasActiveFilters = status || assignedTo || dateRange || category || subcategory || (year && year !== "all");
+  const hasActiveFilters = status || assignedTo || attentionAreaId || dateRange || category || subcategory || (year && year !== "all");
 
   const availableSubcategories = category && category !== 'all'
     ? subcategories.filter(s => s.categoryId === Number(category))
@@ -118,6 +120,23 @@ export function TicketFilters({ assignedUsers, categories = [], subcategories = 
           ))}
         </SelectContent>
       </Select>
+
+      {attentionAreas.length > 0 && (
+        <Select
+          value={attentionAreaId || "all"}
+          onValueChange={(v) => updateParams({ attentionAreaId: v === "all" ? "" : v, page: "" })}
+        >
+          <SelectTrigger className="w-[200px] bg-transparent">
+            <SelectValue placeholder="Área de atención" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="all">Todas las áreas</SelectItem>
+            {attentionAreas.map((area) => (
+              <SelectItem key={area.id} value={String(area.id)}>{area.name}</SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+      )}
 
       {categories.length > 0 && (
         <Select value={category || "all"} onValueChange={handleCategoryChange}>
