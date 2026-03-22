@@ -5,6 +5,9 @@ import { getActiveProvidersByArea } from "@/actions/config/get-config";
 import { eq, desc } from "drizzle-orm";
 import { ProviderTicketsList } from "@/components/agent/provider-tickets-list";
 import { Breadcrumb } from "@/components/shared/breadcrumb";
+import { Button } from "@/components/ui/button";
+import { FileSpreadsheet } from "lucide-react";
+import Link from "next/link";
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
@@ -56,11 +59,19 @@ export default async function ProviderTicketsPage() {
     <div className="flex flex-col gap-6">
       <Breadcrumb items={[{ label: "Tickets de proveedores" }]} />
 
-      <div>
-        <h1 className="text-3xl font-bold tracking-tight">Tickets de proveedores</h1>
-        <p className="text-muted-foreground mt-1">
-          Gestión de tickets de proveedores externos de tu área
-        </p>
+      <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+        <div>
+          <h1 className="text-3xl font-bold tracking-tight">Tickets de proveedores</h1>
+          <p className="text-muted-foreground mt-1">
+            Gestión de tickets de proveedores externos de tu área
+          </p>
+        </div>
+        <Link href="/dashboard/proveedores/export">
+          <Button variant="outline" className="gap-2 shrink-0">
+            <FileSpreadsheet className="h-4 w-4" />
+            Exportar Excel
+          </Button>
+        </Link>
       </div>
 
       <ProviderTicketsList
