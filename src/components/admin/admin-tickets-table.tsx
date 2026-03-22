@@ -44,15 +44,17 @@ interface AdminTicketsTableProps {
   totalCount: number;
   assignedUsers: Array<{ id: string; name: string }>;
   categories: Array<{ id: number; name: string }>;
+  attentionAreas?: Array<{ id: number; name: string }>;
 }
 
-export function AdminTicketsTable({ tickets, totalCount, assignedUsers, categories }: AdminTicketsTableProps) {
+export function AdminTicketsTable({ tickets, totalCount, assignedUsers, categories, attentionAreas }: AdminTicketsTableProps) {
   const router = useRouter();
   const searchParams = useSearchParams();
 
   const currentPage = Number(searchParams.get("page") ?? "1");
   const itemsPerPage = Number(searchParams.get("perPage") ?? "10");
   const searchQuery = searchParams.get("search") ?? "";
+  const currentAreaId = searchParams.get("attentionAreaId") ?? "";
 
   const updateParams = useCallback((updates: Record<string, string>) => {
     const params = new URLSearchParams(searchParams.toString());
@@ -92,6 +94,26 @@ export function AdminTicketsTable({ tickets, totalCount, assignedUsers, categori
       />
 
       <TicketFilters assignedUsers={assignedUsers} categories={categories} />
+
+      {/* Area of Attention filter */}
+      {attentionAreas && attentionAreas.length > 0 && (
+        <div className="flex items-center gap-2">
+          <label htmlFor="area-filter" className="text-sm font-medium text-muted-foreground whitespace-nowrap">
+            Área de atención:
+          </label>
+          <select
+            id="area-filter"
+            value={currentAreaId}
+            onChange={(e) => updateParams({ attentionAreaId: e.target.value, page: "1" })}
+            className="h-9 rounded-md border border-input bg-background px-3 py-1 text-sm shadow-sm focus:outline-none focus:ring-1 focus:ring-ring"
+          >
+            <option value="">Todas las áreas</option>
+            {attentionAreas.map((area) => (
+              <option key={area.id} value={String(area.id)}>{area.name}</option>
+            ))}
+          </select>
+        </div>
+      )}
 
       <div className="rounded-md border bg-card shadow-sm">
         <Table>
