@@ -3,7 +3,7 @@
 import { db } from "@/db";
 import { satisfactionSurveys, tickets } from "@/db/schema";
 import { requireAuth, requireAgent } from "@/lib/auth/helpers";
-import { eq, and, count, desc } from "drizzle-orm";
+import { eq, and, count, desc, sql } from "drizzle-orm";
 import { revalidatePath } from "next/cache";
 import { submitSurveySchema } from "@/lib/validation/schemas";
 import { createRateLimiter } from "@/lib/utils/rate-limit";
@@ -108,31 +108,52 @@ export async function getSurveyByTicketAction(ticketId: number) {
   }
 }
 
+export interface SurveyFilterParams {
+  agentId?: string;
+  dateFrom?: string;
+  dateTo?: string;
+}
+
 /**
  * Get aggregated survey results for the results page.
  * - Agents: see only encuestas from their attentionArea.
  * - Admins: see all encuestas across every area.
+ * Optional filters: agentId (assigned agent on ticket), dateFrom/dateTo.
  */
-export async function getSurveyResultsAction() {
+export async function getSurveyResultsAction(filters?: SurveyFilterParams) {
   const session = await requireAgent();
 
   try {
     const isAdmin = session.user.role === "admin";
     const areaId = session.user.attentionAreaId;
 
-    // Build where condition
-    const whereCondition = isAdmin
-      ? undefined
-      : areaId
-        ? eq(satisfactionSurveys.attentionAreaId, areaId)
-        : undefined;
+    // Build where conditions (AND logic)
+    const conditions = [];
+
+    // Area scoping
+    if (!isAdmin && areaId) {
+      conditions.push(eq(satisfactionSurveys.attentionAreaId, areaId));
+    }
+
+    // Date filters on survey creation date
+    if (filters?.dateFrom) {
+      conditions.push(sql`${satisfactionSurveys.createdAt} >= ${filters.dateFrom}::timestamp`);
+    }
+    if (filters?.dateTo) {
+      conditions.push(sql`${satisfactionSurveys.createdAt} < (${filters.dateTo}::timestamp + interval '1 day')`);
+    }
+
+    const whereCondition = conditions.length > 0 ? and(...conditions) : undefined;
 
     // Get all surveys with ticket info
-    const surveysList = await db.query.satisfactionSurveys.findMany({
+    const allSurveys = await db.query.satisfactionSurveys.findMany({
       where: whereCondition,
       with: {
         ticket: {
           columns: { ticketCode: true, title: true },
+          with: {
+            assignedTo: { columns: { id: true, name: true } },
+          },
         },
         user: {
           columns: { name: true },
@@ -143,6 +164,11 @@ export async function getSurveyResultsAction() {
       },
       orderBy: [desc(satisfactionSurveys.createdAt)],
     });
+
+    // Apply agent filter in-memory (filter by assigned agent on the ticket)
+    const surveysList = filters?.agentId
+      ? allSurveys.filter(s => s.ticket.assignedTo?.id === filters.agentId)
+      : allSurveys;
 
     // Calculate KPIs
     const totalSurveys = surveysList.length;
@@ -174,9 +200,7 @@ export async function getSurveyResultsAction() {
     const avgSolution = surveysList.reduce((sum, s) => sum + s.solutionRating, 0) / totalSurveys;
 
     // Calculate response rate (surveys / resolved tickets in scope)
-    const resolvedTicketsConditions = [
-      eq(tickets.status, "resolved"),
-    ];
+    const resolvedTicketsConditions = [eq(tickets.status, "resolved")];
     if (!isAdmin && areaId) {
       resolvedTicketsConditions.push(eq(tickets.attentionAreaId, areaId));
     }
@@ -189,7 +213,7 @@ export async function getSurveyResultsAction() {
       ? (totalSurveys / resolvedCount.count) * 100
       : 0;
 
-    // Calculate distributions (count of each rating value per question)
+    // Calculate distributions
     const distributions = {
       responseTime: [0, 0, 0, 0, 0] as number[],
       communication: [0, 0, 0, 0, 0] as number[],
@@ -219,5 +243,45 @@ export async function getSurveyResultsAction() {
   } catch (error) {
     console.error("Error fetching survey results:", error);
     return { error: "Error al obtener los resultados de encuestas" };
+  }
+}
+
+/**
+ * Returns the list of agents who have attended at least one surveyed ticket.
+ * Used to populate the agent filter dropdown on the surveys page.
+ */
+export async function getAgentsWithSurveysAction() {
+  const session = await requireAgent();
+
+  try {
+    const isAdmin = session.user.role === "admin";
+    const areaId = session.user.attentionAreaId;
+
+    const scopeCondition = isAdmin || !areaId
+      ? undefined
+      : eq(satisfactionSurveys.attentionAreaId, areaId);
+
+    const rows = await db.query.satisfactionSurveys.findMany({
+      where: scopeCondition,
+      with: {
+        ticket: {
+          columns: {},
+          with: { assignedTo: { columns: { id: true, name: true } } },
+        },
+      },
+    });
+
+    // Deduplicate by agent id
+    const agentMap = new Map<string, string>();
+    for (const row of rows) {
+      const agent = row.ticket.assignedTo;
+      if (agent && !agentMap.has(agent.id)) {
+        agentMap.set(agent.id, agent.name || agent.id);
+      }
+    }
+
+    return Array.from(agentMap.entries()).map(([id, name]) => ({ id, name }));
+  } catch {
+    return [];
   }
 }

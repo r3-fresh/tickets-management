@@ -25,7 +25,9 @@ import {
   Inbox,
   ExternalLink,
   FileText,
-  BarChart3
+  BarChart3,
+  Star,
+  Package,
 } from "lucide-react";
 import { authClient } from "@/lib/auth/client";
 import { useRouter } from "next/navigation";
@@ -83,9 +85,7 @@ const AGENT_NAV_GROUPS: NavGroup[] = [
   },
   {
     groupLabel: "Análisis",
-    items: [
-      { href: "/dashboard/encuestas", label: "Encuestas", icon: BarChart3 },
-    ],
+    items: [],
   },
 ];
 
@@ -103,9 +103,7 @@ const ADMIN_NAV_GROUPS: NavGroup[] = [
   },
   {
     groupLabel: "Análisis",
-    items: [
-      { href: "/dashboard/encuestas", label: "Encuestas", icon: BarChart3 },
-    ],
+    items: [],
   },
 ];
 
@@ -121,6 +119,7 @@ export default function DashboardLayout({
   const [isSidebarOpen, setIsSidebarOpen] = useState(false); // Mobile toggle
   const [isCollapsed, setIsCollapsed] = useState(false); // Desktop collapse
   const [isKnowledgeBaseOpen, setIsKnowledgeBaseOpen] = useState(() => pathname.startsWith("/dashboard/manual/")); // Knowledge base collapsible
+  const [isEncuestasOpen, setIsEncuestasOpen] = useState(() => pathname.startsWith("/dashboard/encuestas")); // Encuestas collapsible
   const [knowledgeBaseUrl, setKnowledgeBaseUrl] = useState(DEFAULT_KNOWLEDGE_BASE_URL);
 
   // Close mobile sidebar on Escape key
@@ -306,7 +305,7 @@ export default function DashboardLayout({
             <>
               {/* Navigation Groups */}
               <div className="px-3 space-y-1">
-                {navigationGroups.map((group, gi) => (
+                {navigationGroups.filter(g => g.items.length > 0).map((group, gi) => (
                   <div key={gi}>
                     {/* Group separator + label (not first group, not collapsed) */}
                     {gi > 0 && (
@@ -326,6 +325,74 @@ export default function DashboardLayout({
                   </div>
                 ))}
               </div>
+
+              {/* Encuestas collapsible — for agents and admins */}
+              {(userRole === "agent" || userRole === "admin") && (
+                <div className="px-3">
+                  <div className={cn("pt-3 pb-1", !isCollapsed && "px-3")}>
+                    {!isCollapsed ? (
+                      <h3 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider animate-in fade-in duration-300">
+                        Análisis
+                      </h3>
+                    ) : (
+                      <div className="border-t border-sidebar-border" />
+                    )}
+                  </div>
+                  <Collapsible open={isEncuestasOpen} onOpenChange={setIsEncuestasOpen}>
+                    <CollapsibleTrigger
+                      className={cn(
+                        "flex items-center w-full px-3 py-2 text-sm font-medium rounded-md transition-colors cursor-pointer",
+                        isCollapsed ? "justify-center" : "",
+                        pathname.startsWith("/dashboard/encuestas")
+                          ? "text-sidebar-accent-foreground bg-sidebar-accent"
+                          : "text-muted-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"
+                      )}
+                      title={isCollapsed ? "Encuestas" : undefined}
+                    >
+                      <BarChart3 className={cn("h-5 w-5 shrink-0", !isCollapsed && "mr-3")} aria-hidden="true" />
+                      {!isCollapsed && (
+                        <>
+                          <span className="flex-1 text-left">Encuestas</span>
+                          <ChevronDown className={cn(
+                            "h-4 w-4 text-muted-foreground transition-transform duration-200",
+                            isEncuestasOpen && "rotate-180"
+                          )} />
+                        </>
+                      )}
+                    </CollapsibleTrigger>
+                    <CollapsibleContent>
+                      {!isCollapsed && (
+                        <div className="ml-8 space-y-1 mt-1">
+                          <Link
+                            href="/dashboard/encuestas/usuarios"
+                            className={cn(
+                              "group flex items-center px-3 py-1.5 text-sm font-medium rounded-md transition-colors",
+                              pathname === "/dashboard/encuestas/usuarios"
+                                ? "bg-sidebar-accent text-sidebar-accent-foreground"
+                                : "text-muted-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"
+                            )}
+                          >
+                            <Star className="h-4 w-4 shrink-0 mr-2" aria-hidden="true" />
+                            <span>Encuestas de usuarios</span>
+                          </Link>
+                          <Link
+                            href="/dashboard/encuestas/proveedores"
+                            className={cn(
+                              "group flex items-center px-3 py-1.5 text-sm font-medium rounded-md transition-colors",
+                              pathname === "/dashboard/encuestas/proveedores"
+                                ? "bg-sidebar-accent text-sidebar-accent-foreground"
+                                : "text-muted-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"
+                            )}
+                          >
+                            <Package className="h-4 w-4 shrink-0 mr-2" aria-hidden="true" />
+                            <span>Evaluaciones de proveedores</span>
+                          </Link>
+                        </div>
+                      )}
+                    </CollapsibleContent>
+                  </Collapsible>
+                </div>
+              )}
 
               {/* Resources Section */}
               <div className="px-3">
@@ -564,7 +631,7 @@ export default function DashboardLayout({
                     Navegación
                   </h3>
                   <div className="space-y-2">
-                    {navigationGroups.map((group, gi) => (
+                    {navigationGroups.filter(g => g.items.length > 0).map((group, gi) => (
                       <div key={gi}>
                         {gi > 0 && (
                           <div className="pt-2 pb-1 px-2">
@@ -580,6 +647,62 @@ export default function DashboardLayout({
                     ))}
                   </div>
                 </div>
+
+                {/* Encuestas collapsible — mobile */}
+                {(userRole === "agent" || userRole === "admin") && (
+                  <div>
+                    <h3 className="px-2 mb-2 text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+                      Análisis
+                    </h3>
+                    <Collapsible open={isEncuestasOpen} onOpenChange={setIsEncuestasOpen}>
+                      <CollapsibleTrigger
+                        className={cn(
+                          "flex items-center w-full px-3 py-3 text-base font-medium rounded-lg transition-colors cursor-pointer",
+                          pathname.startsWith("/dashboard/encuestas")
+                            ? "text-sidebar-accent-foreground bg-sidebar-accent"
+                            : "text-muted-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"
+                        )}
+                      >
+                        <BarChart3 className="mr-4 h-6 w-6 shrink-0" aria-hidden="true" />
+                        <span className="flex-1 text-left">Encuestas</span>
+                        <ChevronDown className={cn(
+                          "h-4 w-4 text-muted-foreground transition-transform duration-200",
+                          isEncuestasOpen && "rotate-180"
+                        )} />
+                      </CollapsibleTrigger>
+                      <CollapsibleContent>
+                        <div className="ml-10 space-y-1 mt-1">
+                          <Link
+                            href="/dashboard/encuestas/usuarios"
+                            onClick={() => setIsSidebarOpen(false)}
+                            className={cn(
+                              "group flex items-center px-3 py-2 text-sm font-medium rounded-md transition-colors",
+                              pathname === "/dashboard/encuestas/usuarios"
+                                ? "bg-sidebar-accent text-sidebar-accent-foreground"
+                                : "text-muted-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"
+                            )}
+                          >
+                            <Star className="h-4 w-4 shrink-0 mr-2" />
+                            <span>Encuestas de usuarios</span>
+                          </Link>
+                          <Link
+                            href="/dashboard/encuestas/proveedores"
+                            onClick={() => setIsSidebarOpen(false)}
+                            className={cn(
+                              "group flex items-center px-3 py-2 text-sm font-medium rounded-md transition-colors",
+                              pathname === "/dashboard/encuestas/proveedores"
+                                ? "bg-sidebar-accent text-sidebar-accent-foreground"
+                                : "text-muted-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"
+                            )}
+                          >
+                            <Package className="h-4 w-4 shrink-0 mr-2" />
+                            <span>Evaluaciones de proveedores</span>
+                          </Link>
+                        </div>
+                      </CollapsibleContent>
+                    </Collapsible>
+                  </div>
+                )}
 
                 <div>
                   <h3 className="px-2 mb-2 text-xs font-semibold text-muted-foreground uppercase tracking-wider">
