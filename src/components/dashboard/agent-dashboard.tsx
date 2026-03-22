@@ -32,6 +32,12 @@ interface AgentDashboardProps {
 const ACTIVE_STATUSES = ["open", "in_progress"] as const;
 const USER_ACTIVE_STATUSES = ["open", "in_progress", "pending_validation"] as const;
 
+/** Returns avg days between createdAt and closedAt for resolved tickets */
+function avgDays(ms: number | null): string {
+  if (!ms || ms <= 0) return "—";
+  return ms.toFixed(1);
+}
+
 function MiniBar({ value, max, color }: { value: number; max: number; color: string }) {
   const pct = max > 0 ? Math.min((value / max) * 100, 100) : 0;
   return (
@@ -53,6 +59,8 @@ export async function AgentDashboard({ userId, attentionAreaId }: AgentDashboard
     userTicketsWithAssigned,
     recentWatchedTickets,
     watchedTicketsWithRelations,
+    [areaAvgTimeRes],
+    [userAvgTimeRes],
   ] = await Promise.all([
     db.query.attentionAreas.findFirst({ where: eq(attentionAreas.id, attentionAreaId) }),
     db.select({ status: tickets.status, count: count() })
@@ -90,6 +98,18 @@ export async function AgentDashboard({ userId, attentionAreaId }: AgentDashboard
       orderBy: [desc(tickets.createdAt)],
       limit: 3,
     }),
+    // Avg attention days for area (resolved tickets with closedAt)
+    db.select({
+      avgDays: sql<number>`COALESCE(AVG(EXTRACT(EPOCH FROM (${tickets.closedAt} - ${tickets.createdAt})) / 86400), 0)`,
+    })
+      .from(tickets)
+      .where(and(eq(tickets.attentionAreaId, attentionAreaId), eq(tickets.status, "resolved"), sql`${tickets.closedAt} IS NOT NULL`)),
+    // Avg attention days for user's created tickets
+    db.select({
+      avgDays: sql<number>`COALESCE(AVG(EXTRACT(EPOCH FROM (${tickets.closedAt} - ${tickets.createdAt})) / 86400), 0)`,
+    })
+      .from(tickets)
+      .where(and(eq(tickets.createdById, userId), eq(tickets.status, "resolved"), sql`${tickets.closedAt} IS NOT NULL`)),
   ]);
 
   const getAreaStat = (status: string) => areaStatusStats.find(s => s.status === status)?.count || 0;
@@ -105,11 +125,15 @@ export async function AgentDashboard({ userId, attentionAreaId }: AgentDashboard
   const userResolvedCount = getUserStat("resolved");
   const userResolutionRate = userTotalTickets > 0 ? Math.round((userResolvedCount / userTotalTickets) * 100) : 0;
 
+  const areaAvgTime = Number(areaAvgTimeRes?.avgDays ?? 0);
+  const userAvgTime = Number(userAvgTimeRes?.avgDays ?? 0);
+
   const areaKPIs = [
     { label: "Abiertos", value: getAreaStat("open"), max: areaActiveCount || 1, barColor: "bg-orange-500", iconBg: "bg-orange-100 text-orange-600 dark:bg-orange-950/40 dark:text-orange-400", icon: AlertCircle },
     { label: "En proceso", value: getAreaStat("in_progress"), max: areaActiveCount || 1, barColor: "bg-blue-500", iconBg: "bg-blue-100 text-blue-600 dark:bg-blue-950/40 dark:text-blue-400", icon: Clock },
     { label: "Resueltos", value: areaResolvedCount, max: areaTotalTickets || 1, barColor: "bg-emerald-500", iconBg: "bg-emerald-100 text-emerald-600 dark:bg-emerald-950/40 dark:text-emerald-400", icon: CheckCircle2 },
     { label: "Tasa resolución", value: `${areaResolutionRate}%`, rawValue: areaResolutionRate, max: 100, barColor: areaResolutionRate >= 70 ? "bg-emerald-500" : areaResolutionRate >= 40 ? "bg-yellow-500" : "bg-red-500", iconBg: "bg-teal-100 text-teal-600 dark:bg-teal-950/40 dark:text-teal-400", icon: TrendingUp },
+    { label: "T. prom. atención", value: areaAvgTime > 0 ? `${avgDays(areaAvgTime)}d` : "—", rawValue: 0, max: 1, barColor: "bg-indigo-500", iconBg: "bg-indigo-100 text-indigo-600 dark:bg-indigo-950/40 dark:text-indigo-400", icon: Users },
   ];
 
   const userKPIs = [
@@ -119,6 +143,7 @@ export async function AgentDashboard({ userId, attentionAreaId }: AgentDashboard
     { label: "En seguimiento", value: watcherCountResult?.count || 0, max: userTotalTickets || 1, barColor: "bg-purple-500", iconBg: "bg-purple-100 text-purple-600 dark:bg-purple-950/40 dark:text-purple-400", icon: Eye },
     { label: "Resueltos", value: userResolvedCount, max: userTotalTickets || 1, barColor: "bg-emerald-500", iconBg: "bg-emerald-100 text-emerald-600 dark:bg-emerald-950/40 dark:text-emerald-400", icon: CheckCircle2 },
     { label: "Tasa resolución", value: `${userResolutionRate}%`, rawValue: userResolutionRate, max: 100, barColor: userResolutionRate >= 70 ? "bg-emerald-500" : userResolutionRate >= 40 ? "bg-yellow-500" : "bg-red-500", iconBg: "bg-teal-100 text-teal-600 dark:bg-teal-950/40 dark:text-teal-400", icon: TrendingUp },
+    { label: "T. prom. atención", value: userAvgTime > 0 ? `${avgDays(userAvgTime)}d` : "—", rawValue: 0, max: 1, barColor: "bg-indigo-500", iconBg: "bg-indigo-100 text-indigo-600 dark:bg-indigo-950/40 dark:text-indigo-400", icon: Users },
   ];
 
   const mergedAreaTickets = recentAreaTickets.map((ticket) => {
@@ -159,7 +184,7 @@ export async function AgentDashboard({ userId, attentionAreaId }: AgentDashboard
           <Building2 className="h-4 w-4 text-muted-foreground" />
           <h2 className="text-sm font-semibold text-muted-foreground uppercase tracking-wider">Tickets del área · {areaDetails?.name}</h2>
         </div>
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+        <div className="grid grid-cols-2 sm:grid-cols-5 gap-3">
           {areaKPIs.map(({ label, value, rawValue, max, barColor, iconBg, icon: Icon }) => (
             <Card key={label}>
               <CardContent className="pt-4 pb-4">
@@ -181,7 +206,7 @@ export async function AgentDashboard({ userId, attentionAreaId }: AgentDashboard
           <Users className="h-4 w-4 text-muted-foreground" />
           <h2 className="text-sm font-semibold text-muted-foreground uppercase tracking-wider">Mis tickets personales</h2>
         </div>
-        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
+        <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-7 gap-3">
           {userKPIs.map(({ label, value, rawValue, max, barColor, iconBg, icon: Icon }) => (
             <Card key={label}>
               <CardContent className="pt-4 pb-4">

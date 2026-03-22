@@ -1,6 +1,6 @@
 import { db } from "@/db";
 import { tickets, users, comments, attentionAreas } from "@/db/schema";
-import { sql, count, eq, desc } from "drizzle-orm";
+import { sql, count, eq, desc, and } from "drizzle-orm";
 import {
   Card,
   CardContent,
@@ -19,6 +19,7 @@ import {
   Activity,
   HourglassIcon,
   TrendingUp,
+  Timer,
 } from "lucide-react";
 import { Breadcrumb } from "@/components/shared/breadcrumb";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -42,6 +43,7 @@ export async function AdminDashboard() {
     [totalCommentsRes],
     recentUsers,
     ticketsByArea,
+    [avgTimeRes],
   ] = await Promise.all([
     db.select({ count: count() }).from(tickets),
     db.select({ status: tickets.status, count: count() }).from(tickets).groupBy(tickets.status),
@@ -57,7 +59,17 @@ export async function AdminDashboard() {
       .from(tickets)
       .where(sql`${tickets.attentionAreaId} IS NOT NULL`)
       .groupBy(tickets.attentionAreaId, tickets.status),
+    // Avg attention time (days) globally
+    db.select({
+      avgDays: sql<number>`COALESCE(AVG(EXTRACT(EPOCH FROM (${tickets.closedAt} - ${tickets.createdAt})) / 86400), 0)`,
+    })
+      .from(tickets)
+      .where(and(eq(tickets.status, "resolved"), sql`${tickets.closedAt} IS NOT NULL`)),
   ]);
+
+  function avgDays(val: number): string {
+    return val > 0 ? val.toFixed(1) : "—";
+  }
 
   const getStat = (status: string) => statusStats.find(s => s.status === status)?.count || 0;
   const getUsersStat = (role: string) => usersByRole.find(r => r.role === role)?.count || 0;
@@ -95,6 +107,7 @@ export async function AdminDashboard() {
     { title: "Pend. validación", value: getStat("pending_validation"), icon: HourglassIcon, iconBg: "bg-yellow-100 text-yellow-600 dark:bg-yellow-950/40 dark:text-yellow-400", barColor: "bg-yellow-500", max: activeCount || 1 },
     { title: "Resueltos", value: resolvedCount, icon: CheckCircle2, iconBg: "bg-emerald-100 text-emerald-600 dark:bg-emerald-950/40 dark:text-emerald-400", barColor: "bg-emerald-500", max: totalTickets || 1 },
     { title: "Tasa de resolución", value: `${resolutionRate}%`, rawValue: resolutionRate, icon: TrendingUp, iconBg: "bg-teal-100 text-teal-600 dark:bg-teal-950/40 dark:text-teal-400", barColor: resolutionRate >= 70 ? "bg-emerald-500" : resolutionRate >= 40 ? "bg-yellow-500" : "bg-red-500", max: 100 },
+    { title: "T. prom. atención", value: `${avgDays(Number(avgTimeRes?.avgDays ?? 0))}d`, rawValue: 0, icon: Timer, iconBg: "bg-indigo-100 text-indigo-600 dark:bg-indigo-950/40 dark:text-indigo-400", barColor: "bg-indigo-500", max: 1 },
   ];
 
   const totalUsers = getUsersStat("user") + getUsersStat("agent") + getUsersStat("admin");
@@ -109,7 +122,7 @@ export async function AdminDashboard() {
       </div>
 
       {/* Main KPI Cards */}
-      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
+      <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-7 gap-3">
         {mainKpis.map(({ title, value, rawValue, icon: Icon, iconBg, barColor, max }) => (
           <Card key={title}>
             <CardContent className="pt-4 pb-4">
