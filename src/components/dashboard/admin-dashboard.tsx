@@ -137,7 +137,68 @@ export async function AdminDashboard() {
         ))}
       </div>
 
-      {/* Second row: System Activity + Recent Users */}
+      {/* Area Ranking Table */}
+      {areaRows.length > 0 && (
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Building2 className="h-5 w-5" />
+              Ranking por área de atención
+            </CardTitle>
+            <CardDescription>Comparativa de carga activa y tasa de resolución por departamento</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="overflow-x-auto">
+              <table className="w-full text-sm">
+                <thead>
+                  <tr className="border-b bg-muted/30">
+                    <th className="text-left py-3 px-4 font-medium text-muted-foreground">Área</th>
+                    <th className="text-center py-3 px-4 font-medium text-muted-foreground">Abiertos</th>
+                    <th className="text-center py-3 px-4 font-medium text-muted-foreground">En proceso</th>
+                    <th className="text-center py-3 px-4 font-medium text-muted-foreground">Pend. val.</th>
+                    <th className="text-center py-3 px-4 font-medium text-muted-foreground">Resueltos</th>
+                    <th className="text-center py-3 px-4 font-medium text-muted-foreground">Total</th>
+                    <th className="text-left py-3 px-4 font-medium text-muted-foreground w-36">% Resolución</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {areaRows.map((row) => (
+                    <tr key={row.name} className="border-b last:border-0 hover:bg-muted/20 transition-colors">
+                      <td className="py-3 px-4 font-medium">{row.name}</td>
+                      <td className="py-3 px-4 text-center">
+                        <span className={cn("font-semibold", row.open > 0 ? "text-orange-600 dark:text-orange-400" : "text-muted-foreground")}>{row.open}</span>
+                      </td>
+                      <td className="py-3 px-4 text-center">
+                        <span className={cn("font-semibold", row.inProgress > 0 ? "text-blue-600 dark:text-blue-400" : "text-muted-foreground")}>{row.inProgress}</span>
+                      </td>
+                      <td className="py-3 px-4 text-center">
+                        <span className={cn("font-semibold", row.pendingValidation > 0 ? "text-yellow-600 dark:text-yellow-400" : "text-muted-foreground")}>{row.pendingValidation}</span>
+                      </td>
+                      <td className="py-3 px-4 text-center">
+                        <span className={cn("font-semibold", row.resolved > 0 ? "text-emerald-600 dark:text-emerald-400" : "text-muted-foreground")}>{row.resolved}</span>
+                      </td>
+                      <td className="py-3 px-4 text-center font-semibold">{row.total}</td>
+                      <td className="py-3 px-4">
+                        <div className="flex items-center gap-2">
+                          <div className="flex-1 h-2 bg-muted rounded-full overflow-hidden">
+                            <div
+                              className={cn("h-full rounded-full", row.rate >= 70 ? "bg-emerald-500" : row.rate >= 40 ? "bg-yellow-500" : "bg-red-500")}
+                              style={{ width: `${row.rate}%` }}
+                            />
+                          </div>
+                          <span className="text-xs font-semibold tabular-nums w-8 text-right">{row.rate}%</span>
+                        </div>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
+      {/* System Activity + Recent Users */}
       <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-7">
         <Card className="col-span-4">
           <CardHeader>
@@ -223,67 +284,6 @@ export async function AdminDashboard() {
           </CardContent>
         </Card>
       </div>
-
-      {/* Area Ranking Table */}
-      {areaRows.length > 0 && (
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Building2 className="h-5 w-5" />
-              Ranking por área de atención
-            </CardTitle>
-            <CardDescription>Comparativa de carga activa y tasa de resolución por departamento</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="overflow-x-auto">
-              <table className="w-full text-sm">
-                <thead>
-                  <tr className="border-b bg-muted/30">
-                    <th className="text-left py-3 px-4 font-medium text-muted-foreground">Área</th>
-                    <th className="text-center py-3 px-4 font-medium text-muted-foreground">Abiertos</th>
-                    <th className="text-center py-3 px-4 font-medium text-muted-foreground">En proceso</th>
-                    <th className="text-center py-3 px-4 font-medium text-muted-foreground">Pend. val.</th>
-                    <th className="text-center py-3 px-4 font-medium text-muted-foreground">Resueltos</th>
-                    <th className="text-center py-3 px-4 font-medium text-muted-foreground">Total</th>
-                    <th className="text-left py-3 px-4 font-medium text-muted-foreground w-36">% Resolución</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {areaRows.map((row) => (
-                    <tr key={row.name} className="border-b last:border-0 hover:bg-muted/20 transition-colors">
-                      <td className="py-3 px-4 font-medium">{row.name}</td>
-                      <td className="py-3 px-4 text-center">
-                        <span className={cn("font-semibold", row.open > 0 ? "text-orange-600 dark:text-orange-400" : "text-muted-foreground")}>{row.open}</span>
-                      </td>
-                      <td className="py-3 px-4 text-center">
-                        <span className={cn("font-semibold", row.inProgress > 0 ? "text-blue-600 dark:text-blue-400" : "text-muted-foreground")}>{row.inProgress}</span>
-                      </td>
-                      <td className="py-3 px-4 text-center">
-                        <span className={cn("font-semibold", row.pendingValidation > 0 ? "text-yellow-600 dark:text-yellow-400" : "text-muted-foreground")}>{row.pendingValidation}</span>
-                      </td>
-                      <td className="py-3 px-4 text-center">
-                        <span className={cn("font-semibold", row.resolved > 0 ? "text-emerald-600 dark:text-emerald-400" : "text-muted-foreground")}>{row.resolved}</span>
-                      </td>
-                      <td className="py-3 px-4 text-center font-semibold">{row.total}</td>
-                      <td className="py-3 px-4">
-                        <div className="flex items-center gap-2">
-                          <div className="flex-1 h-2 bg-muted rounded-full overflow-hidden">
-                            <div
-                              className={cn("h-full rounded-full", row.rate >= 70 ? "bg-emerald-500" : row.rate >= 40 ? "bg-yellow-500" : "bg-red-500")}
-                              style={{ width: `${row.rate}%` }}
-                            />
-                          </div>
-                          <span className="text-xs font-semibold tabular-nums w-8 text-right">{row.rate}%</span>
-                        </div>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          </CardContent>
-        </Card>
-      )}
     </div>
   );
 }
