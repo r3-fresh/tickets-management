@@ -28,6 +28,17 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "@/components/ui/form";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import * as z from "zod";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
@@ -68,6 +79,17 @@ import {
 } from "lucide-react";
 import { es } from "react-day-picker/locale";
 import { toast } from "sonner";
+
+const providerTicketSchema = z.object({
+  externalCode: z.string().min(3, "El código debe tener al menos 3 caracteres"),
+  title: z.string().min(5, "El título debe tener al menos 5 caracteres"),
+  providerId: z.coerce.number().min(1, "Selecciona un proveedor"),
+  requestDate: z.string().min(1, "La fecha de requerimiento es obligatoria"),
+  description: z.string().min(10, "La descripción debe tener al menos 10 caracteres"),
+  priority: z.enum(["none", "baja", "media", "alta", "critica"]).optional().or(z.literal("")),
+  ticketId: z.number().nullable().optional(),
+});
+type ProviderTicketValues = z.infer<typeof providerTicketSchema>;
 
 // --- Types ---
 
@@ -607,6 +629,11 @@ function CloseProviderTicketDialog({
                   onSelect={(date) => {
                     setCompletionDate(date ? dayjs(date).format("YYYY-MM-DD") : "");
                   }}
+                  disabled={(date) => {
+                    if (!ticket) return false;
+                    const selected = dayjs(date).startOf("day");
+                    return selected.isBefore(dayjs(ticket.requestDate).startOf("day")) || selected.isAfter(dayjs().startOf("day"));
+                  }}
                   autoFocus
                 />
               </PopoverContent>
@@ -717,33 +744,37 @@ function ProviderTicketDialog({
 }) {
   const [isPending, startTransition] = useTransition();
 
-  // State for date picker and ticket combobox
-  // Because we use key={ticket?.id ?? "new"} on this component,
-  // these initial values are always correct on mount.
-  const [requestDate, setRequestDate] = useState<string>(ticket?.requestDate || "");
-  const [linkedTicketId, setLinkedTicketId] = useState<number | null>(ticket?.ticketId ?? null);
-  const [priority, setPriority] = useState<string>(ticket?.priority || "");
+  const form = useForm<ProviderTicketValues>({
+    resolver: zodResolver(providerTicketSchema) as any,
+    defaultValues: {
+      externalCode: ticket?.externalCode || "",
+      title: ticket?.title || "",
+      providerId: ticket?.providerId || ("" as unknown as number),
+      requestDate: ticket?.requestDate || "",
+      description: ticket?.description || "",
+      priority: (ticket?.priority as ProviderTicketValues["priority"]) || "none",
+      ticketId: ticket?.ticketId || null,
+    },
+  });
 
-  async function handleSubmit(formData: FormData) {
-    // Append calendar-managed fields
-    formData.set("requestDate", requestDate);
-    // Append combobox-managed field
-    if (linkedTicketId) {
-      formData.set("ticketId", linkedTicketId.toString());
-    } else {
-      formData.delete("ticketId");
+  async function onSubmit(data: ProviderTicketValues) {
+    const formData = new FormData();
+    formData.set("externalCode", data.externalCode);
+    formData.set("title", data.title);
+    formData.set("providerId", data.providerId.toString());
+    formData.set("requestDate", data.requestDate);
+    formData.set("description", data.description);
+    
+    if (data.priority && data.priority !== "none") {
+      formData.set("priority", data.priority);
     }
-    // Append priority
-    if (priority && priority !== "none") {
-      formData.set("priority", priority);
-    } else {
-      formData.delete("priority");
+    if (data.ticketId) {
+      formData.set("ticketId", data.ticketId.toString());
     }
 
     startTransition(async () => {
       if (ticket) {
         formData.append("id", ticket.id.toString());
-        // Preserve current status and completionDate when editing
         formData.set("status", ticket.status);
         if (ticket.completionDate) {
           formData.set("completionDate", ticket.completionDate);
@@ -769,7 +800,7 @@ function ProviderTicketDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-lg max-h-[90vh] overflow-y-auto">
+      <DialogContent className="max-w-xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>
             {ticket ? "Editar ticket de proveedor" : "Nuevo ticket de proveedor"}
@@ -780,143 +811,182 @@ function ProviderTicketDialog({
               : "Registra un nuevo ticket de proveedor externo."}
           </DialogDescription>
         </DialogHeader>
-        <form action={handleSubmit} className="space-y-4">
-          {/* External Code */}
-          <div className="grid gap-2">
-            <Label htmlFor="externalCode">Código externo</Label>
-            <Input
-              id="externalCode"
+        
+        <Form {...form}>
+          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-5">
+            {/* External Code */}
+            <FormField
+              control={form.control}
               name="externalCode"
-              defaultValue={ticket?.externalCode}
-              required
-              placeholder="Ej: TK-2026-001"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Código externo <span className="text-destructive">*</span></FormLabel>
+                  <FormControl>
+                    <Input placeholder="Ej: TK-2026-001" {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
             />
-          </div>
 
-          {/* Title */}
-          <div className="grid gap-2">
-            <Label htmlFor="title">Título</Label>
-            <Input
-              id="title"
+            {/* Title */}
+            <FormField
+              control={form.control}
               name="title"
-              defaultValue={ticket?.title}
-              required
-              placeholder="Descripción breve del requerimiento"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Título <span className="text-destructive">*</span></FormLabel>
+                  <FormControl>
+                    <Input placeholder="Descripción breve del requerimiento" {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
             />
-          </div>
 
-          {/* Provider */}
-          <div className="grid gap-2">
-            <Label htmlFor="providerId">Proveedor</Label>
-            <select
-              id="providerId"
+            {/* Provider */}
+            <FormField
+              control={form.control}
               name="providerId"
-              defaultValue={ticket?.providerId?.toString() || ""}
-              required
-              className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
-            >
-              <option value="" disabled>
-                Selecciona un proveedor
-              </option>
-              {providers.map((p) => (
-                <option key={p.id} value={p.id.toString()}>
-                  {p.name}
-                </option>
-              ))}
-            </select>
-          </div>
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Proveedor <span className="text-destructive">*</span></FormLabel>
+                  <Select onValueChange={(val) => field.onChange(Number(val))} defaultValue={field.value?.toString()}>
+                    <FormControl>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Selecciona un proveedor" />
+                      </SelectTrigger>
+                    </FormControl>
+                    <SelectContent>
+                      {providers.map((p) => (
+                        <SelectItem key={p.id} value={p.id.toString()}>
+                          {p.name}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
 
-          {/* Request Date */}
-          <div className="grid gap-2">
-            <Label>Fecha de requerimiento</Label>
-            <Popover>
-              <PopoverTrigger asChild>
-                <Button
-                  type="button"
-                  variant="outline"
-                  className={cn(
-                    "w-full justify-start text-left font-normal text-sm",
-                    !requestDate && "text-muted-foreground"
-                  )}
-                >
-                  <CalendarIcon className="mr-2 h-4 w-4" />
-                  {requestDate
-                    ? dayjs(requestDate).format("D [de] MMMM [de] YYYY")
-                    : "Selecciona una fecha"}
-                </Button>
-              </PopoverTrigger>
-              <PopoverContent className="w-auto p-0" align="start">
-                <Calendar
-                  locale={es}
-                  mode="single"
-                  selected={requestDate ? new Date(requestDate + "T00:00:00") : undefined}
-                  onSelect={(date) => {
-                    setRequestDate(date ? dayjs(date).format("YYYY-MM-DD") : "");
-                  }}
-                  autoFocus
-                />
-              </PopoverContent>
-            </Popover>
-          </div>
+            {/* Request Date */}
+            <FormField
+              control={form.control}
+              name="requestDate"
+              render={({ field }) => (
+                <FormItem className="flex flex-col">
+                  <FormLabel>Fecha de requerimiento <span className="text-destructive">*</span></FormLabel>
+                  <Popover>
+                    <PopoverTrigger asChild>
+                      <FormControl>
+                        <Button
+                          variant={"outline"}
+                          className={cn(
+                            "w-full pl-3 text-left font-normal",
+                            !field.value && "text-muted-foreground"
+                          )}
+                        >
+                          {field.value ? (
+                            dayjs(field.value).format("D [de] MMMM [de] YYYY")
+                          ) : (
+                            <span>Selecciona una fecha</span>
+                          )}
+                          <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
+                        </Button>
+                      </FormControl>
+                    </PopoverTrigger>
+                    <PopoverContent className="w-auto p-0" align="start">
+                      <Calendar
+                        locale={es}
+                        mode="single"
+                        selected={field.value ? new Date(field.value + "T00:00:00") : undefined}
+                        onSelect={(date) => field.onChange(date ? dayjs(date).format("YYYY-MM-DD") : "")}
+                        disabled={(date) => date > new Date()}
+                        initialFocus
+                      />
+                    </PopoverContent>
+                  </Popover>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
 
-          {/* Description */}
-          <div className="grid gap-2">
-            <Label htmlFor="description">Descripción</Label>
-            <Textarea
-              id="description"
+            {/* Description */}
+            <FormField
+              control={form.control}
               name="description"
-              defaultValue={ticket?.description}
-              required
-              placeholder="Detalle del requerimiento al proveedor"
-              rows={3}
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Descripción <span className="text-destructive">*</span></FormLabel>
+                  <FormControl>
+                    <Textarea
+                      placeholder="Detalle del requerimiento al proveedor"
+                      className="resize-none"
+                      rows={4}
+                      {...field}
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
             />
-          </div>
 
-          {/* Priority */}
-          <div className="grid gap-2">
-            <Label>
-              Prioridad <span className="text-muted-foreground text-xs">(opcional)</span>
-            </Label>
-            <Select value={priority} onValueChange={setPriority}>
-              <SelectTrigger>
-                <SelectValue placeholder="Selecciona una prioridad" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="none">Sin prioridad</SelectItem>
-                {Object.entries(PROVIDER_TICKET_PRIORITY_LABELS).map(([value, label]) => (
-                  <SelectItem key={value} value={value}>
-                    {label}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
-
-          {/* Linked Ticket (searchable combobox) */}
-          <div className="grid gap-2">
-            <Label>
-              Ticket vinculado <span className="text-muted-foreground text-xs">(opcional)</span>
-            </Label>
-            <TicketCombobox
-              tickets={areaTickets}
-              value={linkedTicketId}
-              onChange={setLinkedTicketId}
+            {/* Priority */}
+            <FormField
+              control={form.control}
+              name="priority"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Prioridad <span className="text-muted-foreground text-xs font-normal">(opcional)</span></FormLabel>
+                  <Select onValueChange={field.onChange} defaultValue={field.value}>
+                    <FormControl>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Selecciona una prioridad" />
+                      </SelectTrigger>
+                    </FormControl>
+                    <SelectContent>
+                      <SelectItem value="none">Sin prioridad</SelectItem>
+                      {Object.entries(PROVIDER_TICKET_PRIORITY_LABELS).map(([value, label]) => (
+                        <SelectItem key={value} value={value}>
+                          {label}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  <FormMessage />
+                </FormItem>
+              )}
             />
-            <p className="text-xs text-muted-foreground">
-              Busca por código o título del ticket del sistema.
-            </p>
-          </div>
 
-          <DialogFooter>
-            <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
-              Cancelar
-            </Button>
-            <Button type="submit" disabled={isPending}>
-              {isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-              Guardar
-            </Button>
-          </DialogFooter>
-        </form>
+            {/* Linked Ticket (searchable combobox) */}
+            <FormField
+              control={form.control}
+              name="ticketId"
+              render={({ field }) => (
+                <FormItem className="flex flex-col">
+                  <FormLabel>Ticket vinculado <span className="text-muted-foreground text-xs font-normal">(opcional)</span></FormLabel>
+                  <TicketCombobox
+                    tickets={areaTickets}
+                    value={field.value ?? null}
+                    onChange={field.onChange}
+                  />
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            <DialogFooter className="pt-4">
+              <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
+                Cancelar
+              </Button>
+              <Button type="submit" disabled={isPending}>
+                {isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                Guardar
+              </Button>
+            </DialogFooter>
+          </form>
+        </Form>
       </DialogContent>
     </Dialog>
   );

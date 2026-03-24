@@ -114,6 +114,10 @@ export async function updateProviderTicketAction(formData: FormData) {
     return { error: "Ticket derivado no encontrado en tu área" };
   }
 
+  if (result.data.completionDate && result.data.completionDate < existing.requestDate) {
+    return { error: "La fecha de cierre no puede ser anterior a la fecha de requerimiento" };
+  }
+
   // Verify provider belongs to agent's area
   const provider = await db.query.providers.findFirst({
     where: and(
@@ -203,6 +207,10 @@ export async function closeProviderTicketAction(formData: FormData) {
     return { error: "El ticket ya se encuentra cerrado" };
   }
 
+  if (result.data.completionDate < existing.requestDate) {
+    return { error: "La fecha de cierre no puede ser anterior a la fecha de requerimiento" };
+  }
+
   // Determine if all survey ratings are present
   const { responseTimeRating, deadlineRating, qualityRating, requirementUnderstandingRating, attentionRating } = result.data;
   const hasSurvey = [
@@ -229,6 +237,17 @@ export async function closeProviderTicketAction(formData: FormData) {
           qualityRating: qualityRating!,
           requirementUnderstandingRating: requirementUnderstandingRating!,
           attentionRating: attentionRating!,
+        }).onConflictDoUpdate({
+          target: providerSatisfactionSurveys.providerTicketId,
+          set: {
+            responseTimeRating: responseTimeRating!,
+            deadlineRating: deadlineRating!,
+            qualityRating: qualityRating!,
+            requirementUnderstandingRating: requirementUnderstandingRating!,
+            attentionRating: attentionRating!,
+            submittedById: session.user.id,
+            attentionAreaId: session.user.attentionAreaId!,
+          }
         });
       }
     });

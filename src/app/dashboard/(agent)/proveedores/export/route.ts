@@ -49,11 +49,13 @@ export async function GET(req: NextRequest) {
       return {
         "Código externo": t.externalCode,
         "Título": t.title,
+        "Descripción": t.description || "—",
         "Proveedor": t.provider?.name ?? "—",
         "Área de atención": t.attentionArea?.name ?? "—",
         "Estado": t.status === "cerrado" ? "Cerrado" : "En proceso",
         "Prioridad": t.priority ?? "—",
         "Solicitado por": t.requestedBy?.name ?? "—",
+        "Fecha de creación": t.createdAt ? new Date(t.createdAt).toLocaleString("es-ES") : "—",
         "Fecha de solicitud": t.requestDate ?? "—",
         "Fecha de finalización": t.completionDate ?? "—",
         "Tiempo de atención (días)": days !== null ? days : "—",
