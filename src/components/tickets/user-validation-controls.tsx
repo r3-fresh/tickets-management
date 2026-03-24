@@ -2,8 +2,8 @@
 
 import { useState, useTransition } from "react";
 import { Button } from "@/components/ui/button";
-import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
+import { RichTextEditor } from "@/components/shared/rich-text-editor";
 import { approveTicketValidation, rejectTicketValidation } from "@/actions/tickets";
 import { toast } from "sonner";
 import { CheckCircle2, XCircle, AlertCircle, ChevronUp, ChevronDown, Loader2 } from "lucide-react";
@@ -50,14 +50,14 @@ export function UserValidationControls({ ticketId }: UserValidationControlsProps
   };
 
   const handleRejectSubmit = () => {
-    const trimmed = rejectionMessage.trim();
-    if (trimmed.length < 10) {
+    const rawText = rejectionMessage.replace(/<[^>]+>/g, "").trim();
+    if (rawText.length < 10) {
       toast.error("Por favor describe con más detalle qué necesita ajustarse (mínimo 10 caracteres)");
       return;
     }
 
     startTransition(async () => {
-      const result = await rejectTicketValidation(ticketId, trimmed);
+      const result = await rejectTicketValidation(ticketId, rejectionMessage);
       if (result?.error) {
         toast.error(result.error);
       } else {
@@ -175,13 +175,9 @@ export function UserValidationControls({ ticketId }: UserValidationControlsProps
             <Label htmlFor="rejection-message">
               Motivo del rechazo <span className="text-destructive">*</span>
             </Label>
-            <Textarea
-              id="rejection-message"
-              placeholder="Ej: La solución propuesta no cubre el problema original porque..."
+            <RichTextEditor
               value={rejectionMessage}
-              onChange={(e) => setRejectionMessage(e.target.value)}
-              rows={4}
-              className="resize-none"
+              onChange={(val) => setRejectionMessage(val)}
               disabled={isPending}
             />
             <p className="text-xs text-muted-foreground">
@@ -202,7 +198,7 @@ export function UserValidationControls({ ticketId }: UserValidationControlsProps
             <Button
               variant="destructive"
               onClick={handleRejectSubmit}
-              disabled={isPending || rejectionMessage.trim().length < 10}
+              disabled={isPending || rejectionMessage.replace(/<[^>]+>/g, "").trim().length < 10}
             >
               {isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
               Solicitar mejoras

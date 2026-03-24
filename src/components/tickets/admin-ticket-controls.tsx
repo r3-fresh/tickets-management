@@ -5,12 +5,13 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { assignTicketToSelf, updateTicketStatus, unassignTicket, requestValidation } from "@/actions/admin";
 import { toast } from "sonner";
 import { useTransition } from "react";
-import { UserPlus, UserMinus, CheckCircle } from "lucide-react";
+import { UserPlus, UserMinus, CheckCircle, Share2 } from "lucide-react";
 import { useState } from "react";
 import type { TicketStatus } from "@/types";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { RichTextEditor } from "@/components/shared/rich-text-editor";
 import { Label } from "@/components/ui/label";
+import { cn } from "@/lib/utils/cn";
 
 const STATUS_OPTIONS: { value: TicketStatus; label: string }[] = [
   { value: "open", label: "Abierto" },
@@ -23,11 +24,13 @@ const STATUS_OPTIONS: { value: TicketStatus; label: string }[] = [
 export function AdminTicketControls({
   ticketId,
   currentStatus,
-  isAssigned
+  isAssigned,
+  derivationSlot
 }: {
   ticketId: number;
   currentStatus: string;
   isAssigned: boolean;
+  derivationSlot?: React.ReactNode;
 }) {
   const [isPending, startTransition] = useTransition();
   const [isValidationDialogOpen, setIsValidationDialogOpen] = useState(false);
@@ -84,9 +87,9 @@ export function AdminTicketControls({
   };
 
   return (
-    <div className="space-y-4">
-      <div>
-        <label className="block text-sm font-medium mb-2">
+    <div className="space-y-3">
+      <div className="flex items-center gap-3 w-full">
+        <label className="text-sm font-medium whitespace-nowrap text-foreground shrink-0">
           Cambiar estado
         </label>
         <Select
@@ -107,39 +110,48 @@ export function AdminTicketControls({
         </Select>
       </div>
 
-      {!isAssigned ? (
-        <Button
-          onClick={handleAssign}
-          disabled={isPending}
-          className="w-full"
-          variant="outline"
-        >
-          <UserPlus className="mr-2 h-4 w-4" />
-          Asignarme este ticket
-        </Button>
-      ) : (
-        <>
-          <Button
-            onClick={handleUnassign}
-            disabled={isPending}
-            className="w-full"
-            variant="outline"
-          >
-            <UserMinus className="mr-2 h-4 w-4" />
-            Desasignarme este ticket
-          </Button>
+      {(currentStatus !== "resolved" && currentStatus !== "voided" || derivationSlot) && (
+        <div className={cn("gap-3 pt-2", currentStatus === "in_progress" ? "grid grid-cols-2" : "grid grid-cols-1 md:grid-cols-2")}>
+          {/* Left column options */}
+          <div className={cn("flex flex-col gap-3", currentStatus !== "in_progress" && "col-span-full grid grid-cols-2")}>
+            {currentStatus !== "resolved" && currentStatus !== "voided" && (
+              !isAssigned ? (
+                <Button
+                  onClick={handleAssign}
+                  disabled={isPending}
+                  className="w-full flex-1 min-h-[80px] flex-col gap-2 rounded-xl"
+                  variant="outline"
+                >
+                  <UserPlus className="h-5 w-5" />
+                  <span className="text-xs whitespace-normal text-center">Asignarme este ticket</span>
+                </Button>
+              ) : (
+                <Button
+                  onClick={handleUnassign}
+                  disabled={isPending}
+                  className="w-full flex-1 min-h-[80px] flex-col gap-2 rounded-xl"
+                  variant="outline"
+                >
+                  <UserMinus className="h-5 w-5" />
+                  <span className="text-xs whitespace-normal text-center">Desasignarme este ticket</span>
+                </Button>
+              )
+            )}
+            {derivationSlot}
+          </div>
 
-          {currentStatus === 'in_progress' && (
+          {/* Right column (Validación) */}
+          {currentStatus === "in_progress" && (
             <Button
               onClick={handleRequestValidation}
               disabled={isPending}
-              className="w-full"
+              className="h-full min-h-[172px] flex-col gap-3 rounded-2xl bg-[#5B21B6] hover:bg-[#4C1D95] dark:bg-[#6D28D9] dark:hover:bg-[#5B21B6] text-white shadow-md transition-colors"
             >
-              <CheckCircle className="mr-2 h-4 w-4" />
-              Solicitar validación
+              <CheckCircle className="h-8 w-8 opacity-90" />
+              <span className="font-semibold text-center leading-tight">Solicitar<br />validación</span>
             </Button>
           )}
-        </>
+        </div>
       )}
 
       <Dialog open={isValidationDialogOpen} onOpenChange={setIsValidationDialogOpen}>

@@ -179,7 +179,7 @@ export function FloatingSurvey({ ticketId }: FloatingSurveyProps) {
         ) : (
           <button
             onClick={() => setIsExpanded(true)}
-            className="flex items-center gap-3 px-5 py-3.5 hover:bg-muted/30 transition-colors w-full"
+            className="flex items-center gap-3 px-5 py-3.5 cursor-pointer hover:bg-muted/30 transition-colors w-full"
           >
             <div className="flex items-center justify-center h-8 w-8 rounded-full bg-emerald-100 dark:bg-emerald-900/40">
               <Star className="h-4 w-4 text-emerald-600 dark:text-emerald-400" />

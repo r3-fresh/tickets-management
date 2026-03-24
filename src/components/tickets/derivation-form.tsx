@@ -41,9 +41,10 @@ interface Provider {
 interface DerivationFormProps {
   ticketId: number;
   providers: Provider[];
+  customTrigger?: React.ReactNode;
 }
 
-export function DerivationForm({ ticketId, providers }: DerivationFormProps) {
+export function DerivationForm({ ticketId, providers, customTrigger }: DerivationFormProps) {
   const [open, setOpen] = useState(false);
   const [isPending, startTransition] = useTransition();
   const [providerName, setProviderName] = useState("");
@@ -87,10 +88,12 @@ export function DerivationForm({ ticketId, providers }: DerivationFormProps) {
   return (
     <Dialog open={open} onOpenChange={(val) => { setOpen(val); if (!val) resetForm(); }}>
       <DialogTrigger asChild>
-        <Button variant="outline" size="sm" className="gap-2 w-full">
-          <Share2 className="h-3.5 w-3.5" />
-          Registrar derivación
-        </Button>
+        {customTrigger ? customTrigger : (
+          <Button variant="outline" size="sm" className="gap-2 w-full">
+            <Share2 className="h-3.5 w-3.5" />
+            Registrar derivación
+          </Button>
+        )}
       </DialogTrigger>
       <DialogContent className="sm:max-w-md">
         <DialogHeader>

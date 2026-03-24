@@ -18,6 +18,8 @@ import {
 } from "lucide-react";
 import { cn } from "@/lib/utils/cn";
 import { AdminTicketControls } from "@/components/tickets/admin-ticket-controls";
+import { AgentManagementCollapsible } from "@/components/agent/agent-management-collapsible";
+import { Button } from "@/components/ui/button";
 import { MarkAsViewed } from "@/components/tickets/mark-as-viewed";
 import { WatchersManager } from "@/components/tickets/watchers-manager";
 import { CancelTicketButton } from "@/components/tickets/cancel-ticket-button";
@@ -161,7 +163,7 @@ export default async function TicketDetailPage({ params }: { params: Promise<{ c
         <FloatingSurvey ticketId={ticket.id} />
       )}
 
-      <div className="mx-auto max-w-[1600px] space-y-8 pb-10 animate-in fade-in duration-500">
+      <div className="mx-auto max-w-[1600px] space-y-8 pb-36 animate-in fade-in duration-500">
         <MarkAsViewed ticketId={ticket.id} />
 
         {/* Top Navigation */}
@@ -586,32 +588,37 @@ export default async function TicketDetailPage({ params }: { params: Promise<{ c
               )}
             </div>
 
-            {/* Admin Controls */}
-            {(isAdmin || isAgentForArea) && (
-              <div className="space-y-3 pt-2">
-                <div className="rounded-lg border border-orange-200 dark:border-orange-900 bg-linear-to-b from-orange-50/50 to-orange-50/10 dark:from-orange-950/20 dark:to-transparent overflow-hidden">
-                  <div className="px-3 py-2 border-b border-orange-100 dark:border-orange-900/50 flex items-center gap-2 bg-orange-100/30 dark:bg-orange-950/30">
-                    <Monitor className="w-3.5 h-3.5 text-orange-600 dark:text-orange-400" />
-                    <span className="text-[10px] font-bold text-orange-600 dark:text-orange-400 uppercase tracking-wider">Gestión del Ticket</span>
-                  </div>
-                  <div className="p-3">
-                    <AdminTicketControls
-                      ticketId={ticket.id}
-                      currentStatus={ticket.status}
-                      isAssigned={!!ticket.assignedToId}
-                    />
-                    {canComment && areaProviders.length > 0 && (
-                      <div className="mt-3 pt-3 border-t border-orange-100 dark:border-orange-900/50">
-                        <DerivationForm ticketId={ticket.id} providers={areaProviders} />
-                      </div>
-                    )}
-                  </div>
-                </div>
-              </div>
-            )}
           </div>
         </div >
       </div >
+
+      {/* Floating Action Bar - Admin Controls */}
+      {(isAdmin || isAgentForArea) && (
+        <AgentManagementCollapsible>
+          <AdminTicketControls
+            ticketId={ticket.id}
+            currentStatus={ticket.status}
+            isAssigned={!!ticket.assignedToId}
+            derivationSlot={
+              canComment && areaProviders.length > 0 ? (
+                <DerivationForm
+                  ticketId={ticket.id}
+                  providers={areaProviders}
+                  customTrigger={
+                    <Button
+                      variant="outline"
+                      className="w-full flex-1 min-h-[80px] flex-col gap-2 rounded-xl"
+                    >
+                      <Share2 className="h-5 w-5" />
+                      <span className="text-xs whitespace-normal text-center">Registrar derivación</span>
+                    </Button>
+                  }
+                />
+              ) : undefined
+            }
+          />
+        </AgentManagementCollapsible>
+      )}
     </>
   );
 }
