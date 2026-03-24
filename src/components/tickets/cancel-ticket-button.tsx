@@ -53,7 +53,7 @@ export function CancelTicketButton({ ticketId }: { ticketId: number }) {
         </AlertDialogHeader>
         <AlertDialogFooter>
           <AlertDialogCancel>Cancelar</AlertDialogCancel>
-          <AlertDialogAction onClick={handleCancel} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
+          <AlertDialogAction onClick={handleCancel} className="bg-destructive text-destructive-foreground text-white hover:bg-destructive/90">
             Sí, anular ticket
           </AlertDialogAction>
         </AlertDialogFooter>

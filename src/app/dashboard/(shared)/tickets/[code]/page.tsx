@@ -172,7 +172,7 @@ export default async function TicketDetailPage({ params }: { params: Promise<{ c
         <div className="grid grid-cols-1 lg:grid-cols-[1fr_340px] gap-10 items-start">
 
           {/* LEFT COLUMN: Main Content */}
-          <div className="min-w-0 space-y-8">
+          <div className="min-w-0 space-y-4">
 
             {/* Header */}
             <div className="space-y-4">
@@ -207,7 +207,8 @@ export default async function TicketDetailPage({ params }: { params: Promise<{ c
 
               <div className="rounded-xl border border-border bg-card">
                 <div className="px-6 pt-5 pb-4">
-                  <h3 className="text-sm font-medium mb-1 flex items-center gap-2">
+                  <h3 className="text-sm font-medium mb-2 flex items-center gap-2">
+                    <FileText className="w-4 h-4 text-muted-foreground" />
                     Descripción
                   </h3>
                   <div className="prose prose-zinc dark:prose-invert max-w-none">
@@ -300,7 +301,7 @@ export default async function TicketDetailPage({ params }: { params: Promise<{ c
                   Añadir comentario
                 </h3>
                 {canComment ? (
-                  <div className="bg-card w-full border border-border/80 shadow-xs rounded-xl focus-within:shadow-md focus-within:border-ring/50 transition-all overflow-hidden lg:mr-8 relative">
+                  <div className="bg-card w-full border border-border/80 shadow-xs rounded-xl focus-within:shadow-md focus-within:border-primary/50 transition-all overflow-hidden relative">
                     <CommentForm ticketId={ticket.id} />
                   </div>
                 ) : (
@@ -327,106 +328,105 @@ export default async function TicketDetailPage({ params }: { params: Promise<{ c
 
                     <CollapsibleContent>
                       {/* Timeline */}
-                      <div className="space-y-8 relative pl-2">
-                    {/* Line connector */}
-                    {ticket.comments.length > 0 && (
-                      <div className="absolute left-[26px] top-4 bottom-4 w-px bg-linear-to-b from-border/80 via-border/40 to-transparent" />
-                    )}
+                      <div className="space-y-6 relative pl-2">
+                        {/* Line connector */}
+                        {ticket.comments.length > 0 && (
+                          <div className="absolute left-[26px] top-4 bottom-4 w-px bg-linear-to-b from-border/80 via-border/40 to-transparent" />
+                        )}
 
-                    {ticket.comments.map((entry) => {
-                      const entryType = (entry.type as string) || 'comment';
+                        {ticket.comments.map((entry) => {
+                          const entryType = (entry.type as string) || 'comment';
 
-                      // --- Derivation banner ---
-                      if (entryType === 'derivation') {
-                        const meta = entry.metadata as DerivationMetadata | null;
-                        return (
-                          <div key={entry.id} className="relative pl-12 group">
-                            {/* Icon */}
-                            <div className="absolute left-0 top-0 z-10">
-                              <div className="h-10 w-10 rounded-full bg-amber-100 dark:bg-amber-950 ring-4 ring-background flex items-center justify-center shadow-sm">
-                                <Share2 className="h-4 w-4 text-amber-600 dark:text-amber-400" />
-                              </div>
-                            </div>
-
-                            {/* Derivation Body */}
-                            <div className="space-y-1">
-                              <div className="flex items-baseline gap-2">
-                                <span className="text-sm font-semibold text-foreground">{entry.author.name}</span>
-                                <span className="text-xs text-muted-foreground">{formatDate(entry.createdAt)}</span>
-                              </div>
-                              <div className="bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-800/50 rounded-xl px-4 py-3 text-sm text-amber-800 dark:text-amber-300 group-hover:border-amber-300 dark:group-hover:border-amber-700 transition-colors space-y-1.5">
-                                <span>Se derivó la atención al proveedor: <strong>{meta?.providerName || 'Desconocido'}</strong></span>
-                                {meta?.estimatedDate && (
-                                  <div className="text-xs text-amber-700 dark:text-amber-400">
-                                    Fecha estimada: <strong>{formatDateShort(meta.estimatedDate)}</strong>
+                          // --- Derivation banner ---
+                          if (entryType === 'derivation') {
+                            const meta = entry.metadata as DerivationMetadata | null;
+                            return (
+                              <div key={entry.id} className="relative pl-12 group">
+                                {/* Icon */}
+                                <div className="absolute left-0 top-0 z-10">
+                                  <div className="h-10 w-10 rounded-full bg-amber-100 dark:bg-amber-950 ring-4 ring-background flex items-center justify-center shadow-sm">
+                                    <Share2 className="h-4 w-4 text-amber-600 dark:text-amber-400" />
                                   </div>
-                                )}
-                                {meta?.note && (
-                                  <div className="text-xs text-amber-700 dark:text-amber-400 pt-1 border-t border-amber-200 dark:border-amber-800/40 mt-1">
-                                    <span className="font-semibold">Nota: </span>{meta.note}
+                                </div>
+
+                                {/* Derivation Body */}
+                                <div className={cn("space-y-2", !(meta?.note || meta?.estimatedDate) && "min-h-10 flex items-center")}>
+                                  <div className="flex items-baseline gap-2">
+                                    <span className="text-sm font-bold text-amber-700 dark:text-amber-500">
+                                      Derivado a {meta?.providerName || 'Desconocido'}
+                                    </span>
+                                    <span className="text-xs text-muted-foreground">{formatDate(entry.createdAt)}</span>
                                   </div>
-                                )}
+                                  {(meta?.note || meta?.estimatedDate) && (
+                                    <div className="bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-800/50 rounded-xl px-4 py-3 text-sm text-amber-800 dark:text-amber-300 group-hover:border-amber-300 dark:group-hover:border-amber-700 transition-colors space-y-1.5">
+                                      {meta?.estimatedDate && (
+                                        <p className="font-medium text-xs">Fecha estimada de atención: <strong>{formatDateShort(meta.estimatedDate)}</strong></p>
+                                      )}
+                                      {meta?.note && (
+                                        <p className="leading-relaxed">{meta.note}</p>
+                                      )}
+                                    </div>
+                                  )}
+                                </div>
+                              </div>
+                            );
+                          }
+
+                          // --- System event (grey text) ---
+                          if (entryType === 'system') {
+                            return (
+                              <div key={entry.id} className="relative pl-12 group">
+                                {/* Icon */}
+                                <div className="absolute left-0 top-0 z-10">
+                                  <div className="h-10 w-10 rounded-full bg-muted ring-4 ring-background flex items-center justify-center shadow-sm">
+                                    <ArrowRight className="h-4 w-4 text-muted-foreground" />
+                                  </div>
+                                </div>
+
+                                {/* System Body */}
+                                <div className="flex items-baseline gap-2 min-h-10 pt-2.5">
+                                  <span className="text-xs text-muted-foreground">
+                                    <span className="font-medium">{entry.author.name}</span>
+                                    {' — '}
+                                    <span dangerouslySetInnerHTML={{ __html: entry.content }} />
+                                  </span>
+                                  <span className="text-xs text-muted-foreground/60">{formatDate(entry.createdAt)}</span>
+                                </div>
+                              </div>
+                            );
+                          }
+
+                          // --- Regular comment (default) ---
+                          return (
+                            <div key={entry.id} className="relative pl-12 group">
+                              {/* Avatar */}
+                              <div className="absolute left-0 top-0 z-10">
+                                <UserAvatar
+                                  name={entry.author.name}
+                                  image={entry.author.image}
+                                  size="md"
+                                  className="ring-4 ring-background h-10 w-10 shadow-sm"
+                                />
+                              </div>
+
+                              {/* Comment Body */}
+                              <div className="space-y-2">
+                                <div className="flex items-baseline gap-2">
+                                  <span className="text-sm font-semibold text-foreground">{entry.author.name}</span>
+                                  <span className="text-xs text-muted-foreground">{formatDate(entry.createdAt)}</span>
+                                </div>
+                                <div className="bg-sidebar border border-border/50 rounded-xl px-4 py-2 text-sm text-foreground shadow-sm group-hover:border-border/80 transition-colors">
+                                  <RichTextEditor
+                                    value={entry.content}
+                                    disabled={true}
+                                    className="border-0 px-0 bg-transparent min-h-0 p-0 shadow-none"
+                                  />
+                                </div>
                               </div>
                             </div>
-                          </div>
-                        );
-                      }
-
-                      // --- System event (grey text) ---
-                      if (entryType === 'system') {
-                        return (
-                          <div key={entry.id} className="relative pl-12 group">
-                            {/* Icon */}
-                            <div className="absolute left-0 top-0 z-10">
-                              <div className="h-10 w-10 rounded-full bg-muted ring-4 ring-background flex items-center justify-center shadow-sm">
-                                <ArrowRight className="h-4 w-4 text-muted-foreground" />
-                              </div>
-                            </div>
-
-                            {/* System Body */}
-                            <div className="flex items-baseline gap-2 min-h-10 pt-2.5">
-                              <span className="text-xs text-muted-foreground">
-                                <span className="font-medium">{entry.author.name}</span>
-                                {' — '}
-                                <span dangerouslySetInnerHTML={{ __html: entry.content }} />
-                              </span>
-                              <span className="text-xs text-muted-foreground/60">{formatDate(entry.createdAt)}</span>
-                            </div>
-                          </div>
-                        );
-                      }
-
-                      // --- Regular comment (default) ---
-                      return (
-                        <div key={entry.id} className="relative pl-12 group">
-                          {/* Avatar */}
-                          <div className="absolute left-0 top-0 z-10">
-                            <UserAvatar
-                              name={entry.author.name}
-                              image={entry.author.image}
-                              size="md"
-                              className="ring-4 ring-background h-10 w-10 shadow-sm"
-                            />
-                          </div>
-
-                          {/* Comment Body */}
-                          <div className="space-y-2">
-                            <div className="flex items-baseline gap-2">
-                              <span className="text-sm font-semibold text-foreground">{entry.author.name}</span>
-                              <span className="text-xs text-muted-foreground">{formatDate(entry.createdAt)}</span>
-                            </div>
-                            <div className="bg-sidebar border border-border/50 rounded-xl px-4 py-2 text-sm text-foreground shadow-sm group-hover:border-border/80 transition-colors">
-                              <RichTextEditor
-                                value={entry.content}
-                                disabled={true}
-                                className="border-0 px-0 bg-transparent min-h-0 p-0 shadow-none"
-                              />
-                            </div>
-                          </div>
-                        </div>
-                      );
-                    })}
-                  </div>
+                          );
+                        })}
+                      </div>
                     </CollapsibleContent>
                   </Collapsible>
                 </div>
