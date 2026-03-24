@@ -37,21 +37,21 @@ export function CommentForm({ ticketId }: CommentFormProps) {
   };
 
   return (
-    <div className="space-y-4">
-
-      <div className="bg-sidebar rounded-md border shadow-sm focus-within:ring-1 focus-within:ring-ring transition-all">
-        <RichTextEditor
-          value={content}
-          onChange={setContent}
-          placeholder="Escribe un comentario..."
-          className="min-h-[100px] border-0 focus-visible:ring-0 px-3 py-2"
-        />
-        <div className="flex justify-end items-center bg-muted/20 px-3 py-2 border-t">
-          <Button onClick={handleSubmit} disabled={isPending || !content} size="sm" className="h-8">
-            {isPending && <Loader2 className="mr-2 h-3 w-3 animate-spin" />}
-            Enviar comentario
-          </Button>
-        </div>
+    <div className="flex flex-col h-full bg-transparent">
+      <RichTextEditor
+        value={content}
+        onChange={setContent}
+        placeholder="Escribe un comentario o actualización sobre este ticket..."
+        className="min-h-[120px] border-0 focus-visible:ring-0 px-4 py-3 bg-transparent text-sm shadow-none"
+      />
+      <div className="flex justify-between items-center bg-muted/10 px-4 py-3 border-t">
+        <span className="text-xs text-muted-foreground hidden sm:inline-block">
+          Cuanta más información compartas, mejor podremos ayudarte.
+        </span>
+        <Button onClick={handleSubmit} disabled={isPending || !content || content.trim() === "<p></p>"} size="sm" className="h-9 px-5 ml-auto cursor-pointer">
+          {isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+          Enviar comentario
+        </Button>
       </div>
     </div>
   );

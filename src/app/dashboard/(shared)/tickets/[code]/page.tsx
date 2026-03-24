@@ -293,26 +293,41 @@ export default async function TicketDetailPage({ params }: { params: Promise<{ c
 
             {/* Activity / Comments */}
             <div className="space-y-6 pt-4">
-              <Collapsible defaultOpen className="space-y-6">
-                <div className="flex items-center justify-between">
-                  <CollapsibleTrigger className="flex items-center gap-2 text-xs font-semibold text-muted-foreground uppercase tracking-wider hover:text-foreground transition-colors group cursor-pointer">
-                    <Activity className="w-3.5 h-3.5" />
-                    Actividad
-                    <ChevronDown className="w-3 h-3 transition-transform group-data-[state=open]:rotate-180" />
-                  </CollapsibleTrigger>
-                  <span className="text-xs text-muted-foreground bg-muted px-2 py-0.5 rounded-full">{ticket.comments.length}</span>
-                </div>
+              {/* Nuevo Comentario (Siempre visible) */}
+              <div className="mb-6">
+                <h3 className="text-sm font-semibold mb-3 flex items-center gap-2 text-foreground">
+                  <MessageSquareIcon className="w-4 h-4" />
+                  Añadir comentario
+                </h3>
+                {canComment ? (
+                  <div className="bg-card w-full border border-border/80 shadow-xs rounded-xl focus-within:shadow-md focus-within:border-ring/50 transition-all overflow-hidden lg:mr-8 relative">
+                    <CommentForm ticketId={ticket.id} />
+                  </div>
+                ) : (
+                  <div className="bg-muted/30 border border-border/50 rounded-xl p-5 flex flex-col items-center justify-center gap-2 text-sm text-muted-foreground">
+                    <span className="h-8 w-8 flex items-center justify-center rounded-full bg-muted/50 mb-1">
+                      <MessageSquareIcon className="h-4 w-4 text-muted-foreground/60" />
+                    </span>
+                    Este ticket ha sido cerrado y ya no admite comentarios.
+                  </div>
+                )}
+              </div>
 
-                <CollapsibleContent>
-                  {/* Comment Form (Top) */}
-                  {canComment && (
-                    <div className="pb-8 pl-2">
-                      <CommentForm ticketId={ticket.id} />
+              {ticket.comments.length > 0 && (
+                <div className="pt-2">
+                  <Collapsible defaultOpen className="space-y-6">
+                    <div className="flex items-center justify-between">
+                      <CollapsibleTrigger className="flex items-center gap-2 text-xs font-semibold text-muted-foreground uppercase tracking-wider hover:text-foreground transition-colors group cursor-pointer select-none">
+                        <Activity className="w-3.5 h-3.5" />
+                        Historial de actividad
+                        <ChevronDown className="w-3 h-3 transition-transform group-data-[state=open]:rotate-180" />
+                      </CollapsibleTrigger>
+                      <span className="text-xs text-muted-foreground bg-muted border px-2.5 py-0.5 rounded-full">{ticket.comments.length}</span>
                     </div>
-                  )}
 
-                  {/* Timeline */}
-                  <div className="space-y-8 relative pl-2">
+                    <CollapsibleContent>
+                      {/* Timeline */}
+                      <div className="space-y-8 relative pl-2">
                     {/* Line connector */}
                     {ticket.comments.length > 0 && (
                       <div className="absolute left-[26px] top-4 bottom-4 w-px bg-linear-to-b from-border/80 via-border/40 to-transparent" />
@@ -412,27 +427,21 @@ export default async function TicketDetailPage({ params }: { params: Promise<{ c
                       );
                     })}
                   </div>
-                </CollapsibleContent>
-              </Collapsible>
-
-              {/* Empty State */}
-              {ticket.comments.length === 0 && (
-                <div className="text-center py-8 px-4 border border-dashed rounded-lg bg-muted/5">
-                  <div className="mx-auto h-12 w-12 rounded-full bg-muted/20 flex items-center justify-center mb-3">
-                    <Activity className="h-6 w-6 text-muted-foreground/50" />
-                  </div>
-                  <h3 className="text-sm font-medium text-foreground">Sin actividad aún</h3>
-                  <p className="text-xs text-muted-foreground mt-1 max-w-xs mx-auto">
-                    Inicia la conversación preguntando detalles o añadiendo actualizaciones.
-                  </p>
+                    </CollapsibleContent>
+                  </Collapsible>
                 </div>
               )}
 
-              {/* Comment Form */}
-              {!canComment && (
-                <div className="bg-muted/30 border rounded-lg p-4 flex items-center justify-center gap-2 text-sm text-muted-foreground mt-4">
-                  <span className="h-2 w-2 rounded-full bg-muted-foreground/50" />
-                  Este ticket ha sido cerrado.
+              {/* Empty State */}
+              {ticket.comments.length === 0 && (
+                <div className="text-center py-10 px-4 border border-dashed border-border/60 rounded-xl bg-muted/5">
+                  <div className="mx-auto h-12 w-12 rounded-full bg-muted/30 flex items-center justify-center mb-3">
+                    <Activity className="h-5 w-5 text-muted-foreground/50" />
+                  </div>
+                  <h3 className="text-sm font-medium text-foreground">Sin actividad aún</h3>
+                  <p className="text-xs text-muted-foreground mt-1.5 max-w-sm mx-auto">
+                    Añade un comentario arriba para iniciar la conversación. Al enviarlo, se registrará aquí en el historial.
+                  </p>
                 </div>
               )}
             </div>
