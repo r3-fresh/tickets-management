@@ -3,6 +3,7 @@
 import { useForm, type Resolver } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { createTicketFormSchema, type CreateTicketFormSchema } from "@/lib/validation/schemas";
+import { z } from "zod";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
@@ -190,9 +191,45 @@ export function NewTicketForm({
 
   const isDiffusion = selectedAreaSlug === "DIF";
 
+  const dynamicSchema = useMemo(() => {
+    return createTicketFormSchema.superRefine((data, ctx) => {
+      if (!data.priority) {
+        ctx.addIssue({
+          code: "custom",
+          message: "Selecciona una prioridad",
+          path: ["priority"],
+        });
+      }
+
+      if (isDiffusion) {
+        if (!data.activityStartDate) {
+          ctx.addIssue({
+            code: "custom",
+            message: "La fecha de inicio de la actividad es obligatoria",
+            path: ["activityStartDate"],
+          });
+        }
+        if (!data.desiredDiffusionDate) {
+          ctx.addIssue({
+            code: "custom",
+            message: "La fecha deseada de difusión es obligatoria",
+            path: ["desiredDiffusionDate"],
+          });
+        }
+        if (!data.targetAudience || data.targetAudience.trim() === "") {
+          ctx.addIssue({
+            code: "custom",
+            message: "El público objetivo es obligatorio",
+            path: ["targetAudience"],
+          });
+        }
+      }
+    });
+  }, [isDiffusion]);
+
   // Un único formulario con schema unificado
   const form = useForm<CreateTicketFormSchema>({
-    resolver: zodResolver(createTicketFormSchema) as Resolver<CreateTicketFormSchema>,
+    resolver: zodResolver(dynamicSchema) as Resolver<CreateTicketFormSchema>,
     defaultValues: {
       title: "",
       description: "",
@@ -328,14 +365,10 @@ export function NewTicketForm({
       </div>
 
       <div className="flex gap-8 items-start">
-        {/* ════════════════════════════════════════ */}
-        {/* Panel principal                         */}
-        {/* ════════════════════════════════════════ */}
         <div className="flex-1 min-w-0">
           <Form {...form}>
             <TooltipProvider delayDuration={300}>
               <form onSubmit={form.handleSubmit(onSubmit)} id="ticket-form">
-                {/* ── Card 1: Clasificación (siempre visible) ── */}
                 <div className="rounded-xl border border-border bg-card p-6">
                   <p className="text-sm font-medium mb-1">Clasifica tu solicitud</p>
                   <p className="text-xs text-muted-foreground mb-4">
@@ -474,7 +507,6 @@ export function NewTicketForm({
                   </div>
                 </div>
 
-                {/* ── Resto del formulario (aparece tras clasificar) ── */}
                 <div
                   className={cn(
                     "grid transition-all duration-300 ease-in-out",
@@ -484,7 +516,6 @@ export function NewTicketForm({
                   )}
                 >
                   <div className="overflow-hidden">
-                    {/* ── Card 2: Título + Prioridad + Campos de área ── */}
                     <div className="rounded-xl border border-border bg-card">
                       <FormField
                         control={form.control}
@@ -509,7 +540,6 @@ export function NewTicketForm({
                       {/* Separador */}
                       <div className="mx-6 border-t border-border" />
 
-                      {/* ── Prioridad (todas las áreas) ── */}
                       <div className="px-6 pb-5 pt-4">
                         <FormField
                           control={form.control}
@@ -556,7 +586,6 @@ export function NewTicketForm({
                         />
                       </div>
 
-                      {/* ── Campos de Difusión ── */}
                       {isDiffusion && (
                         <>
                           <div className="mx-6 border-t border-border" />
@@ -712,7 +741,6 @@ export function NewTicketForm({
                       )}
                     </div>
 
-                    {/* ── Card 3: Descripción + Archivos adjuntos ── */}
                     <div className="mt-5 rounded-xl border border-border bg-card">
                       {/* Descripción */}
                       <div className="px-6 pt-5 pb-4">
@@ -769,7 +797,6 @@ export function NewTicketForm({
                       )}
                     </div>
 
-                    {/* ── Notificar a — solo visible en móvil (en desktop va al sidebar) ── */}
                     <div className="mt-3 rounded-xl border border-border bg-card p-5 lg:hidden">
                       <div className="flex items-center gap-2 mb-1">
                         <Bell className="h-3.5 w-3.5 text-muted-foreground" />
@@ -788,7 +815,6 @@ export function NewTicketForm({
                   </div>
                 </div>
 
-                {/* ── Barra sticky — solo en móvil (sin sidebar) ── */}
                 {hasClassification && (
                   <div className="sticky bottom-0 mt-6 lg:hidden">
                     <div className="rounded-xl border border-border bg-card/95 backdrop-blur-sm px-5 py-3.5">
@@ -816,11 +842,7 @@ export function NewTicketForm({
           </Form>
         </div>
 
-        {/* ════════════════════════════════════════ */}
-        {/* Panel lateral (desktop)                 */}
-        {/* ════════════════════════════════════════ */}
         <aside className="hidden lg:flex lg:flex-col w-72 shrink-0 sticky top-4 gap-4">
-          {/* Tarjeta 1: progreso + tips */}
           <div className="rounded-xl border border-border bg-card p-5 space-y-4">
             {/* Progreso — indicador compacto */}
             <div className="flex items-center justify-between">
