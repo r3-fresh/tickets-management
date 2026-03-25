@@ -12,13 +12,15 @@ Bienvenido al sistema de gestión de tickets. Este manual te guiará a través d
 
 ---
 
-## Panel principal
+## 🖥️ Panel principal
 
-El panel principal muestra un resumen de tu actividad:
+El panel principal muestra un resumen interactivo de tu actividad:
 
-- Tickets creados recientemente.
-- Tickets pendientes de tu validación.
-- Accesos directos para crear un nuevo ticket o ver tus tickets existentes.
+- 📊 **Tickets recientes:** Estado actual, prioridad y última fecha de interacción.
+- ⏳ **Pendientes de validación:** Solicitudes que requieren tu aprobación.
+- ⚡ **Accesos directos:** Creación rápida de tickets e historiales.
+
+> **💡 Nota de navegación:** Si intentas acceder a un ticket anulado o ruta inexistente, el sistema te redirigirá a una **Página Extraviada (Error 404)** con diseño premium, desde donde podrás volver rápidamente al inicio.
 
 ---
 

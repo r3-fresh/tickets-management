@@ -17,7 +17,7 @@ Este manual describe la arquitectura, tecnologías y decisiones técnicas del si
 | Formularios | React Hook Form + Zod |
 | Correos | Gmail API (googleapis) |
 | Almacenamiento | Google Drive API |
-| Gráficos | Recharts |
+| Pantallas de Carga | Skeletons UI Nativos (Split-screen) |
 | Editor de texto | TipTap |
 | Gestor de paquetes | pnpm |
 
@@ -134,7 +134,7 @@ Todas las server actions usan helpers ubicados en `src/lib/auth/helpers.ts`:
 
 ### Proxy
 
-El proyecto usa `proxy.ts` (Next.js 16) en la raíz en lugar de `middleware.ts` para interceptar y proteger rutas.
+El proyecto usa `src/proxy.ts` (Next.js 16) en lugar de `middleware.ts` para interceptar y proteger de forma centralizada. Posee protecciones contra *Redirect Loops* al delegar la verificación fuerte a las páginas (Server Components) para cookies caducas.
 
 ---
 

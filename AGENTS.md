@@ -14,7 +14,7 @@ Este documento contiene información esencial para agentes de código (AI coding
 
 **Idioma:** Español (UI, mensajes, comentarios)
 
-## 🛠️ Comandos Principales
+🧰 **Comandos Principales**
 
 ### Desarrollo
 ```bash
@@ -294,16 +294,23 @@ if (!result.success) {
 - Interfaz `TicketContext` unificada con threading (`inReplyTo`/`references`)
 - Gmail API (googleapis) con `after()` para no bloquear respuestas
 
-### Infraestructura
-- **Proxy:** El proyecto usa `proxy.ts` en la raíz (Next.js 16), NO `middleware.ts`
-- **Base de datos:** Neon PostgreSQL
-- **Rate limiting:** `createRateLimiter('MODERATE')` o `createRateLimiter('STRICT')` (función síncrona)
-- **Config UI:** Componentes admin usan patrón tabla + modal (como `attention-areas-list.tsx`)
+### Infraestructura y UI
+- **Proxy:** El proyecto usa `src/proxy.ts` (Next.js 16), NO `middleware.ts`. Permanece dentro de `src/` por buenas prácticas de App Router. Evitar redirecciones ciegas para prevenir loops con cookies caducas.
+- **Base de datos:** Neon PostgreSQL con Drizzle ORM.
+- **Rate limiting:** `createRateLimiter('MODERATE')` o `createRateLimiter('STRICT')` (función síncrona).
+- **Rendimiento (Vercel Best Practices):** El renderizado del dashboard está optimizado. Para nuevas integraciones se exige usar `Promise.all()` en queries simultáneas para abolir *waterfalls*. Reemplazar condicionales inestables (`&&`) con renderizados estrictos (`? : null`).
+- **Aspecto Premium:** Uso extendido de barras nativas con Tailwind (ej. `<MiniBar>`) y *Skeletons* de carga que emulan exactamente el diseño subyacente (ej. diseño *split-screen* del Login y 404 globales). Jamás usar componentes genéricos descuidados.
 
 ## 🔄 Reglas de Desarrollo
 
 - Cada nueva funcionalidad se implementa en una **branch independiente**
 - Se requiere **aprobación del usuario** antes de merge a main
 - Después del merge se elimina la branch
-- Verificar con `pnpm exec tsc --noEmit` (puede requerir `rm -rf .next` si hay tipos cacheados obsoletos)
-- Verificar BD con `pnpm db:reset` para asegurar que schema + seed funcionan
+### Verificación de Estabilidad 🛡️
+
+```bash
+pnpm exec tsc --noEmit    # Verificar tipos de forma estricta
+pnpm exec eslint .        # Comprobar variables sin uso
+pnpm db:reset             # Verificar que schema + seed funcionan
+```
+```
