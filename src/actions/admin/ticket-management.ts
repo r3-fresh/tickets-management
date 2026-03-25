@@ -89,7 +89,7 @@ export async function assignTicketToSelf(ticketId: number) {
 }
 
 export async function unassignTicket(ticketId: number) {
-    const session = await requireAgent();
+    await requireAgent();
 
     try {
         // Obtener ticketCode antes de actualizar
@@ -116,7 +116,7 @@ export async function unassignTicket(ticketId: number) {
 }
 
 export async function updateTicketStatus(ticketId: number, newStatus: TicketStatus) {
-    const session = await requireAgent();
+    await requireAgent();
 
     try {
         // Obtener el estado actual del ticket para validar la transición
@@ -156,7 +156,7 @@ export async function updateTicketStatus(ticketId: number, newStatus: TicketStat
 }
 
 export async function deepDeleteTicketAction(ticketId: number) {
-  const session = await requireAdmin();
+  await requireAdmin();
 
   try {
       const targetTicket = await db.query.tickets.findFirst({

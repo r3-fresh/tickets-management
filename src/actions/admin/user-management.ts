@@ -5,10 +5,9 @@ import { users } from "@/db/schema";
 import { requireAdmin } from "@/lib/auth/helpers";
 import { eq } from "drizzle-orm";
 import { revalidatePath } from "next/cache";
-import type { UserRole } from "@/types";
 
 export async function updateUserRole(userId: string, newRole: string, attentionAreaId?: number | null) {
-  const session = await requireAdmin();
+  await requireAdmin();
 
   try {
     // Validate role
@@ -49,7 +48,7 @@ export async function toggleUserActive(userId: string, isActive: boolean) {
       return { error: "No puedes desactivar tu propia cuenta" };
     }
 
-    const updateData: Record<string, any> = {
+    const updateData: Record<string, unknown> = {
       isActive,
       updatedAt: new Date(),
     };

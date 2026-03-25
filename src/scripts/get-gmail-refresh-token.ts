@@ -84,9 +84,13 @@ rl.question('Pega el código aquí: ', async (code) => {
     console.log();
     console.log('⚠️  IMPORTANTE: Este token es sensible, no lo compartas.');
     console.log();
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error('❌ Error al obtener el token:');
-    console.error(error.message);
+    if (error instanceof Error) {
+      console.error(error.message);
+    } else {
+      console.error(String(error));
+    }
     console.log();
     console.log('💡 Asegúrate de:');
     console.log('   1. Haber copiado el código completo');

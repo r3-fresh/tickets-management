@@ -26,7 +26,7 @@ export function getTicketAssignedTemplate(params: TicketAssignedTemplateParams):
             <p style="margin: 0; color: #1E40AF; font-weight: 500;">Tu solicitud está siendo atendida por <strong>${agentName}</strong>.</p>
         </div>
         
-        <p style="margin: 15px 0;">Estamos trabajando en tu solicitud y te contactaremos pronto si necesitamos más información. Puedes dar seguimiento en el siguiente botón:</p>
+        <p style="margin: 15px 0;">Estamos trabajando en tu solicitud y te contactaremos pronto si necesitamos más información.</p>
         
         <div style="text-align: center; margin: 20px 0;">
             <a href="${params.ticketUrl}" style="display: inline-block; background-color: #4F46E5; color: white; padding: 12px 30px; text-decoration: none; border-radius: 6px; font-weight: bold;">Ver detalles del ticket</a>

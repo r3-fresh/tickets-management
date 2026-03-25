@@ -116,10 +116,6 @@ function quotedPrintableEncode(str: string): string {
  * Fetch thread details to get references for threading
  * Includes retry logic to handle API consistency delays
  */
-/**
- * Fetch thread details to get references for threading
- * Includes retry logic to handle API consistency delays
- */
 export async function getThreadMessageIds(threadId: string): Promise<{ inReplyTo?: string, references?: string }> {
   let attempt = 0;
   const maxAttempts = 3;
@@ -193,7 +189,7 @@ export async function sendGmailEmail(params: SendEmailParams) {
       .replace(/\//g, '_')
       .replace(/=+$/, '');
 
-    const requestBody: any = {
+    const requestBody: { raw: string; threadId?: string } = {
       raw: encodedMessage,
     };
 

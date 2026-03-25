@@ -744,8 +744,8 @@ function ProviderTicketDialog({
 }) {
   const [isPending, startTransition] = useTransition();
 
-  const form = useForm<ProviderTicketValues>({
-    resolver: zodResolver(providerTicketSchema) as any,
+  const form = useForm<z.input<typeof providerTicketSchema>, unknown, ProviderTicketValues>({
+    resolver: zodResolver(providerTicketSchema),
     defaultValues: {
       externalCode: ticket?.externalCode || "",
       title: ticket?.title || "",

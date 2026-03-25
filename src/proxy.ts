@@ -13,10 +13,6 @@ export async function proxy(request: NextRequest) {
   const protectedRoutes = ['/dashboard'];
   const isProtectedRoute = protectedRoutes.some(route => pathname.startsWith(route));
 
-  // Rutas públicas donde usuarios autenticados no deberían estar
-  const publicRoutes = ['/login'];
-  const isPublicRoute = publicRoutes.some(route => pathname.startsWith(route));
-
   // Verificar token de sesión (soporta ambos prefijos: estándar y seguro)
   const sessionToken = request.cookies.get("better-auth.session_token") ||
     request.cookies.get("__Secure-better-auth.session_token");
@@ -25,12 +21,6 @@ export async function proxy(request: NextRequest) {
   if (isProtectedRoute && !sessionToken) {
     const loginUrl = new URL("/login", request.url);
     return NextResponse.redirect(loginUrl);
-  }
-
-  // Redirigir a dashboard si usuario autenticado intenta acceder a login
-  if (isPublicRoute && sessionToken && pathname === '/login') {
-    const dashboardUrl = new URL("/dashboard", request.url);
-    return NextResponse.redirect(dashboardUrl);
   }
 
   return NextResponse.next();

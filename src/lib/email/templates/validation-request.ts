@@ -37,10 +37,6 @@ export function getValidationRequestTemplate(params: ValidationRequestTemplatePa
         <div style="text-align: center; margin: 20px 0;">
             <a href="${params.ticketUrl}" style="display: inline-block; background-color: #10B981; color: white; padding: 12px 30px; text-decoration: none; border-radius: 6px; font-weight: bold;">Revisar y validar ticket</a>
         </div>
-        
-        <p style="margin-top: 30px; font-size: 13px; color: #6B7280; padding-top: 20px; border-top: 1px solid #E5E7EB;">
-            Puedes aprobar el cierre o rechazarlo si necesitas ajustes adicionales.
-        </p>
     `;
 
   return getBaseTemplate(content, params.attentionAreaName);

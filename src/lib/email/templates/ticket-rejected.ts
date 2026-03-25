@@ -17,7 +17,7 @@ export function getTicketRejectedTemplate(params: TicketRejectedTemplateParams):
     ? `
         <div style="background-color: #FFF7ED; border-left: 4px solid #F97316; padding: 15px; margin: 20px 0; border-radius: 4px;">
             <p style="margin: 0 0 6px 0; font-weight: bold; color: #9A3412;">Motivo de la solicitud de mejoras:</p>
-            <p style="margin: 0; color: #7C2D12; white-space: pre-wrap;">${escapeHtml(params.rejectionMessage)}</p>
+            <p style="margin: 0; color: #7C2D12; white-space: pre-wrap;">${params.rejectionMessage}</p>
         </div>`
     : '';
 

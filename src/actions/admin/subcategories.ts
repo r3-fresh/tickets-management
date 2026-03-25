@@ -3,7 +3,7 @@
 import { db } from "@/db";
 import { ticketSubcategories } from "@/db/schema";
 import { requireAdmin } from "@/lib/auth/helpers";
-import { eq, sql, gt, lt } from "drizzle-orm";
+import { eq, sql } from "drizzle-orm";
 import { revalidatePath } from "next/cache";
 
 export async function createSubcategory(
