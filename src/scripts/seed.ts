@@ -128,7 +128,7 @@ async function seed() {
       },
       {
         key: "knowledge_base_url",
-        value: "https://docs.google.com/spreadsheets/d/1F23_z7fQJbfGCmvavge3Igw-FcyG4Xd_A-MR3s5WURc/"
+        value: "https://docs.google.com/spreadsheets/d/140VQoMEDkztJ1vmJ68ULwKlQ1y1BdQixU5w7AGZ5QZ4/"
       },
     ]).onConflictDoNothing();
 

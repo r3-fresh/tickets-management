@@ -152,7 +152,7 @@ export function SurveyResultsView({ surveys, kpis, distributions }: SurveyResult
               </div>
               <div className="flex-1 min-w-0">
                 <p className="text-sm text-muted-foreground">Promedio general</p>
-                <p className="text-xs text-muted-foreground/70 mb-1">Promedio de los 4 criterios</p>
+                <p className="text-xs text-muted-foreground/70 mb-1">Evaluación general de los 4 criterios</p>
                 <div className="flex items-baseline gap-2">
                   <span className="text-3xl font-bold tracking-tight">{generalPct}%</span>
                   <span className="text-sm text-muted-foreground">{kpis.avgGeneral}/5</span>
@@ -177,7 +177,7 @@ export function SurveyResultsView({ surveys, kpis, distributions }: SurveyResult
               </div>
               <div className="flex-1 min-w-0">
                 <p className="text-sm text-muted-foreground">Total de encuestas</p>
-                <p className="text-xs text-muted-foreground/70 mb-1">Realizadas / Tickets resueltos</p>
+                <p className="text-xs text-muted-foreground/70 mb-1">Cantidad de encuestas realizadas</p>
                 <div className="flex items-baseline gap-2">
                   <span className="text-3xl font-bold tracking-tight">
                     {kpis.totalSurveys}

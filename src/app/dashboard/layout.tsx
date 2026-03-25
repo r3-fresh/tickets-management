@@ -19,7 +19,7 @@ import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/component
 import { cn } from "@/lib/utils/cn";
 import { getAppSettingAction } from "@/actions/admin/settings";
 
-const DEFAULT_KNOWLEDGE_BASE_URL = "https://docs.google.com/spreadsheets/d/1F23_z7fQJbfGCmvavge3Igw-FcyG4Xd_A-MR3s5WURc/";
+const DEFAULT_KNOWLEDGE_BASE_URL = "https://docs.google.com/spreadsheets/d/140VQoMEDkztJ1vmJ68ULwKlQ1y1BdQixU5w7AGZ5QZ4/";
 
 interface NavSubItem {
   href: string;
@@ -141,7 +141,7 @@ export default function DashboardLayout({
 
     // 3. Recursos
     const manualSubItems: NavSubItem[] = [
-      { href: knowledgeBaseUrl, label: "Enlace", icon: ExternalLink, external: true },
+      { href: knowledgeBaseUrl, label: "Capacitaciones / Formatos", icon: ExternalLink, external: true },
       { href: "/dashboard/manual/usuario", label: "Manual de usuario", icon: FileText }
     ];
     if (userRole === "admin" || userRole === "agent") {
