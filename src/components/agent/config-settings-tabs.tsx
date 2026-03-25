@@ -64,7 +64,7 @@ interface SettingsTabsProps {
 export function SettingsTabs({ initialData, categories, subcategories, priorityConfigs, providers }: SettingsTabsProps) {
   return (
     <Tabs defaultValue="reception" className="w-full">
-      <TabsList className="grid w-full max-w-3xl grid-cols-5">
+      <TabsList className="grid w-full grid-cols-5">
         <TabsTrigger value="reception" className="cursor-pointer">Recepción</TabsTrigger>
         <TabsTrigger value="categories" className="cursor-pointer">Categorías</TabsTrigger>
         <TabsTrigger value="subcategories" className="cursor-pointer">Subcategorías</TabsTrigger>
