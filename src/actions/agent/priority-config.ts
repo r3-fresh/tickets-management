@@ -54,7 +54,7 @@ export async function updateAgentPriorityConfigAction(formData: FormData) {
       })
       .where(eq(priorityConfig.id, result.data.id));
 
-    revalidatePath("/dashboard/agente/configuracion");
+    revalidatePath("/dashboard/configuracion");
     revalidatePath("/dashboard/tickets/nuevo");
     return { success: true };
   } catch (error) {

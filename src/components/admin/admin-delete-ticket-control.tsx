@@ -23,7 +23,7 @@ export function AdminDeleteTicketControl({ ticketId, isAdmin }: { ticketId: numb
       } else {
         toast.success("Ticket eliminado permanentemente");
         setOpen(false);
-        router.push("/dashboard/admin/tickets");
+        router.push("/dashboard/explorador");
       }
     });
   };
@@ -39,7 +39,7 @@ export function AdminDeleteTicketControl({ ticketId, isAdmin }: { ticketId: numb
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
           <div className="flex bg-red-100 dark:bg-red-900/30 p-3 rounded-full w-fit mb-2">
-           <AlertTriangle className="w-6 h-6 text-red-600 dark:text-red-500" />
+            <AlertTriangle className="w-6 h-6 text-red-600 dark:text-red-500" />
           </div>
           <DialogTitle className="text-xl">¿Eliminación crítica?</DialogTitle>
           <DialogDescription className="text-sm pt-2">

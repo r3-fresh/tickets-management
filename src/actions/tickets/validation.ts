@@ -297,7 +297,7 @@ export async function requestValidation(ticketId: number, message?: string) {
     }
 
     revalidatePath(`/dashboard/tickets/${ticket.ticketCode}`);
-    revalidatePath("/dashboard/admin/tickets");
+    revalidatePath("/dashboard/explorador");
     return { success: true };
   } catch (error) {
     console.error("Error requesting validation:", error);
