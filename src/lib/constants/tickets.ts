@@ -73,7 +73,7 @@ export const VALID_STATUS_TRANSITIONS: Record<TicketStatus, readonly TicketStatu
   in_progress: ['open', 'pending_validation', 'resolved', 'voided'],
   pending_validation: ['resolved', 'in_progress'],
   resolved: ['in_progress'],
-  voided: [],
+  voided: ['open', 'in_progress'],
 };
 
 // ============================================

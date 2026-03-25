@@ -18,6 +18,7 @@ import {
 } from "lucide-react";
 import { cn } from "@/lib/utils/cn";
 import { AdminTicketControls } from "@/components/tickets/admin-ticket-controls";
+import { AdminDeleteTicketControl } from "@/components/admin/admin-delete-ticket-control";
 import { AgentManagementCollapsible } from "@/components/agent/agent-management-collapsible";
 import { Button } from "@/components/ui/button";
 import { MarkAsViewed } from "@/components/tickets/mark-as-viewed";
@@ -574,6 +575,13 @@ export default async function TicketDetailPage({ params }: { params: Promise<{ c
                 </>
               )}
 
+              {/* Delete Action for Admin */}
+              {isAdmin && (
+                <div className="pt-2">
+                  <AdminDeleteTicketControl ticketId={ticket.id} isAdmin={isAdmin} />
+                </div>
+              )}
+
               {/* Closure Info (if applicable) */}
               {ticket.status === 'resolved' && ticket.closedBy && (
                 <div className="rounded-md bg-green-500/10 border border-green-500/20 p-3 mt-4">
@@ -582,7 +590,7 @@ export default async function TicketDetailPage({ params }: { params: Promise<{ c
                     <span className="text-xs font-bold text-green-700 dark:text-green-400">Resuelto</span>
                   </div>
                   <p className="text-xs text-green-600/80 dark:text-green-500/80">
-                    Cerrado por {ticket.closedBy === 'user' ? 'Usuario' : ticket.closedBy === 'admin' ? 'Admin' : 'Sistema'} el {formatDate(ticket.closedAt!)}
+                    Cerrado por {ticket.closedBy === 'user' ? 'usuario' : ticket.closedBy === 'admin' ? 'admin' : 'sistema'} el {formatDate(ticket.closedAt!)}
                   </p>
                 </div>
               )}
@@ -592,8 +600,8 @@ export default async function TicketDetailPage({ params }: { params: Promise<{ c
         </div >
       </div >
 
-      {/* Floating Action Bar - Admin Controls */}
-      {(isAdmin || isAgentForArea) && (
+      {/* Floating Action Bar - Agent Controls */}
+      {(!isAdmin && isAgentForArea) && (
         <AgentManagementCollapsible>
           <AdminTicketControls
             ticketId={ticket.id}

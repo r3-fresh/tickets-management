@@ -1,9 +1,10 @@
 "use server";
 
 import { db } from "@/db";
-import { tickets, users } from "@/db/schema";
-import { requireAgent } from "@/lib/auth/helpers";
+import { tickets, users, comments, ticketAttachments, ticketViews, satisfactionSurveys, providerTickets, providerSatisfactionSurveys } from "@/db/schema";
+import { requireAgent, requireAdmin } from "@/lib/auth/helpers";
 import { eq, inArray, and } from "drizzle-orm";
+import { deleteFileFromDrive } from "@/lib/drive/client";
 import { revalidatePath } from "next/cache";
 import { after } from "next/server";
 import { TICKET_STATUS, VALID_STATUS_TRANSITIONS, STATUS_LABELS } from "@/lib/constants/tickets";
@@ -150,6 +151,65 @@ export async function updateTicketStatus(ticketId: number, newStatus: TicketStat
         return { success: true };
     } catch (error) {
         console.error("Error updating ticket status:", error);
-        return { error: "Error al actualizar el estado" };
-    }
+      return { error: "Error al actualizar el estado" };
+  }
+}
+
+export async function deepDeleteTicketAction(ticketId: number) {
+  const session = await requireAdmin();
+
+  try {
+      const targetTicket = await db.query.tickets.findFirst({
+          where: eq(tickets.id, ticketId),
+          with: { attachments: true }
+      });
+
+      if (!targetTicket) {
+          return { error: "Ticket no encontrado" };
+      }
+
+      // Eliminar archivos adjuntos de Google Drive
+      if (targetTicket.attachments && targetTicket.attachments.length > 0) {
+          for (const file of targetTicket.attachments) {
+              try {
+                  await deleteFileFromDrive(file.driveFileId);
+              } catch (driveErr) {
+                  console.error("Failed to delete file from Drive:", driveErr);
+              }
+          }
+      }
+
+      // Operaciones en la BD usando transacción
+      await db.transaction(async (tx) => {
+          // 1. Encuestas de satisfacción a proveedores
+          const pTickets = await tx.select({ id: providerTickets.id }).from(providerTickets).where(eq(providerTickets.ticketId, ticketId));
+          if (pTickets.length > 0) {
+              await tx.delete(providerSatisfactionSurveys).where(inArray(providerSatisfactionSurveys.providerTicketId, pTickets.map(pt => pt.id)));
+          }
+
+          // 2. Tickets de proveedores
+          await tx.delete(providerTickets).where(eq(providerTickets.ticketId, ticketId));
+
+          // 3. Encuestas de satisfacción del usuario
+          await tx.delete(satisfactionSurveys).where(eq(satisfactionSurveys.ticketId, ticketId));
+
+          // 4. Comentarios e historial de actividad
+          await tx.delete(comments).where(eq(comments.ticketId, ticketId));
+
+          // 5. Archivos adjuntos y vistas (aunque tienen CASCADE, es seguro forzarlo)
+          await tx.delete(ticketAttachments).where(eq(ticketAttachments.ticketId, ticketId));
+          await tx.delete(ticketViews).where(eq(ticketViews.ticketId, ticketId));
+
+          // 6. Eliminar el propio ticket
+          await tx.delete(tickets).where(eq(tickets.id, ticketId));
+      });
+
+      revalidatePath("/dashboard/admin/tickets");
+      revalidatePath("/dashboard/agente");
+      revalidatePath("/dashboard");
+      return { success: true };
+  } catch (error) {
+      console.error("Error deeply deleting ticket:", error);
+      return { error: "Error al intentar eliminar el ticket permanentemente" };
+  }
 }

@@ -5,7 +5,7 @@ import { ChevronUp, ChevronDown, Monitor } from "lucide-react";
 import { cn } from "@/lib/utils/cn";
 
 export function AgentManagementCollapsible({ children }: { children: React.ReactNode }) {
-  const [isExpanded, setIsExpanded] = useState(false);
+  const [isExpanded, setIsExpanded] = useState(true);
 
   return (
     <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-50">
