@@ -256,9 +256,9 @@ export async function AgentDashboard({ userId, attentionAreaId }: AgentDashboard
           <div className="flex items-center gap-2">
             <Eye className="h-5 w-5" />
             <h2 className="text-xl font-semibold">En seguimiento</h2>
-            {mergedWatchedTickets.length > 0 && (
+            {mergedWatchedTickets.length > 0 ? (
               <Badge variant="secondary">{mergedWatchedTickets.length} elementos</Badge>
-            )}
+            ) : null}
           </div>
           <Button asChild variant="link" className="text-primary">
             <Link href="/dashboard/seguimiento">Ver todo el historial</Link>

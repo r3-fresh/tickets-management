@@ -55,12 +55,16 @@ export default async function DashboardRootPage() {
     // Check if agent has area assigned
     if (!session.user.attentionAreaId) {
       return (
-        <div className="p-8 text-center">
-          <h1 className="text-2xl font-bold text-destructive">Error de configuración</h1>
-          <p className="mt-2 text-muted-foreground">
-            Tu usuario tiene rol de agente pero no tiene un área de atención asignada.
-            Contacta al administrador.
-          </p>
+        <div className="flex min-h-[calc(100vh-100px)] items-center justify-center bg-background px-4">
+          <div className="rounded-lg border bg-card p-8 text-center max-w-md shadow-sm">
+            <h1 className="text-2xl font-bold tracking-tight text-destructive">Acceso Restringido</h1>
+            <p className="text-muted-foreground mt-4 text-sm leading-relaxed">
+              Tu usuario tiene asignado el rol de <strong>Agente</strong>, pero no cuenta con un <strong>Área de Atención</strong> configurada en el sistema.
+            </p>
+            <p className="text-muted-foreground mt-2 text-sm">
+              Por favor, contacta al administrador general para que habilite tu departamento.
+            </p>
+          </div>
         </div>
       );
     }

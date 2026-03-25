@@ -17,7 +17,7 @@ export default function DashboardError({
   }, [error]);
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-muted px-4">
+    <div className="flex min-h-[calc(100vh-100px)] items-center justify-center bg-background px-4">
       <div className="w-full max-w-md space-y-8 text-center">
         <div className="flex justify-center">
           <div className="rounded-full bg-destructive/10 p-3">

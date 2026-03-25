@@ -138,7 +138,7 @@ export async function AdminDashboard() {
       </div>
 
       {/* Area Ranking Table */}
-      {areaRows.length > 0 && (
+      {areaRows.length > 0 ? (
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
@@ -196,7 +196,7 @@ export async function AdminDashboard() {
             </div>
           </CardContent>
         </Card>
-      )}
+      ) : null}
 
       {/* System Activity + Recent Users */}
       <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-7">
