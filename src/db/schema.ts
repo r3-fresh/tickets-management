@@ -414,7 +414,7 @@ export const providerTicketsRelations = relations(providerTickets, ({ one }) => 
 
 export const providerSatisfactionSurveys = pgTable("provider_satisfaction_survey", {
   id: serial("id").primaryKey(),
-  providerTicketId: integer("provider_ticket_id").notNull().references(() => providerTickets.id).unique(),
+  providerTicketId: integer("provider_ticket_id").notNull().references(() => providerTickets.id, { onDelete: 'cascade' }).unique(),
   attentionAreaId: integer("attention_area_id").notNull().references(() => attentionAreas.id),
   submittedById: text("submitted_by_id").notNull().references(() => users.id),
   // 5 preguntas de evaluación (escala 1-5)

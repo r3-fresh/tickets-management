@@ -99,7 +99,7 @@ export function TicketFilters({ assignedUsers, categories = [], subcategories = 
         <SelectContent>
           <SelectItem value="all">Todos los estados</SelectItem>
           <SelectItem value="open">Abierto</SelectItem>
-          <SelectItem value="in_progress">En curso</SelectItem>
+          <SelectItem value="in_progress">En progreso</SelectItem>
           <SelectItem value="pending_validation">Pendiente de validación</SelectItem>
           <SelectItem value="resolved">Resuelto</SelectItem>
           <SelectItem value="voided">Anulado</SelectItem>
