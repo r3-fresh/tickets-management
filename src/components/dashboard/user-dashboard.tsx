@@ -3,16 +3,14 @@ import { tickets } from "@/db/schema";
 import { eq, desc, sql, and, not, count, inArray } from "drizzle-orm";
 import { queryTickets } from "@/db/queries";
 import { TicketsList } from "@/components/tickets/tickets-list";
+import { CollapsibleSection } from "@/components/dashboard/collapsible-section";
 import { Breadcrumb } from "@/components/shared/breadcrumb";
 import Link from "next/link";
 import {
   Card,
   CardContent,
-  CardHeader,
-  CardTitle,
 } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
 import {
   CheckCircle2,
   Clock,
@@ -22,6 +20,7 @@ import {
   Plus,
   Users,
   TrendingUp,
+  Ticket,
 } from "lucide-react";
 import { cn } from "@/lib/utils/cn";
 
@@ -161,51 +160,54 @@ export async function UserDashboard({ userId }: UserDashboardProps) {
       </div>
 
       {/* KPI Cards */}
-      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
-        {kpiCards.map(({ label, value, rawValue, icon: Icon, barColor, max, iconBg }) => (
-          <Card key={label}>
-            <CardContent className="pt-4 pb-4">
-              <div className={cn("h-8 w-8 rounded-lg flex items-center justify-center mb-2", iconBg)}>
-                <Icon className="h-4 w-4" />
-              </div>
-              <p className="text-xs text-muted-foreground leading-tight mb-1">{label}</p>
-              <p className="text-2xl font-bold tracking-tight">{value}</p>
-              <MiniBar value={rawValue ?? (value as number)} max={max} color={barColor} />
-            </CardContent>
-          </Card>
-        ))}
-      </div>
+      <CollapsibleSection
+        id="user-kpis"
+        icon={<Ticket className="h-5 w-5 text-muted-foreground shrink-0" />}
+        title="Resumen de mis tickets"
+      >
+        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
+          {kpiCards.map(({ label, value, rawValue, icon: Icon, barColor, max, iconBg }) => (
+            <Card key={label}>
+              <CardContent className="pt-4 pb-4">
+                <div className={cn("h-8 w-8 rounded-lg flex items-center justify-center mb-2", iconBg)}>
+                  <Icon className="h-4 w-4" />
+                </div>
+                <p className="text-xs text-muted-foreground leading-tight mb-1">{label}</p>
+                <p className="text-2xl font-bold tracking-tight">{value}</p>
+                <MiniBar value={rawValue ?? (value as number)} max={max} color={barColor} />
+              </CardContent>
+            </Card>
+          ))}
+        </div>
+      </CollapsibleSection>
 
       {/* My Tickets Table */}
-      <div className="space-y-4">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <Users className="h-5 w-5" />
-            <h2 className="text-xl font-semibold">Mis tickets recientes</h2>
-          </div>
+      <CollapsibleSection
+        id="user-my-tickets"
+        icon={<Users className="h-5 w-5 text-muted-foreground shrink-0" />}
+        title="Mis tickets recientes"
+        headerRight={
           <Button asChild variant="link" className="text-primary">
             <Link href="/dashboard/mis-tickets">Ver todo el historial</Link>
           </Button>
-        </div>
+        }
+      >
         <TicketsList tickets={mergedRecentTickets} isAdmin={false} hideFilters={true} hideHeader={true} />
-      </div>
+      </CollapsibleSection>
 
       {/* Watched Tickets */}
-      <div className="space-y-4">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <Eye className="h-5 w-5" />
-            <h2 className="text-xl font-semibold">En seguimiento</h2>
-            {mergedWatchedTickets.length > 0 && (
-              <Badge variant="secondary">{mergedWatchedTickets.length} elementos</Badge>
-            )}
-          </div>
+      <CollapsibleSection
+        id="user-watched-tickets"
+        icon={<Eye className="h-5 w-5 text-muted-foreground shrink-0" />}
+        title={`En seguimiento${mergedWatchedTickets.length > 0 ? ` (${mergedWatchedTickets.length})` : ""}`}
+        headerRight={
           <Button asChild variant="link" className="text-primary">
             <Link href="/dashboard/seguimiento">Ver todo el historial</Link>
           </Button>
-        </div>
+        }
+      >
         <TicketsList tickets={mergedWatchedTickets} isAdmin={false} isWatchedView={true} hideFilters={true} hideHeader={true} />
-      </div>
+      </CollapsibleSection>
     </div>
   );
 }

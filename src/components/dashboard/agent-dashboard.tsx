@@ -3,6 +3,7 @@ import { tickets, attentionAreas } from "@/db/schema";
 import { eq, desc, sql, and, not, count, inArray } from "drizzle-orm";
 import { queryTickets } from "@/db/queries";
 import { TicketsList } from "@/components/tickets/tickets-list";
+import { CollapsibleSection } from "@/components/dashboard/collapsible-section";
 import { Breadcrumb } from "@/components/shared/breadcrumb";
 import Link from "next/link";
 import {
@@ -10,7 +11,6 @@ import {
   CardContent,
 } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
 import {
   AlertCircle,
   Clock,
@@ -179,11 +179,11 @@ export async function AgentDashboard({ userId, attentionAreaId }: AgentDashboard
       </div>
 
       {/* Area KPIs */}
-      <div>
-        <div className="flex items-center gap-2 mb-3">
-          <Building2 className="h-4 w-4 text-muted-foreground" />
-          <h2 className="text-sm font-semibold text-muted-foreground uppercase tracking-wider">Tickets del área · {areaDetails?.name}</h2>
-        </div>
+      <CollapsibleSection
+        id="agent-area-kpis"
+        icon={<Building2 className="h-5 w-5 text-muted-foreground shrink-0" />}
+        title={`Tickets del área · ${areaDetails?.name || ""}`}
+      >
         <div className="grid grid-cols-2 sm:grid-cols-5 gap-3">
           {areaKPIs.map(({ label, value, rawValue, max, barColor, iconBg, icon: Icon }) => (
             <Card key={label}>
@@ -198,14 +198,14 @@ export async function AgentDashboard({ userId, attentionAreaId }: AgentDashboard
             </Card>
           ))}
         </div>
-      </div>
+      </CollapsibleSection>
 
       {/* Personal KPIs */}
-      <div>
-        <div className="flex items-center gap-2 mb-3">
-          <Users className="h-4 w-4 text-muted-foreground" />
-          <h2 className="text-sm font-semibold text-muted-foreground uppercase tracking-wider">Mis tickets personales</h2>
-        </div>
+      <CollapsibleSection
+        id="agent-personal-kpis"
+        icon={<Users className="h-5 w-5 text-muted-foreground shrink-0" />}
+        title="Mis tickets personales"
+      >
         <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-7 gap-3">
           {userKPIs.map(({ label, value, rawValue, max, barColor, iconBg, icon: Icon }) => (
             <Card key={label}>
@@ -220,52 +220,49 @@ export async function AgentDashboard({ userId, attentionAreaId }: AgentDashboard
             </Card>
           ))}
         </div>
-      </div>
+      </CollapsibleSection>
 
       {/* Area Tickets Table */}
-      <div className="space-y-4">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <Building2 className="h-5 w-5" />
-            <h2 className="text-xl font-semibold">Tickets recientes del área</h2>
-          </div>
+      <CollapsibleSection
+        id="agent-area-tickets"
+        icon={<Building2 className="h-5 w-5 text-muted-foreground shrink-0" />}
+        title="Tickets recientes del área"
+        headerRight={
           <Button asChild variant="link" className="text-primary">
             <Link href="/dashboard/area">Ver todo el historial</Link>
           </Button>
-        </div>
+        }
+      >
         <TicketsList tickets={mergedAreaTickets} isAdmin={false} isAgent={true} hideFilters={true} hideHeader={true} />
-      </div>
+      </CollapsibleSection>
 
       {/* My Tickets Table */}
-      <div className="space-y-4">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <Users className="h-5 w-5" />
-            <h2 className="text-xl font-semibold">Mis tickets</h2>
-          </div>
+      <CollapsibleSection
+        id="agent-my-tickets"
+        icon={<Users className="h-5 w-5 text-muted-foreground shrink-0" />}
+        title="Mis tickets recientes"
+        headerRight={
           <Button asChild variant="link" className="text-primary">
             <Link href="/dashboard/mis-tickets">Ver todo el historial</Link>
           </Button>
-        </div>
+        }
+      >
         <TicketsList tickets={mergedUserTickets} isAdmin={false} hideFilters={true} hideHeader={true} />
-      </div>
+      </CollapsibleSection>
 
       {/* Watched Tickets */}
-      <div className="space-y-4">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <Eye className="h-5 w-5" />
-            <h2 className="text-xl font-semibold">En seguimiento</h2>
-            {mergedWatchedTickets.length > 0 ? (
-              <Badge variant="secondary">{mergedWatchedTickets.length} elementos</Badge>
-            ) : null}
-          </div>
+      <CollapsibleSection
+        id="agent-watched-tickets"
+        icon={<Eye className="h-5 w-5 text-muted-foreground shrink-0" />}
+        title={`En seguimiento${mergedWatchedTickets.length > 0 ? ` (${mergedWatchedTickets.length})` : ""}`}
+        headerRight={
           <Button asChild variant="link" className="text-primary">
             <Link href="/dashboard/seguimiento">Ver todo el historial</Link>
           </Button>
-        </div>
+        }
+      >
         <TicketsList tickets={mergedWatchedTickets} isAdmin={false} isWatchedView={true} hideFilters={true} hideHeader={true} />
-      </div>
+      </CollapsibleSection>
     </div>
   );
 }
