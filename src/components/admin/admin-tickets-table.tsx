@@ -51,9 +51,9 @@ export function AdminTicketsTable({ tickets, totalCount, assignedUsers, categori
   const router = useRouter();
   const searchParams = useSearchParams();
 
-  const currentPage = Number(searchParams.get("page") ?? "1");
-  const itemsPerPage = Number(searchParams.get("perPage") ?? "10");
-  const searchQuery = searchParams.get("search") ?? "";
+  const currentPage = Number(searchParams.get("pagina") ?? "1");
+  const itemsPerPage = Number(searchParams.get("porPagina") ?? "10");
+  const searchQuery = searchParams.get("buscar") ?? "";
 
   const updateParams = useCallback((updates: Record<string, string>) => {
     const params = new URLSearchParams(searchParams.toString());
@@ -68,15 +68,15 @@ export function AdminTicketsTable({ tickets, totalCount, assignedUsers, categori
   }, [searchParams, router]);
 
   const handlePageChange = useCallback((page: number) => {
-    updateParams({ page: page.toString() });
+    updateParams({ pagina: page.toString() });
   }, [updateParams]);
 
   const handleItemsPerPageChange = useCallback((perPage: number) => {
-    updateParams({ perPage: perPage.toString(), page: "1" });
+    updateParams({ porPagina: perPage.toString(), pagina: "1" });
   }, [updateParams]);
 
   const debouncedSearch = useDebounce((value: string) => {
-    updateParams({ search: value, page: "" });
+    updateParams({ buscar: value, pagina: "" });
   }, 400);
 
   const handleSearchChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {

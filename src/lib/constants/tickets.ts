@@ -51,6 +51,24 @@ export const STATUS_LABELS: Record<TicketStatus, string> = {
   voided: "Anulado",
 };
 
+// Slugs en español para URLs (valor URL → valor BD)
+export const STATUS_URL_TO_DB: Record<string, TicketStatus> = {
+  abierto: 'open',
+  en_progreso: 'in_progress',
+  pendiente_validacion: 'pending_validation',
+  resuelto: 'resolved',
+  anulado: 'voided',
+};
+
+// Slugs en español para URLs (valor BD → valor URL)
+export const STATUS_DB_TO_URL: Record<TicketStatus, string> = {
+  open: 'abierto',
+  in_progress: 'en_progreso',
+  pending_validation: 'pendiente_validacion',
+  resolved: 'resuelto',
+  voided: 'anulado',
+};
+
 export const PRIORITY_LABELS: Record<TicketPriority, string> = {
   low: "Baja",
   medium: "Media",

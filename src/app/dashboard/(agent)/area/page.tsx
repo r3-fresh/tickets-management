@@ -38,16 +38,16 @@ export default async function AreaTicketsPage({ searchParams }: PageProps) {
 
   const params = await searchParams;
   const filters: TicketFilterParams = {
-    status: typeof params.status === "string" ? params.status : undefined,
-    assignedTo: typeof params.assignedTo === "string" ? params.assignedTo : undefined,
-    category: typeof params.category === "string" ? params.category : undefined,
-    subcategory: typeof params.subcategory === "string" ? params.subcategory : undefined,
-    search: typeof params.search === "string" ? params.search : undefined,
-    year: typeof params.year === "string" ? params.year : undefined,
-    dateFrom: typeof params.dateFrom === "string" ? params.dateFrom : undefined,
-    dateTo: typeof params.dateTo === "string" ? params.dateTo : undefined,
-    page: typeof params.page === "string" ? Number(params.page) : 1,
-    perPage: typeof params.perPage === "string" ? Number(params.perPage) : 10,
+    estado: typeof params.estado === "string" ? params.estado : undefined,
+    asignado: typeof params.asignado === "string" ? params.asignado : undefined,
+    categoria: typeof params.categoria === "string" ? params.categoria : undefined,
+    subcategoria: typeof params.subcategoria === "string" ? params.subcategoria : undefined,
+    buscar: typeof params.buscar === "string" ? params.buscar : undefined,
+    anio: typeof params.anio === "string" ? params.anio : undefined,
+    desde: typeof params.desde === "string" ? params.desde : undefined,
+    hasta: typeof params.hasta === "string" ? params.hasta : undefined,
+    pagina: typeof params.pagina === "string" ? Number(params.pagina) : 1,
+    porPagina: typeof params.porPagina === "string" ? Number(params.porPagina) : 10,
   };
 
   // Queries independientes en paralelo

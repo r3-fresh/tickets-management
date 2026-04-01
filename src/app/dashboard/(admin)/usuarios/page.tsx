@@ -18,9 +18,9 @@ export default async function UsuariosPage({ searchParams }: PageProps) {
   if (!session?.user) return null;
 
   const params = await searchParams;
-  const search = typeof params.search === "string" ? params.search : undefined;
-  const page = typeof params.page === "string" ? Number(params.page) : 1;
-  const perPage = typeof params.perPage === "string" ? Number(params.perPage) : 10;
+  const search = typeof params.buscar === "string" ? params.buscar : undefined;
+  const page = typeof params.pagina === "string" ? Number(params.pagina) : 1;
+  const perPage = typeof params.porPagina === "string" ? Number(params.porPagina) : 10;
 
   const { getActiveAttentionAreas } = await import("@/actions/config/get-config");
   const [paginatedUsers, attentionAreas] = await Promise.all([

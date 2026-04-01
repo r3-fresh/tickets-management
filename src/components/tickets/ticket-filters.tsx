@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback } from "react";
+import { useCallback, useState, useEffect } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Button } from "@/components/ui/button";
@@ -9,6 +9,7 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
 import { CalendarIcon, X } from "lucide-react";
 import { DateRange } from "react-day-picker";
 import { YearFilter } from "@/components/tickets/year-filter";
+import { StatusFilter } from "@/components/tickets/status-filter";
 import { dayjs } from "@/lib/utils/date";
 
 interface TicketFiltersProps {
@@ -22,22 +23,39 @@ export function TicketFilters({ assignedUsers, categories = [], subcategories = 
   const router = useRouter();
   const searchParams = useSearchParams();
 
-  const status = searchParams.get("status") ?? "";
-  const assignedTo = searchParams.get("assignedTo") ?? "";
-  const attentionAreaId = searchParams.get("attentionAreaId") ?? "";
-  const category = searchParams.get("category") ?? "";
-  const subcategory = searchParams.get("subcategory") ?? "";
-  const year = searchParams.get("year") ?? "all";
-  const dateFrom = searchParams.get("dateFrom") ?? "";
-  const dateTo = searchParams.get("dateTo") ?? "";
+  const estado = searchParams.get("estado") ?? "";
+  const asignado = searchParams.get("asignado") ?? "";
+  const area = searchParams.get("area") ?? "";
+  const categoria = searchParams.get("categoria") ?? "";
+  const subcategoria = searchParams.get("subcategoria") ?? "";
+  const anio = searchParams.get("anio") ?? "all";
+  const desde = searchParams.get("desde") ?? "";
+  const hasta = searchParams.get("hasta") ?? "";
 
-  const dateRange: DateRange | undefined = dateFrom
-    ? { from: new Date(dateFrom), to: dateTo ? new Date(dateTo) : undefined }
+  // Rango derivado de la URL (fuente de verdad)
+  // IMPORTANTE: usar dayjs() en vez de new Date() para parsear como hora local.
+  // new Date("2026-03-01") interpreta como UTC → se desfasa un día en UTC-5.
+  const urlDateRange: DateRange | undefined = desde
+    ? { from: dayjs(desde).toDate(), to: hasta ? dayjs(hasta).toDate() : undefined }
     : undefined;
+
+  // Estado local para la selección interactiva del rango
+  // Permite al usuario hacer 2 clics sin que la URL se actualice en cada clic
+  const [localRange, setLocalRange] = useState<DateRange | undefined>(urlDateRange);
+  const [calendarOpen, setCalendarOpen] = useState(false);
+
+  // Sincronizar estado local cuando la URL cambia externamente (ej: limpiar filtros)
+  useEffect(() => {
+    setLocalRange(urlDateRange);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [desde, hasta]);
+
+  // Parsear estado como array de slugs
+  const estadoValues = estado ? estado.split(",").filter(Boolean) : [];
 
   const updateParams = useCallback((updates: Record<string, string>) => {
     const params = new URLSearchParams(searchParams.toString());
-    params.delete("page");
+    params.delete("pagina");
     for (const [key, value] of Object.entries(updates)) {
       if (value && value !== "all") {
         params.set(key, value);
@@ -48,71 +66,81 @@ export function TicketFilters({ assignedUsers, categories = [], subcategories = 
     router.push(`?${params.toString()}`, { scroll: false });
   }, [searchParams, router]);
 
-  const handleStatusChange = (value: string) => {
-    updateParams({ status: value === "all" ? "" : value });
+  const handleStatusChange = (values: string[]) => {
+    updateParams({ estado: values.length > 0 ? values.join(",") : "" });
   };
 
   const handleAssignedToChange = (value: string) => {
-    updateParams({ assignedTo: value === "all" ? "" : value });
+    updateParams({ asignado: value === "all" ? "" : value });
   };
 
-  const handleDateRangeChange = (range: DateRange | undefined) => {
-    updateParams({
-      dateFrom: range?.from ? dayjs(range.from).format("YYYY-MM-DD") : "",
-      dateTo: range?.to ? dayjs(range.to).format("YYYY-MM-DD") : "",
-    });
+  const handleLocalRangeChange = (range: DateRange | undefined) => {
+    setLocalRange(range);
+
+    // Solo actualizar URL cuando el rango esté completo (from + to)
+    if (range?.from && range?.to) {
+      updateParams({
+        desde: dayjs(range.from).format("YYYY-MM-DD"),
+        hasta: dayjs(range.to).format("YYYY-MM-DD"),
+      });
+    }
+  };
+
+  // Al cerrar el popover, si solo hay from sin to, limpiar el estado local
+  const handleCalendarOpenChange = (open: boolean) => {
+    setCalendarOpen(open);
+    if (!open && localRange?.from && !localRange?.to) {
+      // El usuario cerró sin completar el rango, restaurar al estado de la URL
+      setLocalRange(urlDateRange);
+    }
+  };
+
+  const clearDateRange = () => {
+    setLocalRange(undefined);
+    updateParams({ desde: "", hasta: "" });
   };
 
   const handleCategoryChange = (value: string) => {
     updateParams({
-      category: value === "all" ? "" : value,
-      subcategory: ""
+      categoria: value === "all" ? "" : value,
+      subcategoria: ""
     });
   };
 
   const handleSubcategoryChange = (value: string) => {
-    updateParams({ subcategory: value === "all" ? "" : value });
+    updateParams({ subcategoria: value === "all" ? "" : value });
   };
 
   const handleYearChange = (value: string) => {
-    updateParams({ year: value });
+    updateParams({ anio: value });
   };
 
   const clearFilters = () => {
+    setLocalRange(undefined);
     router.push("?", { scroll: false });
   };
 
-  const hasActiveFilters = status || assignedTo || attentionAreaId || dateRange || category || subcategory || (year && year !== "all");
+  // Usar urlDateRange para "active filters" (sólo filtros ya aplicados)
+  const hasActiveFilters = estado || asignado || area || urlDateRange || categoria || subcategoria || (anio && anio !== "all");
 
-  const availableSubcategories = category && category !== 'all'
-    ? subcategories.filter(s => s.categoryId === Number(category))
+  const availableSubcategories = categoria && categoria !== 'all'
+    ? subcategories.filter(s => s.categoryId === Number(categoria))
     : [];
 
-  const formatDateDisplay = (date: Date) => dayjs(date).format("DD MMM YYYY");
+  // Texto de display del rango — usar urlDateRange (lo aplicado)
+  const displayRange = urlDateRange;
 
   return (
     <div className="flex flex-wrap gap-3 items-center">
-      <Select value={status || "all"} onValueChange={handleStatusChange}>
-        <SelectTrigger className="w-[180px] bg-transparent">
-          <SelectValue placeholder="Estado" />
-        </SelectTrigger>
-        <SelectContent>
-          <SelectItem value="all">Todos los estados</SelectItem>
-          <SelectItem value="open">Abierto</SelectItem>
-          <SelectItem value="in_progress">En progreso</SelectItem>
-          <SelectItem value="pending_validation">Pendiente de validación</SelectItem>
-          <SelectItem value="resolved">Resuelto</SelectItem>
-          <SelectItem value="voided">Anulado</SelectItem>
-        </SelectContent>
-      </Select>
+      <StatusFilter value={estadoValues} onChange={handleStatusChange} />
 
-      <Select value={assignedTo || "all"} onValueChange={handleAssignedToChange}>
+      <Select value={asignado || "all"} onValueChange={handleAssignedToChange}>
         <SelectTrigger className="w-[200px] bg-transparent">
           <SelectValue placeholder="Asignado a" />
         </SelectTrigger>
         <SelectContent>
           <SelectItem value="all">Todos</SelectItem>
-          <SelectItem value="unassigned">Sin asignar</SelectItem>
+          <SelectItem value="sin_asignar">Sin asignar</SelectItem>
           {assignedUsers.map((user) => (
             <SelectItem key={user.id} value={user.id}>
               {user.name}
@@ -123,23 +151,23 @@ export function TicketFilters({ assignedUsers, categories = [], subcategories = 
 
       {attentionAreas.length > 0 && (
         <Select
-          value={attentionAreaId || "all"}
-          onValueChange={(v) => updateParams({ attentionAreaId: v === "all" ? "" : v, page: "" })}
+          value={area || "all"}
+          onValueChange={(v) => updateParams({ area: v === "all" ? "" : v, pagina: "" })}
         >
           <SelectTrigger className="w-[200px] bg-transparent">
             <SelectValue placeholder="Área de atención" />
           </SelectTrigger>
           <SelectContent>
             <SelectItem value="all">Todas las áreas</SelectItem>
-            {attentionAreas.map((area) => (
-              <SelectItem key={area.id} value={String(area.id)}>{area.name}</SelectItem>
+            {attentionAreas.map((a) => (
+              <SelectItem key={a.id} value={String(a.id)}>{a.name}</SelectItem>
             ))}
           </SelectContent>
         </Select>
       )}
 
       {categories.length > 0 && (
-        <Select value={category || "all"} onValueChange={handleCategoryChange}>
+        <Select value={categoria || "all"} onValueChange={handleCategoryChange}>
           <SelectTrigger className="w-[200px] bg-transparent">
             <SelectValue placeholder="Categoría" />
           </SelectTrigger>
@@ -154,8 +182,8 @@ export function TicketFilters({ assignedUsers, categories = [], subcategories = 
         </Select>
       )}
 
-      {category && availableSubcategories.length > 0 && (
-        <Select value={subcategory || "all"} onValueChange={handleSubcategoryChange}>
+      {categoria && availableSubcategories.length > 0 && (
+        <Select value={subcategoria || "all"} onValueChange={handleSubcategoryChange}>
           <SelectTrigger className="w-[200px] bg-transparent">
             <SelectValue placeholder="Subcategoría" />
           </SelectTrigger>
@@ -170,36 +198,55 @@ export function TicketFilters({ assignedUsers, categories = [], subcategories = 
         </Select>
       )}
 
-      <Popover>
+      <Popover open={calendarOpen} onOpenChange={handleCalendarOpenChange}>
         <PopoverTrigger asChild>
           <Button variant="outline" className="w-[280px] justify-start text-left font-normal bg-transparent">
             <CalendarIcon className="mr-2 h-4 w-4" />
-            {dateRange?.from ? (
-              dateRange.to ? (
+            {displayRange?.from ? (
+              displayRange.to ? (
                 <>
-                  {dayjs(dateRange.from).format("DD MMM")} -{" "}
-                  {dayjs(dateRange.to).format("DD MMM YYYY")}
+                  {dayjs(displayRange.from).format("DD MMM")} -{" "}
+                  {dayjs(displayRange.to).format("DD MMM YYYY")}
                 </>
               ) : (
-                formatDateDisplay(dateRange.from)
+                dayjs(displayRange.from).format("DD MMM YYYY")
               )
             ) : (
               <span>Rango de fechas</span>
             )}
+            {displayRange ? (
+              <span
+                role="button"
+                tabIndex={0}
+                className="ml-auto rounded-sm opacity-50 hover:opacity-100"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  clearDateRange();
+                }}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter" || e.key === " ") {
+                    e.stopPropagation();
+                    clearDateRange();
+                  }
+                }}
+              >
+                <X className="h-3.5 w-3.5" />
+              </span>
+            ) : null}
           </Button>
         </PopoverTrigger>
         <PopoverContent className="w-auto p-0" align="start">
           <Calendar
             autoFocus
             mode="range"
-            defaultMonth={dateRange?.from}
-            selected={dateRange}
-            onSelect={handleDateRangeChange}
+            defaultMonth={localRange?.from}
+            selected={localRange}
+            onSelect={handleLocalRangeChange}
             numberOfMonths={2}
           />
         </PopoverContent>
       </Popover>
-      <YearFilter value={year} onChange={handleYearChange} />
+      <YearFilter value={anio} onChange={handleYearChange} />
 
       {hasActiveFilters && (
         <Button variant="ghost" size="sm" onClick={clearFilters}>

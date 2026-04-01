@@ -1,6 +1,8 @@
 import { db } from "@/db";
 import { tickets, comments, ticketCategories, ticketSubcategories, appSettings, users, attentionAreas } from "@/db/schema";
-import { eq, desc, sql, and, or, ilike, SQL, count as drizzleCount } from "drizzle-orm";
+import { eq, desc, sql, and, or, ilike, inArray, SQL, count as drizzleCount } from "drizzle-orm";
+import { STATUS_URL_TO_DB } from "@/lib/constants/tickets";
+import type { TicketStatus } from "@/types";
 
 /**
  * Resultado de la query de tickets con conteo de comentarios.
@@ -11,17 +13,17 @@ export type TicketRow = Awaited<ReturnType<typeof queryTickets>>[number];
  * Parámetros de filtro para tickets (usados desde URL search params).
  */
 export interface TicketFilterParams {
-  status?: string;
-  assignedTo?: string;
-  attentionAreaId?: string;
-  category?: string;
-  subcategory?: string;
-  search?: string;
-  year?: string;
-  dateFrom?: string;
-  dateTo?: string;
-  page?: number;
-  perPage?: number;
+  estado?: string;
+  asignado?: string;
+  area?: string;
+  categoria?: string;
+  subcategoria?: string;
+  buscar?: string;
+  anio?: string;
+  desde?: string;
+  hasta?: string;
+  pagina?: number;
+  porPagina?: number;
 }
 
 /**
@@ -38,32 +40,41 @@ export interface PaginatedTicketsResult {
 function buildTicketFilterConditions(filters: TicketFilterParams): SQL[] {
   const conditions: SQL[] = [];
 
-  if (filters.status) {
-    conditions.push(eq(tickets.status, filters.status));
-  }
-
-  if (filters.assignedTo) {
-    if (filters.assignedTo === "unassigned") {
-      conditions.push(sql`${tickets.assignedToId} IS NULL`);
-    } else {
-      conditions.push(eq(tickets.assignedToId, filters.assignedTo));
+  // Multi-select de estado: "abierto,en_progreso" → ['open', 'in_progress']
+  if (filters.estado) {
+    const slugs = filters.estado.split(',').filter(Boolean);
+    const dbValues = slugs
+      .map(s => STATUS_URL_TO_DB[s])
+      .filter((v): v is TicketStatus => v != null);
+    if (dbValues.length === 1) {
+      conditions.push(eq(tickets.status, dbValues[0]));
+    } else if (dbValues.length > 1) {
+      conditions.push(inArray(tickets.status, dbValues));
     }
   }
 
-  if (filters.attentionAreaId) {
-    conditions.push(eq(tickets.attentionAreaId, Number(filters.attentionAreaId)));
+  if (filters.asignado) {
+    if (filters.asignado === "sin_asignar") {
+      conditions.push(sql`${tickets.assignedToId} IS NULL`);
+    } else {
+      conditions.push(eq(tickets.assignedToId, filters.asignado));
+    }
   }
 
-  if (filters.category) {
-    conditions.push(eq(tickets.categoryId, Number(filters.category)));
+  if (filters.area) {
+    conditions.push(eq(tickets.attentionAreaId, Number(filters.area)));
   }
 
-  if (filters.subcategory) {
-    conditions.push(eq(tickets.subcategoryId, Number(filters.subcategory)));
+  if (filters.categoria) {
+    conditions.push(eq(tickets.categoryId, Number(filters.categoria)));
   }
 
-  if (filters.search) {
-    const searchPattern = `%${filters.search}%`;
+  if (filters.subcategoria) {
+    conditions.push(eq(tickets.subcategoryId, Number(filters.subcategoria)));
+  }
+
+  if (filters.buscar) {
+    const searchPattern = `%${filters.buscar}%`;
     conditions.push(
       or(
         ilike(tickets.ticketCode, searchPattern),
@@ -72,19 +83,19 @@ function buildTicketFilterConditions(filters: TicketFilterParams): SQL[] {
     );
   }
 
-  if (filters.year && filters.year !== "all") {
+  if (filters.anio && filters.anio !== "all") {
     conditions.push(
-      sql`extract(year from ${tickets.createdAt}) = ${Number(filters.year)}`,
+      sql`extract(year from ${tickets.createdAt}) = ${Number(filters.anio)}`,
     );
   }
 
-  if (filters.dateFrom) {
-    conditions.push(sql`${tickets.createdAt} >= ${filters.dateFrom}::timestamp`);
+  if (filters.desde) {
+    conditions.push(sql`${tickets.createdAt} >= ${filters.desde}::timestamp`);
   }
 
-  if (filters.dateTo) {
+  if (filters.hasta) {
     // Agregar un día para incluir el día completo
-    conditions.push(sql`${tickets.createdAt} < (${filters.dateTo}::timestamp + interval '1 day')`);
+    conditions.push(sql`${tickets.createdAt} < (${filters.hasta}::timestamp + interval '1 day')`);
   }
 
   return conditions;
@@ -147,8 +158,8 @@ export async function queryTicketsPaginated(
   filters: TicketFilterParams,
   baseWhere?: SQL,
 ): Promise<PaginatedTicketsResult> {
-  const page = filters.page || 1;
-  const perPage = filters.perPage || 25;
+  const page = filters.pagina || 1;
+  const perPage = filters.porPagina || 25;
   const offset = (page - 1) * perPage;
 
   // Combinar condición base con filtros
