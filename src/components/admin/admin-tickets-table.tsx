@@ -35,7 +35,7 @@ interface Ticket {
   updatedAt: Date;
   assignedTo: { id: string; name: string; image: string | null } | null;
   createdBy?: { id: string; name: string; image: string | null } | null;
-  unreadCommentCount?: number;
+
   commentCount?: number;
 }
 
@@ -164,16 +164,9 @@ export function AdminTicketsTable({ tickets, totalCount, assignedUsers, categori
                       )}
                     </TableCell>
                     <TableCell className="text-center">
-                      <div className="flex flex-col items-center gap-1">
-                        <div className="flex items-center justify-center gap-1 text-muted-foreground">
-                          <MessageCircle className="h-3.5 w-3.5" />
-                          <span className="text-xs">{ticket.commentCount || 0}</span>
-                        </div>
-                        {ticket.unreadCommentCount !== undefined && ticket.unreadCommentCount > 0 && (
-                          <span className="text-[10px] bg-foreground text-background px-1.5 py-0.5 rounded-full font-medium">
-                            {ticket.unreadCommentCount} nuevo{ticket.unreadCommentCount > 1 ? 's' : ''}
-                          </span>
-                        )}
+                      <div className="flex items-center justify-center gap-1 text-muted-foreground">
+                        <MessageCircle className="h-3.5 w-3.5" />
+                        <span className="text-xs">{ticket.commentCount || 0}</span>
                       </div>
                     </TableCell>
                     <TableCell className="text-right text-muted-foreground whitespace-nowrap text-xs">

@@ -1,7 +1,7 @@
 "use server";
 
 import { db } from "@/db";
-import { tickets, users, comments, ticketAttachments, ticketViews, satisfactionSurveys, providerTickets, providerSatisfactionSurveys } from "@/db/schema";
+import { tickets, users, comments, ticketAttachments, satisfactionSurveys, providerTickets, providerSatisfactionSurveys } from "@/db/schema";
 import { requireAgent, requireAdmin } from "@/lib/auth/helpers";
 import { eq, inArray, and } from "drizzle-orm";
 import { deleteFileFromDrive } from "@/lib/drive/client";
@@ -196,9 +196,8 @@ export async function deepDeleteTicketAction(ticketId: number) {
       // 4. Comentarios e historial de actividad
       await tx.delete(comments).where(eq(comments.ticketId, ticketId));
 
-      // 5. Archivos adjuntos y vistas (aunque tienen CASCADE, es seguro forzarlo)
+      // 5. Archivos adjuntos (aunque tienen CASCADE, es seguro forzarlo)
       await tx.delete(ticketAttachments).where(eq(ticketAttachments.ticketId, ticketId));
-      await tx.delete(ticketViews).where(eq(ticketViews.ticketId, ticketId));
 
       // 6. Eliminar el propio ticket
       await tx.delete(tickets).where(eq(tickets.id, ticketId));

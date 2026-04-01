@@ -34,7 +34,7 @@ export default async function ExploradorPage({ searchParams }: PageProps) {
   };
 
   const [paginatedResult, filterOptions] = await Promise.all([
-    queryTicketsPaginated(session.user.id, filters),
+    queryTicketsPaginated(filters),
     getTicketFilterOptions(),
   ]);
 

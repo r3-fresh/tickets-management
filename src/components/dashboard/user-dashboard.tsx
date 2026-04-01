@@ -1,7 +1,7 @@
 import { db } from "@/db";
 import { tickets } from "@/db/schema";
 import { eq, desc, sql, and, not, count, inArray } from "drizzle-orm";
-import { queryTicketsWithUnread } from "@/db/queries";
+import { queryTickets } from "@/db/queries";
 import { TicketsList } from "@/components/tickets/tickets-list";
 import { Breadcrumb } from "@/components/shared/breadcrumb";
 import Link from "next/link";
@@ -56,7 +56,7 @@ export async function UserDashboard({ userId }: UserDashboardProps) {
     db.select({ count: count() })
       .from(tickets)
       .where(sql`${userId} = ANY(${tickets.watchers})`),
-    queryTicketsWithUnread(userId, and(eq(tickets.createdById, userId), inArray(tickets.status, [...USER_ACTIVE_STATUSES])), 5),
+    queryTickets(and(eq(tickets.createdById, userId), inArray(tickets.status, [...USER_ACTIVE_STATUSES])), 5),
     db.query.tickets.findMany({
       where: and(eq(tickets.createdById, userId), inArray(tickets.status, [...USER_ACTIVE_STATUSES])),
       columns: { id: true },
@@ -64,7 +64,7 @@ export async function UserDashboard({ userId }: UserDashboardProps) {
       orderBy: [desc(tickets.createdAt)],
       limit: 5,
     }),
-    queryTicketsWithUnread(userId, and(not(eq(tickets.createdById, userId)), sql`${userId} = ANY(${tickets.watchers})`, inArray(tickets.status, [...USER_ACTIVE_STATUSES])), 3),
+    queryTickets(and(not(eq(tickets.createdById, userId)), sql`${userId} = ANY(${tickets.watchers})`, inArray(tickets.status, [...USER_ACTIVE_STATUSES])), 3),
     db.query.tickets.findMany({
       where: and(not(eq(tickets.createdById, userId)), sql`${userId} = ANY(${tickets.watchers})`, inArray(tickets.status, [...USER_ACTIVE_STATUSES])),
       columns: { id: true },

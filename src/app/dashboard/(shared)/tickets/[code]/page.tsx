@@ -21,7 +21,7 @@ import { AdminTicketControls } from "@/components/tickets/admin-ticket-controls"
 import { AdminDeleteTicketControl } from "@/components/admin/admin-delete-ticket-control";
 import { AgentManagementCollapsible } from "@/components/agent/agent-management-collapsible";
 import { Button } from "@/components/ui/button";
-import { MarkAsViewed } from "@/components/tickets/mark-as-viewed";
+
 import { WatchersManager } from "@/components/tickets/watchers-manager";
 import { CancelTicketButton } from "@/components/tickets/cancel-ticket-button";
 import { CopyTicketButton } from "@/components/tickets/copy-ticket-button";
@@ -165,7 +165,6 @@ export default async function TicketDetailPage({ params }: { params: Promise<{ c
       )}
 
       <div className="mx-auto max-w-[1600px] space-y-8 pb-36 animate-in fade-in duration-500">
-        <MarkAsViewed ticketId={ticket.id} />
 
         {/* Top Navigation */}
         <div>

@@ -40,7 +40,7 @@ export default async function MisTicketsPage({ searchParams }: PageProps) {
 
   // Queries independientes en paralelo
   const [paginatedResult, filterOptions] = await Promise.all([
-    queryTicketsPaginated(session.user.id, filters, baseWhere),
+    queryTicketsPaginated(filters, baseWhere),
     getTicketFilterOptions(baseWhere),
   ]);
 

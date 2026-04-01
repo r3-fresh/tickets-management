@@ -55,7 +55,7 @@ export default async function AreaTicketsPage({ searchParams }: PageProps) {
     db.query.attentionAreas.findFirst({
       where: eq(attentionAreas.id, attentionAreaId),
     }),
-    queryTicketsPaginated(session.user.id, filters, baseWhere),
+    queryTicketsPaginated(filters, baseWhere),
     getTicketFilterOptions(baseWhere),
   ]);
 

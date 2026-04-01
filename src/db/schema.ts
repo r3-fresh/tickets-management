@@ -160,17 +160,6 @@ export const ticketAttachments = pgTable("ticket_attachment", {
   createdAt: timestamp("created_at").defaultNow().notNull(),
 });
 
-// Track when users last viewed tickets (for unread comments)
-export const ticketViews = pgTable("ticket_view", {
-  id: serial("id").primaryKey(),
-  ticketId: integer("ticket_id").notNull().references(() => tickets.id, { onDelete: "cascade" }),
-  userId: text("user_id").notNull().references(() => users.id, { onDelete: "cascade" }),
-  lastViewedAt: timestamp("last_viewed_at").defaultNow().notNull(),
-}, (table) => ({
-  // Unique constraint: one view record per user per ticket
-  uniqueUserTicket: unique().on(table.userId, table.ticketId),
-}));
-
 // --- RELATIONS ---
 
 export const ticketsRelations = relations(tickets, ({ one, many }) => ({

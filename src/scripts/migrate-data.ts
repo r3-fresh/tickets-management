@@ -3,7 +3,7 @@ import { db } from "../db/index";
 import { 
   attentionAreas, ticketCategories, ticketSubcategories, 
   users, tickets, comments, ticketAttachments, ticketSequence,
-  priorityConfig, appSettings, providers, sessions, accounts, verifications, ticketViews
+  priorityConfig, appSettings, providers, sessions, accounts, verifications
 } from "../db/schema";
 import { sql } from "drizzle-orm";
 import * as dotenv from "dotenv";
@@ -233,14 +233,7 @@ async function migrate() {
             ).onConflictDoNothing();
         }
 
-        const { rows: oldViews } = await oldPool.query("SELECT * FROM ticket_view");
-        if (oldViews.length > 0) {
-            await db.insert(ticketViews).values(
-                oldViews.map(v => ({
-                    id: v.id, ticketId: v.ticket_id, userId: v.user_id, lastViewedAt: v.last_viewed_at
-                }))
-            ).onConflictDoNothing();
-        }
+
 
         // 7. Seed missing required configurations
         console.log("⚙️  Configurando valores por defecto adicionales...");

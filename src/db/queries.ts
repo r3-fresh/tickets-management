@@ -1,11 +1,11 @@
 import { db } from "@/db";
-import { tickets, comments, ticketViews, ticketCategories, ticketSubcategories, appSettings, users, attentionAreas } from "@/db/schema";
+import { tickets, comments, ticketCategories, ticketSubcategories, appSettings, users, attentionAreas } from "@/db/schema";
 import { eq, desc, sql, and, or, ilike, SQL, count as drizzleCount } from "drizzle-orm";
 
 /**
- * Resultado de la query de tickets con conteo de comentarios no leídos.
+ * Resultado de la query de tickets con conteo de comentarios.
  */
-export type TicketWithUnread = Awaited<ReturnType<typeof queryTicketsWithUnread>>[number];
+export type TicketRow = Awaited<ReturnType<typeof queryTickets>>[number];
 
 /**
  * Parámetros de filtro para tickets (usados desde URL search params).
@@ -28,7 +28,7 @@ export interface TicketFilterParams {
  * Resultado paginado de tickets.
  */
 export interface PaginatedTicketsResult {
-  rows: TicketWithUnread[];
+  rows: TicketRow[];
   totalCount: number;
 }
 
@@ -91,17 +91,15 @@ function buildTicketFilterConditions(filters: TicketFilterParams): SQL[] {
 }
 
 /**
- * Query reutilizable para obtener tickets con conteo de comentarios no leídos.
- * Consolida el patrón duplicado en dashboards, mis-tickets, seguimiento, explorador y area.
+ * Query reutilizable para obtener tickets con conteo de comentarios.
+ * Consolida el patrón en dashboards, mis-tickets, seguimiento, explorador y area.
  * 
  * NOTA: Esta función se mantiene para los dashboards que usan limit sin paginación.
  *
- * @param userId - ID del usuario actual (para calcular no leídos)
  * @param where - Condición WHERE de Drizzle (ej: eq(tickets.createdById, userId))
  * @param limit - Límite de resultados (opcional, sin límite por defecto)
  */
-export function queryTicketsWithUnread(
-  userId: string,
+export function queryTickets(
   where?: SQL,
   limit?: number,
 ) {
@@ -119,30 +117,12 @@ export function queryTicketsWithUnread(
       assignedToId: tickets.assignedToId,
       createdAt: tickets.createdAt,
       updatedAt: tickets.updatedAt,
-      unreadCommentCount: sql<number>`
-                cast(
-                    count(
-                        case 
-                            when ${comments.createdAt} > coalesce(${ticketViews.lastViewedAt}, ${tickets.createdAt})
-                            and ${comments.userId} != ${userId}
-                            then 1 
-                        end
-                    ) as integer
-                )
-            `,
       commentCount: sql<number>`cast(count(${comments.id}) as integer)`,
     })
     .from(tickets)
     .leftJoin(ticketCategories, eq(tickets.categoryId, ticketCategories.id))
     .leftJoin(comments, and(eq(tickets.id, comments.ticketId), eq(comments.type, 'comment')))
-    .leftJoin(
-      ticketViews,
-      and(
-        eq(tickets.id, ticketViews.ticketId),
-        eq(ticketViews.userId, userId),
-      ),
-    )
-    .groupBy(tickets.id, ticketCategories.name, ticketViews.lastViewedAt)
+    .groupBy(tickets.id, ticketCategories.name)
     .orderBy(desc(tickets.createdAt));
 
   if (where) {
@@ -160,12 +140,10 @@ export function queryTicketsWithUnread(
  * Query paginada de tickets con filtros server-side.
  * Ejecuta dos queries en paralelo: una para los datos paginados y otra para el total.
  *
- * @param userId - ID del usuario actual
  * @param filters - Filtros de URL search params
  * @param baseWhere - Condición base (ej: tickets del usuario, del área, etc.)
  */
 export async function queryTicketsPaginated(
-  userId: string,
   filters: TicketFilterParams,
   baseWhere?: SQL,
 ): Promise<PaginatedTicketsResult> {
@@ -195,30 +173,12 @@ export async function queryTicketsPaginated(
       assignedToId: tickets.assignedToId,
       createdAt: tickets.createdAt,
       updatedAt: tickets.updatedAt,
-      unreadCommentCount: sql<number>`
-                cast(
-                    count(
-                        case 
-                            when ${comments.createdAt} > coalesce(${ticketViews.lastViewedAt}, ${tickets.createdAt})
-                            and ${comments.userId} != ${userId}
-                            then 1 
-                        end
-                    ) as integer
-                )
-            `,
       commentCount: sql<number>`cast(count(${comments.id}) as integer)`,
     })
     .from(tickets)
     .leftJoin(ticketCategories, eq(tickets.categoryId, ticketCategories.id))
     .leftJoin(comments, and(eq(tickets.id, comments.ticketId), eq(comments.type, 'comment')))
-    .leftJoin(
-      ticketViews,
-      and(
-        eq(tickets.id, ticketViews.ticketId),
-        eq(ticketViews.userId, userId),
-      ),
-    )
-    .groupBy(tickets.id, ticketCategories.name, ticketViews.lastViewedAt)
+    .groupBy(tickets.id, ticketCategories.name)
     .orderBy(desc(tickets.createdAt))
     .limit(perPage)
     .offset(offset);
@@ -227,7 +187,7 @@ export async function queryTicketsPaginated(
     dataQuery.where(whereClause);
   }
 
-  // Query de conteo total (sin joins de comments/views, solo cuenta tickets)
+  // Query de conteo total (sin joins de comments, solo cuenta tickets)
   const countQuery = db
     .select({ count: drizzleCount() })
     .from(tickets)
